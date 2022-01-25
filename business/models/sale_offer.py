@@ -29,7 +29,7 @@ class Range(SupervisedEntity):
 
     @discounted_price.setter
     def discounted_price(self, discounted_price):
-        self._discounted_price = discounted_price
+        self._discounted_price = float(discounted_price)
 
     @property
     def free_unit(self):
@@ -44,6 +44,12 @@ class Range(SupervisedEntity):
 
     def is_valid_sold_by(self):
         return self.sold_by and isinstance(self.sold_by, numbers.Number)
+
+    def __eq__(self, obj):
+        return isinstance(obj, Range) \
+               and self.free_unit == obj.free_unit \
+               and self.discounted_price == obj.discounted_price \
+               and self.sold_by == obj.sold_by
 
     def rapport_errors(self):
         errors = []
@@ -99,9 +105,9 @@ class Distribution(SupervisedEntity):
     @discounted_price.setter
     def discounted_price(self, discounted_price):
         if self.type == RANGE_DISTRIBUTION:
-            self.ranges[-1].discounted_price = discounted_price
+            self.ranges[-1].discounted_price = float(discounted_price)
         else:
-            self._discounted_price = discounted_price
+            self._discounted_price = float(discounted_price)
 
     @property
     def free_unit(self):

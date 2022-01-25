@@ -73,7 +73,7 @@ class Product(SupervisedEntity):
 
     @weight.setter
     def weight(self, weight):
-        self._weight = weight
+        self._weight = float(weight)
 
     @property
     def vat(self):
@@ -89,7 +89,7 @@ class Product(SupervisedEntity):
 
     @unit_price.setter
     def unit_price(self, unit_price):
-        self._unit_price = unit_price
+        self._unit_price = float(unit_price)
 
     @property
     def dci(self):

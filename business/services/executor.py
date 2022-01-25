@@ -6,11 +6,13 @@ from business.services.product import get_product_by_barcode, create_product_wit
 from business.services.sale_offer import find_sale_offer, create_sale_offer, edit_sale_offer
 
 
-def process_line(excel_line):
+def create_sale_offer_from_excel_line(excel_line):
     print('can_create_sale_offer', excel_line.can_create_sale_offer())
     if excel_line.can_create_sale_offer():
         try:
-            product = find_or_create_product(excel_line.sale_offer.product, excel_line.can_create_product_from_scratch())
+            product = find_or_create_product(excel_line.sale_offer.product,
+                                             excel_line.can_create_product_from_scratch())
+            print('THIS is my product', product)
             sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product)
             print('sale_offer', sale_offer)
         except Exception as err:

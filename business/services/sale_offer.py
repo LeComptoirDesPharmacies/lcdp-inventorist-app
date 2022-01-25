@@ -45,8 +45,8 @@ def edit_sale_offer(reference, sale_offer):
             rank=sale_offer.rank,
             distribution_mode=AnyDistributionMode(
                 type='UNITARY',
-                unit_price=sale_offer.discounted_price,
-                minimal_quantity=sale_offer.sold_by
+                unit_price=sale_offer.distribution.discounted_price,
+                minimal_quantity=sale_offer.distribution.sold_by
             )
         )
     )

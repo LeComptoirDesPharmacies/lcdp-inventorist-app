@@ -78,8 +78,8 @@ class TestSaleOffer(unittest.TestCase):
 
         initial_sale_offer.merge(another_sale_offer)
 
-        expected = json.dumps([range_1, range_2], default=lambda o: o.__dict__)
-        result = json.dumps(initial_sale_offer.distribution.ranges, default=lambda o: o.__dict__)
+        expected = [range_1, range_2]
+        result = initial_sale_offer.distribution.ranges
 
         self.assertEqual(expected, result)
 
