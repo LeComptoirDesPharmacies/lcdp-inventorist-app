@@ -1,13 +1,45 @@
+import logging
+
 from api.consume.gen.product import ApiException
 from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
-from business.exceptions import TooManyProduct, VatNotFound
+from business.exceptions import TooManyProduct, VatNotFound, CannotCreateProduct
+from business.services.laboratory import find_or_create_laboratory
 from business.services.providers import get_search_product_api, get_search_product_metadata_api, get_search_vat_api, \
     get_manage_product_api
 from business.services.security import get_api_key
 
 
-def get_product_by_barcode(barcode):
+def find_or_create_product(product, can_create_product_from_scratch):
+    logging.info(f'Barcode {product.principal_barcode} : Try to find product with barcode')
+    result_product = __get_product_by_barcode(product.principal_barcode)
+    if result_product:
+        return result_product
+
+    logging.info(f'Barcode {product.principal_barcode} : '
+                 f'Product not found in database, try to create product from providers.')
+    result_product = __create_product_with_barcode(product.principal_barcode)
+    if result_product:
+        return result_product
+
+    # Create product from scratch
+    if can_create_product_from_scratch:
+        logging.info(f'Barcode {product.principal_barcode} : Create product from scratch')
+        product_type = __find_product_type_by_name(product.product_type.name)
+        laboratory = find_or_create_laboratory(product.laboratory.name)
+        vat = __get_vat_by_value(product.vat.value)
+        return __create_product_from_scratch(
+            product,
+            product_type,
+            vat,
+            laboratory
+        )
+    else:
+        logging.info(f'Barcode {product.principal_barcode} : Cannot find and create product')
+        raise CannotCreateProduct()
+
+
+def __get_product_by_barcode(barcode):
     api = get_search_product_api()
     products = api.get_products(
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
@@ -18,7 +50,7 @@ def get_product_by_barcode(barcode):
     return next(iter(products.records), None)
 
 
-def find_product_type_by_name(name):
+def __find_product_type_by_name(name):
     api = get_search_product_metadata_api()
     product_types = api.get_product_types(
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key())
@@ -27,7 +59,7 @@ def find_product_type_by_name(name):
     return next(type_iterator, None)
 
 
-def get_vat_by_value(value):
+def __get_vat_by_value(value):
     api = get_search_vat_api()
     vats = api.get_vats(_request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),)
     vat_iterator = filter(lambda x: x.value == value/100, vats)
@@ -37,7 +69,7 @@ def get_vat_by_value(value):
     return vat
 
 
-def create_product_with_barcode(principal_barcode):
+def __create_product_with_barcode(principal_barcode):
     try:
         api = get_manage_product_api()
         payload = ProductCreationOrUpdateParameters(
@@ -56,7 +88,7 @@ def create_product_with_barcode(principal_barcode):
         raise apiError
 
 
-def create_product_from_scratch(product, product_type, vat, laboratory):
+def __create_product_from_scratch(product, product_type, vat, laboratory):
     api = get_manage_product_api()
     product = api.create_product(
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),

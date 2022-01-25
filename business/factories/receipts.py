@@ -1,6 +1,6 @@
 from business.utils import rsetattr
 
-laboratory_excel_receipt = {
+create_laboratory_sale_offer_receipt = {
         0: lambda line, value: rsetattr(line, 'sale_offer.rank', value),
         1: lambda line, value: rsetattr(line, 'sale_offer.product.name', value),
         2: lambda line, value: rsetattr(line, 'sale_offer.product.dci', value),

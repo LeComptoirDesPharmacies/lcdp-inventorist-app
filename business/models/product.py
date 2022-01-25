@@ -57,7 +57,7 @@ class Product(SupervisedEntity):
 
     @principal_barcode.setter
     def principal_barcode(self, principal_barcode):
-        self._principal_barcode = principal_barcode
+        self._principal_barcode = str(principal_barcode)
 
     @property
     def name(self):

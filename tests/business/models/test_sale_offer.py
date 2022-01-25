@@ -53,7 +53,7 @@ class TestSaleOffer(unittest.TestCase):
         another_sale_offer.product.principal_barcode = 'new_barcode'
         self.assertFalse(initial_sale_offer.should_merge(another_sale_offer))
 
-    #TODO: voir sur connexion comment c'était fait
+    #TODO: voir sur connexion comment c'était fait test avec different parametre
     def test_sale_offer_cant_be_merge_2(self):
         initial_sale_offer = build_sale_offer(123, None, 'palier')
         another_sale_offer = build_sale_offer(123, None, 'unitaire')
