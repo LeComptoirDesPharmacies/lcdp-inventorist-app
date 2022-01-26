@@ -181,6 +181,8 @@ class SaleOffer(SupervisedEntity):
     def distribution(self, distribution_type):
         if distribution_type:
             self._distribution = Distribution(self.supervisor, distribution_type)
+        else:
+            self._distribution = Distribution(self.supervisor, UNITARY_DISTRIBUTION)
 
     def should_merge(self, next_sale_offer):
         return self.distribution.type == RANGE_DISTRIBUTION and \

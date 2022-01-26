@@ -1,7 +1,8 @@
 from business.models.excel_line import ExcelLine
 
 
-class ExcelLineBuilder:
+# TODO: le builder est très ciblé laboratoire. créer plusieur builder ?
+class LaboratoryExcelLineBuilder:
     def __init__(self, rows, receipt):
         self.excel_lines = []
         self.receipt = receipt
@@ -14,6 +15,9 @@ class ExcelLineBuilder:
         line.supervisor.identify_errors()
         return line
 
+    def clean_lines(self):
+        self.excel_lines = list(filter(lambda l: l.sale_offer.product.principal_barcode is not None, self.excel_lines))
+
     def get_lines(self):
         return self.excel_lines
 
@@ -25,6 +29,7 @@ class ExcelLineBuilder:
                 self.excel_lines = excel_lines
             else:
                 self.excel_lines.append(current_line)
+        self.clean_lines()
         return self
 
     def merge_duplicate(self, current_line):

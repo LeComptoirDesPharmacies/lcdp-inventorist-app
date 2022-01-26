@@ -3,7 +3,7 @@ import logging
 from openpyxl import load_workbook
 
 from api.consume.gen.auth import ApiException
-from business.factories.excel_factory import ExcelLineBuilder
+from business.factories.excel_factory import LaboratoryExcelLineBuilder
 from business.factories.receipts import create_laboratory_sale_offer_receipt
 from business.services.product import find_or_create_product
 from business.services.sale_offer import create_or_edit_sale_offer
@@ -13,9 +13,7 @@ def create_sale_offer_from_excel(excel_path):
     results = []
     lines = __read_laboratory_excel(excel_path)
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer creation")
-    for line in lines:
-        results.append(__create_sale_offer_from_excel_line(line))
-
+    results = list(map(__create_sale_offer_from_excel_line, lines))
     succeeded_lines = len(list(filter(lambda o: o['result'] is not None, results)))
     errors_lines = len(list(filter(lambda o: o['error'] is not None, results)))
     logging.info(f"{succeeded_lines} sale offer(s) has been created")
@@ -24,8 +22,8 @@ def create_sale_offer_from_excel(excel_path):
 
 def __read_laboratory_excel(excel_url):
     wb = load_workbook(excel_url, read_only=True)
-    rows = wb['Annonces'].iter_rows(2)
-    builder = ExcelLineBuilder(rows, create_laboratory_sale_offer_receipt).build()
+    rows = wb['Annonces'].iter_rows(5)
+    builder = LaboratoryExcelLineBuilder(rows, create_laboratory_sale_offer_receipt).build()
     lines = builder.get_lines()
     return lines
 
