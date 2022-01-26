@@ -3,6 +3,7 @@ from business.models.errors import CreateProductError, CreateSaleOfferError
 import numbers
 
 from business.models.supervisor import SupervisedEntity
+from business.utils import cast_or_default
 
 
 class ProductType:
@@ -57,7 +58,7 @@ class Product(SupervisedEntity):
 
     @principal_barcode.setter
     def principal_barcode(self, principal_barcode):
-        self._principal_barcode = str(principal_barcode)
+        self._principal_barcode = cast_or_default(principal_barcode, str)
 
     @property
     def name(self):
@@ -73,7 +74,7 @@ class Product(SupervisedEntity):
 
     @weight.setter
     def weight(self, weight):
-        self._weight = float(weight)
+        self._weight = cast_or_default(weight, float)
 
     @property
     def vat(self):
@@ -89,7 +90,7 @@ class Product(SupervisedEntity):
 
     @unit_price.setter
     def unit_price(self, unit_price):
-        self._unit_price = float(unit_price)
+        self._unit_price = cast_or_default(unit_price, float)
 
     @property
     def dci(self):

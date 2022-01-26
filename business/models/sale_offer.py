@@ -3,6 +3,8 @@ from business.models.product import Product
 from business.models.supervisor import SupervisedEntity
 import numbers
 
+from business.utils import cast_or_default
+
 UNITARY_DISTRIBUTION = 'unitaire'
 RANGE_DISTRIBUTION = 'palier'
 QUOTATION_DISTRIBUTION = 'devis'
@@ -29,7 +31,7 @@ class Range(SupervisedEntity):
 
     @discounted_price.setter
     def discounted_price(self, discounted_price):
-        self._discounted_price = float(discounted_price)
+        self._discounted_price = cast_or_default(discounted_price, float)
 
     @property
     def free_unit(self):
@@ -105,9 +107,9 @@ class Distribution(SupervisedEntity):
     @discounted_price.setter
     def discounted_price(self, discounted_price):
         if self.type == RANGE_DISTRIBUTION:
-            self.ranges[-1].discounted_price = float(discounted_price)
+            self.ranges[-1].discounted_price = cast_or_default(discounted_price, float)
         else:
-            self._discounted_price = float(discounted_price)
+            self._discounted_price = cast_or_default(discounted_price, float)
 
     @property
     def free_unit(self):
@@ -116,9 +118,9 @@ class Distribution(SupervisedEntity):
     @free_unit.setter
     def free_unit(self, free_unit):
         if self.type == RANGE_DISTRIBUTION:
-            self.ranges[-1].free_unit = free_unit
+            self.ranges[-1].free_unit = cast_or_default(free_unit, int, 0)
         else:
-            self._free_unit = free_unit
+            self._free_unit = cast_or_default(free_unit, int, 0)
 
     def rapport_errors(self):
         errors = []
