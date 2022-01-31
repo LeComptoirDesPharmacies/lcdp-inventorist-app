@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from business.models.errors import CreateSaleOfferError
@@ -10,7 +9,7 @@ def build_sale_offer(owner_id, rank, distribution_type):
     sale_offer = SaleOffer(Supervisor())
     sale_offer.owner_id = owner_id
     sale_offer.rank = rank
-    sale_offer.distribution = distribution_type
+    sale_offer.distribution_type = distribution_type
     return sale_offer
 
 
@@ -30,12 +29,6 @@ class TestSaleOffer(unittest.TestCase):
     def test_sale_offer_should_have_owner_id_set(self):
         sale_offer = build_sale_offer(None, None, 'unitaire')
         expected = [CreateSaleOfferError.INVALID_SELLER_ID]
-        result = sale_offer.rapport_errors()
-        self.assertEqual(expected, result)
-
-    def test_sale_offer_should_have_distribution_set(self):
-        sale_offer = build_sale_offer(123, None, None)
-        expected = [CreateSaleOfferError.INVALID_DISTRIBUTION]
         result = sale_offer.rapport_errors()
         self.assertEqual(expected, result)
 

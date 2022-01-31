@@ -9,21 +9,23 @@ class SupervisedEntity:
 
 class Supervisor:
     def __init__(self):
-        self.errors = []
-        self.success = []
+        self._errors = []
         self.registered_entity = []
 
     def register(self, entity):
         self.registered_entity.append(entity)
 
     def identify_errors(self):
-        self.errors = [error for entity in self.registered_entity for error in entity.rapport_errors()]
+        self._errors = [error for entity in self.registered_entity for error in entity.rapport_errors()]
 
     def has_one_error_of(self, error_enum_cls):
-        for error in self.errors:
+        for error in self._errors:
             if isinstance(error, error_enum_cls):
                 return True
         return False
 
+    @property
+    def errors(self):
+        return repr(self._errors)
 
 

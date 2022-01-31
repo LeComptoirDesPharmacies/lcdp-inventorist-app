@@ -7,6 +7,12 @@ from business.services.providers import get_manage_sale_offer_api, get_search_sa
 from business.services.security import get_api_key
 
 
+def create_sale_offer(sale_offer, product):
+    logging.info(f'product {sale_offer.product.principal_barcode} : '
+                 f'No sale offer is already exist, create sale offer')
+    return __create_sale_offer(sale_offer, product.id)
+
+
 def create_or_edit_sale_offer(sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = __find_sale_offer(
@@ -14,9 +20,7 @@ def create_or_edit_sale_offer(sale_offer, product):
      product.id
     )
     if not existing_sale_offer:
-        logging.info(f'product {sale_offer.product.principal_barcode} : '
-                     f'No sale offer is already exist, create sale offer')
-        return __create_sale_offer(sale_offer, product.id)
+        return create_sale_offer(sale_offer, product)
     else:
         logging.info(f'product {sale_offer.product.principal_barcode} : '
                      f'Sale offer already exist, edit existing sale offer')
