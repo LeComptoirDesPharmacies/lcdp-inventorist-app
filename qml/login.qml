@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Window 2.15
+import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material 2.15
@@ -12,15 +12,15 @@ ApplicationWindow {
     visible: true
     flags: Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.CustomizeWindowHint | Qt.MSWindowsFixedSizeDialogHint | Qt.WindowTitleHint
 
-    Material.theme: Material.Dark
-    Material.accent: Material.LightBlue
+    Material.theme: Material.Light
+    Material.accent: '#3AB872'
     
     RowLayout {
-        anchors.fill: parent;
+        id: rowLayout
+        anchors.fill: parent
         Pane {
-            anchors.top: parent.top;
-            anchors.bottom: parent.bottom;
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             Image {
                 id: logo
                 y: 50
@@ -74,27 +74,31 @@ ApplicationWindow {
                 anchors.top: loginButton.bottom
                 anchors.topMargin: 15
             }
+
+            ProgressBar {
+               id: loader
+               indeterminate: true
+               anchors.horizontalCenter: parent.horizontalCenter
+               anchors.top: loginState.bottom
+               anchors.topMargin: 15
+               visible: false
+            }
+
         }
     }
     
     Connections {
         target: loginBackend
 
-        property string userName: ""
-
-        function onSignalUserName(name){
-            userName = name
-        }
-
         function onSignalLoading(isLoading){
             loginButton.enabled = !isLoading
+            loader.visible = isLoading
         }
 
         function onSignalConnected(isConnected) {
             if(isConnected){
                 var component = Qt.createComponent("app.qml")
                 var window = component.createObject()
-                window.userName = userName
                 window.show()
                 visible = false
             }

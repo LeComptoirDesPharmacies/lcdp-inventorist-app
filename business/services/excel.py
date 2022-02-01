@@ -1,30 +1,36 @@
 import logging
+import tempfile
+import time
+import os
 
 from openpyxl import load_workbook, Workbook
-
 from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
 from api.consume.gen.product import ApiException as ProductApiException
 from api.consume.gen.laboratory import ApiException as LaboratoryApiException
 from api.consume.gen.configuration import ApiException as ConfigurationApiException
 from business.factories.excel_lines_factory import LaboratoryExcelLinesBuilder
-from business.factories.receipts import create_laboratory_sale_offer_receipt, error_receipt
+from business.factories.receipts import error_receipt
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle
 from business.services.product import find_or_create_product
 from business.services.sale_offer import create_or_edit_sale_offer
 
 
-def create_sale_offer_from_excel(excel_path):
-    lines = __read_laboratory_excel(excel_path)
+def create_sale_offer_from_excel(excel_path, receipt):
+    lines = __read_excel(excel_path, receipt)
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer creation")
     results = list(map(__create_sale_offer_from_excel_line, lines))
-    create_excel_summary(results, create_laboratory_sale_offer_receipt)
     return results
 
 
 def create_excel_summary(results, receipt):
     wb = Workbook()
     wb.remove_sheet(wb.active)
+
+    dirpath = tempfile.mkdtemp()
+    current_time = int(time.time())
+
+    summary_path = os.path.join(dirpath, str(current_time) + "-summary.xlsx")
 
     succeeded_lines = list(filter(lambda o: o['result'] is not None, results))
     __create_success_sheet(wb, receipt, succeeded_lines, wb.active)
@@ -34,7 +40,8 @@ def create_excel_summary(results, receipt):
 
     logging.info(f"{len(succeeded_lines)} sale offer(s) has been created")
     logging.info(f"{len(errors_lines)} line have an error")
-    wb.save(filename="summary.xlsx")
+    wb.save(filename=summary_path)
+    return summary_path
 
 
 def __create_success_sheet(wb, receipt, lines, sheet=None):
@@ -66,10 +73,11 @@ def __create_error_sheet(wb, receipt, lines, sheet=None):
     return sheet
 
 
-def __read_laboratory_excel(excel_url):
+def __read_excel(excel_url, receipt):
     wb = load_workbook(excel_url, read_only=True)
+    #TODO: change this method to be more generic
     rows = wb['Annonces'].iter_rows(5)
-    builder = LaboratoryExcelLinesBuilder(rows, create_laboratory_sale_offer_receipt).build()
+    builder = LaboratoryExcelLinesBuilder(rows, receipt).build()
     lines = builder.get_lines()
     return lines
 
