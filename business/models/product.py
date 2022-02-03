@@ -32,7 +32,7 @@ class Vat(SupervisedEntity):
     def value(self, value):
         self._value = value
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.value or not isinstance(self.value, numbers.Number):
             errors.append(CreateProductError.INVALID_VAT)
@@ -104,7 +104,7 @@ class Product(SupervisedEntity):
     def laboratory(self):
         return self._laboratory
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.principal_barcode:
             errors.append(CreateSaleOfferError.INVALID_CIP)

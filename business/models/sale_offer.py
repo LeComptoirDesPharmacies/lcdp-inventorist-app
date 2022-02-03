@@ -53,7 +53,7 @@ class Range(SupervisedEntity):
                and self.discounted_price == obj.discounted_price \
                and self.sold_by == obj.sold_by
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.is_valid_discounted_price() or not self.is_valid_sold_by():
             errors.append(CreateSaleOfferError.INVALID_RANGE)
@@ -128,7 +128,7 @@ class Distribution(SupervisedEntity):
         else:
             self._free_unit = cast_or_default(free_unit, int, 0)
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.type or self.type not in [UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION]:
             errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
@@ -213,7 +213,7 @@ class SaleOffer(SupervisedEntity):
     def merge(self, sale_offer):
         self.distribution.ranges.extend(sale_offer.distribution.ranges)
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
             errors.append(CreateSaleOfferError.INVALID_SELLER_ID)

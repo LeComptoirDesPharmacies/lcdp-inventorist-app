@@ -24,7 +24,7 @@ class Laboratory(SupervisedEntity):
     def name(self, name):
         self._name = name
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.name:
             errors.append(GetOrCreateLaboratoryError.INVALID_LABORATORY_NAME)

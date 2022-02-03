@@ -14,76 +14,95 @@ ApplicationWindow {
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
-    
-    RowLayout {
-        id: rowLayout
+
+    StackView {
         anchors.fill: parent
-        Pane {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Image {
-                id: logo
-                y: 50
-                height: 100
-                width: 100
-                source: "../images/logo.png"
-                anchors.horizontalCenter: parent.horizontalCenter
-                verticalAlignment: Image.AlignVCenter
-                horizontalAlignment: Image.AlignVCenter
+        initialItem: Page {
+            header: Label {
+                id: header
+                text: qsTr("Connexion")
+                bottomPadding: 10
+                topPadding: 10
+                color: '#3AB872'
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: '#1E276D'
+                }
+                font.pixelSize: 22
+                horizontalAlignment: Text.AlignHCenter
             }
+            RowLayout {
+                id: rowLayout
+                anchors.fill: parent
+                Pane {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Image {
+                        id: logo
+                        y: 50
+                        height: 100
+                        width: 100
+                        source: "../images/logo.png"
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        verticalAlignment: Image.AlignVCenter
+                        horizontalAlignment: Image.AlignVCenter
+                    }
 
-            TextField {
-                id: loginField
-                width: 300
-                text: qsTr("")
-                selectByMouse: true
-                placeholderText: qsTr("Email")
-                verticalAlignment: Text.AlignVCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: logo.bottom
-                anchors.topMargin: 60
-                focus: true
+                    TextField {
+                        id: loginField
+                        width: 300
+                        text: qsTr("")
+                        selectByMouse: true
+                        placeholderText: qsTr("Email")
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: logo.bottom
+                        anchors.topMargin: 60
+                        focus: true
+                    }
+
+                    TextField {
+                        id: passwordField
+                        width: 300
+                        selectByMouse: true
+                        placeholderText: qsTr("Mot de passe")
+                        echoMode: TextInput.Password
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: loginField.bottom
+                        anchors.topMargin: 10
+                    }
+
+                    Button {
+                        id: loginButton
+                        text: qsTr("Se connecter")
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: passwordField.bottom
+                        anchors.topMargin: 15
+                        onClicked: loginBackend.login(loginField.text, passwordField.text)
+                    }
+
+                    Label {
+                        id: loginState
+                        text: qsTr("")
+                        color: Material.color(Material.Indigo)
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: loginButton.bottom
+                        anchors.topMargin: 15
+                    }
+
+                    ProgressBar {
+                       id: loader
+                       indeterminate: true
+                       anchors.horizontalCenter: parent.horizontalCenter
+                       anchors.top: loginState.bottom
+                       anchors.topMargin: 15
+                       visible: false
+                    }
+
+                }
             }
-
-            TextField {
-                id: passwordField
-                width: 300
-                selectByMouse: true
-                placeholderText: qsTr("Mot de passe")
-                echoMode: TextInput.Password
-                verticalAlignment: Text.AlignVCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: loginField.bottom
-                anchors.topMargin: 10
-            }
-
-            Button {
-                id: loginButton
-                text: qsTr("Se connecter")
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: passwordField.bottom
-                anchors.topMargin: 15
-                onClicked: loginBackend.login(loginField.text, passwordField.text)
-            }
-
-            Label {
-                id: loginState
-                text: qsTr("")
-                color: Material.color(Material.Indigo)
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: loginButton.bottom
-                anchors.topMargin: 15
-            }
-
-            ProgressBar {
-               id: loader
-               indeterminate: true
-               anchors.horizontalCenter: parent.horizontalCenter
-               anchors.top: loginState.bottom
-               anchors.topMargin: 15
-               visible: false
-            }
-
         }
     }
     

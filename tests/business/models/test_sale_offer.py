@@ -17,19 +17,19 @@ class TestSaleOffer(unittest.TestCase):
     def test_sale_offer_minimal_instantiation(self):
         sale_offer = build_sale_offer(123, None, 'unitaire')
         expected = []
-        result = sale_offer.rapport_errors()
+        result = sale_offer.report_errors()
         self.assertEqual(expected, result)
 
     def test_sale_offer_should_have_valid_owner_id(self):
         sale_offer = build_sale_offer('not_number_owner_id', None, 'unitaire')
         expected = [CreateSaleOfferError.INVALID_SELLER_ID]
-        result = sale_offer.rapport_errors()
+        result = sale_offer.report_errors()
         self.assertEqual(expected, result)
 
     def test_sale_offer_should_have_owner_id_set(self):
         sale_offer = build_sale_offer(None, None, 'unitaire')
         expected = [CreateSaleOfferError.INVALID_SELLER_ID]
-        result = sale_offer.rapport_errors()
+        result = sale_offer.report_errors()
         self.assertEqual(expected, result)
 
     def test_sale_offer_can_be_merge(self):

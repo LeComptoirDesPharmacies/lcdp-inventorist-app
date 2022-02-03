@@ -3,7 +3,7 @@ class SupervisedEntity:
         self.supervisor = supervisor
         supervisor.register(self)
 
-    def rapport_errors(self):
+    def report_errors(self):
         pass
 
 
@@ -16,7 +16,7 @@ class Supervisor:
         self.registered_entity.append(entity)
 
     def identify_errors(self):
-        self._errors = [error for entity in self.registered_entity for error in entity.rapport_errors()]
+        self._errors = [error for entity in self.registered_entity for error in entity.report_errors()]
 
     def has_one_error_of(self, error_enum_cls):
         for error in self._errors:

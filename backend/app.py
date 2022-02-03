@@ -1,11 +1,13 @@
-from PySide6.QtCore import QObject, Slot, Signal
 import logging
+import os
+import subprocess
+import sys
+from urllib.parse import urlparse
+
+from PySide6.QtCore import QObject, Slot, Signal
 
 from business.factories.receipts import create_laboratory_sale_offer_receipt
 from business.services.excel import create_sale_offer_from_excel, create_excel_summary
-
-import os, sys, subprocess
-from urllib.parse import urlparse
 
 
 class App(QObject):
