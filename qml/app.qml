@@ -18,6 +18,7 @@ ApplicationWindow {
     property string currentState: ""
     property string reportPath: ""
     property string templateUrl: ""
+    property string excelPath: ""
     property bool loading: false
 
     function isEmpty(str){
@@ -111,6 +112,23 @@ ApplicationWindow {
                     Layout.alignment: "Qt::AlignHCenter"
                     visible: !loading
                 }
+                Text {
+                    id: excelPathText
+                    color: '#1E276D'
+                    text: excelPath
+                    font.pointSize: 12
+                    Layout.alignment: "Qt::AlignHCenter"
+                }
+                Button {
+                    id: startBtn
+                    Layout.topMargin: 15
+                    text: qsTr("Go !")
+                    onClicked: appBackend.start()
+                    visible: !isEmpty(excelPath)
+                    enabled: !loading
+                    Material.background: Material.Teal
+                    Layout.alignment: "Qt::AlignHCenter"
+                }
                 ProgressBar {
                    id: loader
                    indeterminate: true
@@ -141,6 +159,7 @@ ApplicationWindow {
         title: qsTr("Sélectionner un fichier excel")
         nameFilters: [ "All files (*)"]
         onAccepted: {
+            excelPath = excelFileDialog.currentFile
             appBackend.get_excel(excelFileDialog.currentFile)
         }
         onRejected: {

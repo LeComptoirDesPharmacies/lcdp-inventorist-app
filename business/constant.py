@@ -3,3 +3,8 @@ ORGANIZATION_DOMAIN = "lecomptoirdespharmacies.fr"
 APPLICATION_NAME = "LCDP - Import sale offer"
 
 API_KEY_ID_NAME = 'apiKeyId'
+
+# Import template
+
+CREATE_LABORATORY_SALE_OFFER_TPL = "https://docs.google.com/spreadsheets/d/1NKjBQ0DDzRpkyn5YV396OUVlYq7_h0C7/edit?usp" \
+                                   "=sharing&ouid=110512712826531059999&rtpof=true&sd=true "
