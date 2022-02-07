@@ -12,7 +12,7 @@ class TestLaboratory(unittest.TestCase):
         laboratory = Laboratory(supervisor)
         laboratory.name = "my_laboratory_name"
         expected = []
-        result = laboratory.rapport_errors()
+        result = laboratory.report_errors()
         self.assertEqual(expected, result)
 
     def test_laboratory_should_have_name(self):
@@ -20,5 +20,5 @@ class TestLaboratory(unittest.TestCase):
         laboratory = Laboratory(supervisor)
         laboratory.name = None
         expected = [GetOrCreateLaboratoryError.INVALID_LABORATORY_NAME]
-        result = laboratory.rapport_errors()
+        result = laboratory.report_errors()
         self.assertEqual(expected, result)

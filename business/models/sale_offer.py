@@ -53,7 +53,7 @@ class Range(SupervisedEntity):
                and self.discounted_price == obj.discounted_price \
                and self.sold_by == obj.sold_by
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.is_valid_discounted_price() or not self.is_valid_sold_by():
             errors.append(CreateSaleOfferError.INVALID_RANGE)
@@ -91,6 +91,8 @@ class Distribution(SupervisedEntity):
     
     @property
     def sold_by(self):
+        if self.type == RANGE_DISTRIBUTION:
+            return repr(list(map(lambda r: r.sold_by, self.ranges)))
         return self._sold_by
 
     @sold_by.setter
@@ -102,6 +104,8 @@ class Distribution(SupervisedEntity):
 
     @property
     def discounted_price(self):
+        if self.type == RANGE_DISTRIBUTION:
+            return repr(list(map(lambda r: r.discounted_price, self.ranges)))
         return self._discounted_price
 
     @discounted_price.setter
@@ -113,6 +117,8 @@ class Distribution(SupervisedEntity):
 
     @property
     def free_unit(self):
+        if self.type == RANGE_DISTRIBUTION:
+            return repr(list(map(lambda r: r.free_unit, self.ranges)))
         return self._free_unit
 
     @free_unit.setter
@@ -122,7 +128,7 @@ class Distribution(SupervisedEntity):
         else:
             self._free_unit = cast_or_default(free_unit, int, 0)
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.type or self.type not in [UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION]:
             errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
@@ -140,10 +146,12 @@ class SaleOffer(SupervisedEntity):
     def __init__(self, supervisor):
         super().__init__(supervisor)
         self._product = Product(supervisor)
+        self._distribution_type = None
         self._distribution = None
         self._rank = None
         self._owner_id = None
         self._description = None
+        self._update_policy = None
 
     @property
     def owner_id(self):
@@ -174,15 +182,28 @@ class SaleOffer(SupervisedEntity):
         self._description = description
 
     @property
-    def distribution(self):
-        return self._distribution
+    def distribution_type(self):
+        return self._distribution_type
 
-    @distribution.setter
-    def distribution(self, distribution_type):
+    @distribution_type.setter
+    def distribution_type(self, distribution_type):
         if distribution_type:
             self._distribution = Distribution(self.supervisor, distribution_type)
         else:
             self._distribution = Distribution(self.supervisor, UNITARY_DISTRIBUTION)
+        self._distribution_type = distribution_type
+
+    @property
+    def distribution(self):
+        return self._distribution
+
+    @property
+    def update_policy(self):
+        return self._update_policy
+
+    @update_policy.setter
+    def update_policy(self, update_policy):
+        self._update_policy = update_policy
 
     def should_merge(self, next_sale_offer):
         return self.distribution.type == RANGE_DISTRIBUTION and \
@@ -192,7 +213,7 @@ class SaleOffer(SupervisedEntity):
     def merge(self, sale_offer):
         self.distribution.ranges.extend(sale_offer.distribution.ranges)
 
-    def rapport_errors(self):
+    def report_errors(self):
         errors = []
         if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
             errors.append(CreateSaleOfferError.INVALID_SELLER_ID)

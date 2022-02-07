@@ -20,51 +20,51 @@ class TestProduct(unittest.TestCase):
     def test_product_minimal_valid_instantiation(self):
         product = build_product('barcode', None, None, 123, None)
         expected = []
-        result = product.rapport_errors()
+        result = product.report_errors()
         self.assertEqual(expected, result)
 
     def test_product_should_have_valid_principal_barcode(self):
         product = build_product(None, 'product_name', 123, 123, 'my_dci')
         expected = [CreateSaleOfferError.INVALID_CIP]
-        result = product.rapport_errors()
+        result = product.report_errors()
         self.assertEqual(expected, result)
 
     def test_product_should_have_valid_weight(self):
         product = build_product('barcode', 'product_name', 'not_number_weight', 123, 'my_dci')
         expected = [CreateProductError.INVALID_WEIGHT]
-        result = product.rapport_errors()
+        result = product.report_errors()
         self.assertEqual(expected, result)
 
     def test_product_should_have_unit_price_set(self):
         product = build_product('barcode', None, None, None, None)
         expected = [CreateProductError.INVALID_UNIT_PRICE]
-        result = product.rapport_errors()
+        result = product.report_errors()
         self.assertEqual(expected, result)
 
     def test_product_should_have_valid_unit_price(self):
         product = build_product('barcode', None, None, 'not_number_unit_price', None)
         expected = [CreateProductError.INVALID_UNIT_PRICE]
-        result = product.rapport_errors()
+        result = product.report_errors()
         self.assertEqual(expected, result)
 
     def test_vat_minimal_valid_instantiation(self):
         vat = Vat(Supervisor())
         vat.value = 2.3
         expected = []
-        result = vat.rapport_errors()
+        result = vat.report_errors()
         self.assertEqual(expected, result)
 
     def test_vat_should_have_value_set(self):
         vat = Vat(Supervisor())
         vat.value = None
         expected = [CreateProductError.INVALID_VAT]
-        result = vat.rapport_errors()
+        result = vat.report_errors()
         self.assertEqual(expected, result)
 
     def test_vat_should_have_valid_value(self):
         vat = Vat(Supervisor())
         vat.value = 'not_number_value'
         expected = [CreateProductError.INVALID_VAT]
-        result = vat.rapport_errors()
+        result = vat.report_errors()
         self.assertEqual(expected, result)
 

@@ -19,3 +19,7 @@ def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+
+def clean_none_from_dict(original):
+    return {k: v for k, v in original.items() if v is not None}

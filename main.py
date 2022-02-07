@@ -35,7 +35,7 @@ if __name__ == "__main__":
     logging.info("Starting app")
     logging.info("Start generate api")
     # TODO : A executer avant de package l'app pas au startup
-    run_codegen()
+    # run_codegen()
     from backend.app import App
     from business.services.authentication import delete_api_key
     from backend.login import Login

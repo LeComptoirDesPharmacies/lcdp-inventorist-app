@@ -20,14 +20,13 @@ class Login(QObject):
             self.signalLoading.emit(True)
             self.signalLoginState.emit("Connexion en cours...", False)
             user = authenticate(email, password)
-            time.sleep(3)
-            if(user):
-                self.signalLoading.emit(False)
+            if user:
                 self.signalConnected.emit(True)
                 self.signalUserName.emit(user.firstname)
                 self.signalLoginState.emit("Connecté", False)
         except Exception as err:
-            self.signalLoading.emit(False)
             self.signalConnected.emit(False)
             self.signalLoginState.emit("Email ou mot de passe érroné", True)
-            logging.exception("An exception occur during authentication")
+            logging.exception("An exception occur during authentication", err)
+        finally:
+            self.signalLoading.emit(False)

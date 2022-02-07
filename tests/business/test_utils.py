@@ -1,6 +1,6 @@
 import unittest
 
-from business.utils import cast_or_default, rsetattr, rgetattr
+from business.utils import cast_or_default, rsetattr, rgetattr, clean_none_from_dict
 
 
 class A:
@@ -42,4 +42,10 @@ class TestUtils(unittest.TestCase):
         class_a = A()
         expected = class_a.class_b.prop1
         result = rgetattr(class_a, 'class_b.prop1')
+        self.assertEqual(expected, result)
+
+    def test_clean_none_from_dict(self):
+        my_dict = {'A': 1, 'B': None, 'C': 4}
+        expected = {'A': 1, 'C': 4}
+        result = clean_none_from_dict(my_dict)
         self.assertEqual(expected, result)
