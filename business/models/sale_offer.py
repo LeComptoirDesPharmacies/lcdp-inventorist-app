@@ -3,6 +3,8 @@ from business.models.product import Product
 from business.models.supervisor import SupervisedEntity
 import numbers
 
+from business.utils import cast_or_default
+
 UNITARY_DISTRIBUTION = 'unitaire'
 RANGE_DISTRIBUTION = 'palier'
 QUOTATION_DISTRIBUTION = 'devis'
@@ -29,7 +31,7 @@ class Range(SupervisedEntity):
 
     @discounted_price.setter
     def discounted_price(self, discounted_price):
-        self._discounted_price = discounted_price
+        self._discounted_price = cast_or_default(discounted_price, float)
 
     @property
     def free_unit(self):
@@ -44,6 +46,12 @@ class Range(SupervisedEntity):
 
     def is_valid_sold_by(self):
         return self.sold_by and isinstance(self.sold_by, numbers.Number)
+
+    def __eq__(self, obj):
+        return isinstance(obj, Range) \
+               and self.free_unit == obj.free_unit \
+               and self.discounted_price == obj.discounted_price \
+               and self.sold_by == obj.sold_by
 
     def rapport_errors(self):
         errors = []
@@ -99,9 +107,9 @@ class Distribution(SupervisedEntity):
     @discounted_price.setter
     def discounted_price(self, discounted_price):
         if self.type == RANGE_DISTRIBUTION:
-            self.ranges[-1].discounted_price = discounted_price
+            self.ranges[-1].discounted_price = cast_or_default(discounted_price, float)
         else:
-            self._discounted_price = discounted_price
+            self._discounted_price = cast_or_default(discounted_price, float)
 
     @property
     def free_unit(self):
@@ -110,9 +118,9 @@ class Distribution(SupervisedEntity):
     @free_unit.setter
     def free_unit(self, free_unit):
         if self.type == RANGE_DISTRIBUTION:
-            self.ranges[-1].free_unit = free_unit
+            self.ranges[-1].free_unit = cast_or_default(free_unit, int, 0)
         else:
-            self._free_unit = free_unit
+            self._free_unit = cast_or_default(free_unit, int, 0)
 
     def rapport_errors(self):
         errors = []
@@ -173,6 +181,8 @@ class SaleOffer(SupervisedEntity):
     def distribution(self, distribution_type):
         if distribution_type:
             self._distribution = Distribution(self.supervisor, distribution_type)
+        else:
+            self._distribution = Distribution(self.supervisor, UNITARY_DISTRIBUTION)
 
     def should_merge(self, next_sale_offer):
         return self.distribution.type == RANGE_DISTRIBUTION and \

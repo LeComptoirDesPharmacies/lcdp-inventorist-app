@@ -53,7 +53,7 @@ class TestSaleOffer(unittest.TestCase):
         another_sale_offer.product.principal_barcode = 'new_barcode'
         self.assertFalse(initial_sale_offer.should_merge(another_sale_offer))
 
-    #TODO: voir sur connexion comment c'était fait
+    #TODO: voir sur connexion comment c'était fait test avec different parametre
     def test_sale_offer_cant_be_merge_2(self):
         initial_sale_offer = build_sale_offer(123, None, 'palier')
         another_sale_offer = build_sale_offer(123, None, 'unitaire')
@@ -78,8 +78,8 @@ class TestSaleOffer(unittest.TestCase):
 
         initial_sale_offer.merge(another_sale_offer)
 
-        expected = json.dumps([range_1, range_2], default=lambda o: o.__dict__)
-        result = json.dumps(initial_sale_offer.distribution.ranges, default=lambda o: o.__dict__)
+        expected = [range_1, range_2]
+        result = initial_sale_offer.distribution.ranges
 
         self.assertEqual(expected, result)
 
