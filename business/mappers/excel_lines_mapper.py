@@ -1,4 +1,5 @@
-from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, add_update_policy
+from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, add_update_policy, \
+    create_update_product_mapper
 from business.models.excel_line import ExcelLine
 from business.models.excel_parameter import ExcelParameter
 from business.models.update_policy import UpdatePolicy
@@ -72,3 +73,9 @@ class LaboratoryExcelLinesMapper(ExcelLinesMapper):
             old_obj.sale_offer.merge(new_obj.sale_offer)
             return old_obj
         return new_obj
+
+
+class ProductExcelLinesMapper(ExcelLinesMapper):
+    def __init__(self, excel_path):
+        super().__init__(excel_path, create_update_product_mapper)
+        self.unique_key = "sale_offer.product.principal_barcode"

@@ -31,6 +31,18 @@ create_laboratory_sale_offer_mapper = [
 ]
 
 
+create_update_product_mapper = [
+    Column("CIP/ACL ou EAN*", 'sale_offer.product.principal_barcode'),
+    Column("PU HT catalogue", 'sale_offer.product.unit_price'),
+    Column("Désignation - Nom du produit", 'sale_offer.product.name'),
+    Column("Dénomination Commune Internationale ( DCI )", 'sale_offer.product.dci'),
+    Column("Laboratoire", 'sale_offer.product.laboratory.name'),
+    Column("Poid unitaire en gramme (approximatif )", 'sale_offer.product.weight'),
+    Column("Type de produit", 'sale_offer.product.product_type.name'),
+    Column("TVA", 'sale_offer.product.vat.value'),
+]
+
+
 parameter_mapper = [
     Column("Sheet", "sheet_name"),
     Column("Header Line", "header_line"),

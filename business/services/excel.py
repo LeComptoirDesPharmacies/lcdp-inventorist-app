@@ -12,14 +12,20 @@ from api.consume.gen.configuration import ApiException as ConfigurationApiExcept
 from business.mappers.excel_mapper import error_mapper
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle
-from business.services.product import find_or_create_product
+from business.services.product import update_or_create_product
 from business.services.sale_offer import create_or_edit_sale_offer
 from business.utils import rgetattr
 
 
 def create_sale_offer_from_excel_lines(lines):
-    logging.info(f"{len(lines)} excel line(s) are candide for sale offer creation")
+    logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
     results = list(map(__create_sale_offer_from_excel_line, lines))
+    return results
+
+
+def create_or_update_product_from_excel_lines(lines):
+    logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
+    results = list(map(__create_or_update_product_from_excel_line, lines))
     return results
 
 
@@ -101,8 +107,8 @@ def __create_sale_offer_from_excel_line(excel_line):
     error = None
     if excel_line.can_create_sale_offer():
         try:
-            product = find_or_create_product(excel_line.sale_offer.product,
-                                             excel_line.can_create_product_from_scratch())
+            product = update_or_create_product(excel_line.sale_offer.product,
+                                               excel_line.can_create_product_from_scratch())
             sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product)
         except SaleOfferApiException as sale_offer_api_err:
             logging.error('An API error occur in sale offer api', sale_offer_api_err)
@@ -120,5 +126,24 @@ def __create_sale_offer_from_excel_line(excel_line):
     return {
         'excel_line': excel_line,
         'result': sale_offer,
+        'error': error
+    }
+
+
+def __create_or_update_product_from_excel_line(excel_line):
+    product = None
+    error = None
+    try:
+        product = update_or_create_product(excel_line.sale_offer.product, excel_line.can_create_product_from_scratch())
+    except ProductApiException as product_api_err:
+        logging.error('An API error occur in product api', product_api_err)
+        error = product_api_exception_to_muggle(product_api_err)
+    except Exception as err:
+        logging.error('An error occur during line processing', err)
+        error = str(err)
+
+    return {
+        'excel_line': excel_line,
+        'result': product,
         'error': error
     }
