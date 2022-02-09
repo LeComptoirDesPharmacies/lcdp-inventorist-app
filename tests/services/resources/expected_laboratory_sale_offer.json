@@ -1,0 +1,48 @@
+{
+    "0": {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": 5.5
+                },
+                "_product_type": {
+                    "_name": "M\u00e9dicament"
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": "Phytoceutic Institut"
+                },
+                "_principal_barcode": "3492270078044",
+                "_name": "GEL\u00c9E ROYALEN - POT 30 G",
+                "_weight": 70.0,
+                "_unit_price": 16.42,
+                "_dci": " My DCI"
+            },
+            "_distribution_type": "palier",
+            "_distribution": {
+                "supervisor": "",
+                "_type": "palier",
+                "_sold_by": null,
+                "_discounted_price": null,
+                "_free_unit": null,
+                "_ranges": [
+                    {
+                        "supervisor": "",
+                        "_sold_by": 20,
+                        "_discounted_price": 20.0,
+                        "_free_unit": 10
+                    }
+                ]
+            },
+            "_rank": 470,
+            "_owner_id": 12,
+            "_description": "Compl\u00e9ment alimentaire gel\u00e9e royale riche en nutriments\nGel\u00e9e royal de type 1 et BIO",
+            "_update_policy": null
+        }
+    }
+}

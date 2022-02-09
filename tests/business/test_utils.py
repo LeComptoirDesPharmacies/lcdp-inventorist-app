@@ -1,6 +1,6 @@
 import unittest
 
-from business.utils import cast_or_default, rsetattr, rgetattr, clean_none_from_dict
+from business.utils import cast_or_default, rsetattr, rgetattr, clean_none_from_dict, ConditionalDict
 
 
 class A:
@@ -49,3 +49,23 @@ class TestUtils(unittest.TestCase):
         expected = {'A': 1, 'C': 4}
         result = clean_none_from_dict(my_dict)
         self.assertEqual(expected, result)
+
+    def test_conditional_dict(self):
+        my_dict = ConditionalDict(condition_func=lambda k, v: k is not None)
+        my_dict[None] = "Hello"
+        my_dict["A"] = "Hello"
+        expected = {"A": "Hello"}
+        self.assertEqual(expected, my_dict)
+
+    def test_conditional_dict_merge(self):
+        my_dict = ConditionalDict(merge_func=lambda k, v1, v2: v1+v2)
+        my_dict["A"] = 2
+        my_dict["A"] = 3
+        expected = {"A": 5}
+        self.assertEqual(expected, my_dict)
+
+    def test_before_insert(self):
+        my_dict = ConditionalDict(before_insert_func=lambda k, v1: v1 + 5)
+        my_dict["A"] = 5
+        expected = {"A": 10}
+        self.assertEqual(expected, my_dict)
