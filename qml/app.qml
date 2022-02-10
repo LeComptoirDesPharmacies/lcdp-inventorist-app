@@ -15,7 +15,6 @@ ApplicationWindow {
     Material.theme: Material.Light
     Material.accent: '#3AB872'
 
-    property string currentState: ""
     property string reportPath: ""
     property string templateUrl: ""
     property string excelPath: ""
@@ -70,6 +69,7 @@ ApplicationWindow {
                         textRole: "text"
                         valueRole: "value"
                         model: appBackend.actions
+                        enabled: !loading
                         onActivated: appBackend.select_action(currentValue)
                         Component.onCompleted: currentIndex = indexOfValue("")
                     }
@@ -105,6 +105,7 @@ ApplicationWindow {
                 spacing: 5
                 Button {
                     id: selectFileButton
+                    enabled: !isEmpty(templateUrl)
                     text: qsTr("Sélectionner un fichier excel")
                     onClicked: excelFileDialog.visible = true
                     Layout.alignment: "Qt::AlignHCenter"
@@ -135,17 +136,18 @@ ApplicationWindow {
                 }
                 Text {
                     id: statusText
-                    color: '#1E276D'
-                    text: currentState
+                    text: qsTr("")
+                    color: Material.color(Material.Indigo)
                     font.pointSize: 12
                     Layout.alignment: "Qt::AlignHCenter"
                 }
                 Button {
                     id: openReport
-                    Layout.topMargin: 30
+                    Layout.topMargin: 15
                     text: qsTr("Ouvrir le rapport")
                     onClicked: appBackend.open_file(reportPath)
-                    visible: !isEmpty(reportPath)
+                    visible: !isEmpty(reportPath) && isEmpty(excelPath)
+                    Material.background: Material.Teal
                     Layout.alignment: "Qt::AlignHCenter"
                 }
             }
@@ -155,13 +157,16 @@ ApplicationWindow {
     FileDialog {
         id: excelFileDialog
         title: qsTr("Sélectionner un fichier excel")
-        nameFilters: [ "All files (*)"]
+        nameFilters: [ "Fichier Excel (*.xlt *.xlsx *.xlsm *.xltx *.xltm)"]
         onAccepted: {
+            statusText.text = "Fichier prêt"
+            statusText.color = Material.color(Material.Indigo)
             excelPath = excelFileDialog.currentFile
             appBackend.set_excel_path(excelFileDialog.currentFile)
         }
         onRejected: {
-            console.log("Canceled")
+            statusText.text = "Veuillez selectionner un fichier"
+            statusText.color = Material.color(Material.Red)
         }
     }
 
@@ -172,8 +177,15 @@ ApplicationWindow {
             loading = isLoading
         }
 
-        function onSignalChangeState(state){
-            currentState = state
+        function onSignalState(state, type){
+            var color = Material.color(Material.Indigo)
+            if(type == "ERROR"){
+                color = Material.color(Material.Red)
+            } else if (type == "SUCCESS"){
+                color = Material.color(Material.Green)
+            }
+            statusText.text = state
+            statusText.color = color
         }
 
         function onSignalTemplateUrl(url){
@@ -182,6 +194,11 @@ ApplicationWindow {
 
         function onSignalReportPath(path){
             reportPath = path
+        }
+
+        function onSignalReset(){
+            receiptSelector.currentIndex = -1
+            excelPath = ""
         }
     }
 }

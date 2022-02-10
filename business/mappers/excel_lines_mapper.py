@@ -2,7 +2,6 @@ from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sa
     create_update_product_mapper
 from business.models.excel_line import ExcelLine
 from business.models.excel_parameter import ExcelParameter
-from business.models.update_policy import UpdatePolicy
 from business.services.excel import excel_to_dict
 from business.utils import ConditionalDict
 

@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 
+import sentry_sdk
 from python_openapi_generator_cli.codegen import generate_consumer
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME
 
@@ -12,6 +13,14 @@ from PySide6.QtQml import QQmlApplicationEngine
 
 # Get current script dir
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+# Sentry configuration
+sentry_dsn = os.getenv("SENTRY_DSN")
+lcdp_environment = os.getenv("LCDP_ENVIRONMENT")
+sentry_sdk.init(
+    dsn=sentry_dsn,
+    environment=lcdp_environment,
+)
 
 
 def on_exit():

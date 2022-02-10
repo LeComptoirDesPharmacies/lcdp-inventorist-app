@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 from urllib.parse import urlparse
+from sentry_sdk import capture_exception
 
 from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property
 
@@ -11,49 +12,54 @@ from business.services.excel import create_excel_summary
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal):
+    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
         self.result_signal = result_signal
+        self.reset = reset
 
     def run(self):
         try:
             self.loading_signal.emit(True)
 
-            self.state_signal.emit("Récupération du fichier excel...")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO")
             parsed_url = urlparse(self.excel_path)
             excel_os_path = os.path.abspath(os.path.join(parsed_url.netloc, parsed_url.path))
             self.execute(excel_os_path)
-        except Exception as Err:
-            logging.exception('Cannot read excel with url {}'.format(self.excel_path))
+        except Exception as err:
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
+            logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
+            capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...")
+        self.state_signal.emit("Création/Modification des ressources...", "INFO")
         executor = self.action['executor']
         results = executor(lines)
 
-        self.state_signal.emit("Création du rapport...")
+        self.state_signal.emit("Création du rapport...", "INFO")
         report_path = create_excel_summary(results, mapper.excel_mapper)
         self.result_signal.emit(report_path)
-        self.state_signal.emit("Le fichier a bien été traité")
+        self.state_signal.emit("Le fichier a bien été traité", "SUCCESS")
+        self.reset()
 
 
 class App(QObject):
     signalLoading = Signal(bool)
-    signalChangeState = Signal(str)
+    signalState = Signal(str, str)
     signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
+    signalReset = Signal()
 
     def __init__(self):
         QObject.__init__(self)
@@ -61,8 +67,7 @@ class App(QObject):
         self._actions = simple_actions
         self.selected_action = None
         self.signalActions.emit(simple_actions)
-
-    excel_path = None
+        self.excel_path = None
 
     @Slot(str)
     def select_action(self, action_type):
@@ -71,6 +76,12 @@ class App(QObject):
         if self.selected_action:
             self.signalTemplateUrl.emit(self.selected_action['template'])
 
+    def do_reset(self):
+        self.selected_action = None
+        self.excel_path = None
+        self.signalTemplateUrl.emit("")
+        self.signalReset.emit()
+
     @Slot()
     def start(self):
         worker = Worker(
@@ -78,7 +89,8 @@ class App(QObject):
             self.excel_path,
             loading_signal=self.signalLoading,
             result_signal=self.signalReportPath,
-            state_signal=self.signalChangeState
+            state_signal=self.signalState,
+            reset=self.do_reset
         )
         self.thread_pool.start(worker)
 
