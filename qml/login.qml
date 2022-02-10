@@ -15,6 +15,11 @@ ApplicationWindow {
     Material.theme: Material.Light
     Material.accent: '#3AB872'
 
+
+    function isEmpty(str){
+        return str == ""
+    }
+
     StackView {
         anchors.fill: parent
         initialItem: Page {
@@ -35,6 +40,13 @@ ApplicationWindow {
             RowLayout {
                 id: rowLayout
                 anchors.fill: parent
+                focus: true
+                Keys.onPressed: (event) => {
+                    console.log('event', event)
+                    if (event.key === Qt.Key_Return) {
+                        loginButton.clicked()
+                    }
+                }
                 Pane {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -80,7 +92,17 @@ ApplicationWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: passwordField.bottom
                         anchors.topMargin: 15
+                        enabled: !isEmpty(passwordField.text) && !isEmpty(loginField.text)
                         onClicked: loginBackend.login(loginField.text, passwordField.text)
+                    }
+
+                    ProgressBar {
+                       id: loader
+                       indeterminate: true
+                       anchors.horizontalCenter: parent.horizontalCenter
+                       anchors.top: loginButton.bottom
+                       anchors.topMargin: 15
+                       visible: false
                     }
 
                     Label {
@@ -88,17 +110,8 @@ ApplicationWindow {
                         text: qsTr("")
                         color: Material.color(Material.Indigo)
                         anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loginButton.bottom
+                        anchors.top: loader.bottom
                         anchors.topMargin: 15
-                    }
-
-                    ProgressBar {
-                       id: loader
-                       indeterminate: true
-                       anchors.horizontalCenter: parent.horizontalCenter
-                       anchors.top: loginState.bottom
-                       anchors.topMargin: 15
-                       visible: false
                     }
 
                 }
@@ -123,9 +136,15 @@ ApplicationWindow {
             }
         }
 
-        function onSignalLoginState(state, isError){
+        function onSignalState(state, type){
+            var color = Material.color(Material.Indigo)
+            if(type == "ERROR"){
+                color = Material.color(Material.Red)
+            } else if (type == "SUCCESS"){
+                color = Material.color(Material.Green)
+            }
             loginState.text = state
-            loginState.color = isError ? Material.color(Material.Red) : Material.color(Material.Indigo)
+            loginState.color = color
         }
     }
 }
