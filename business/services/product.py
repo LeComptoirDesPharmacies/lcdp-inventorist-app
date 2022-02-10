@@ -12,10 +12,11 @@ from business.services.security import get_api_key
 from business.utils import clean_none_from_dict
 
 
-def find_or_create_product(product, can_create_product_from_scratch):
+def update_or_create_product(product, can_create_product_from_scratch):
 
     product_type = __find_product_type_by_name(product.product_type.name)
     vat = __get_vat_by_value(product.vat.value)
+    laboratory = find_or_create_laboratory(product.laboratory.name)
 
     logging.info(f'Barcode {product.principal_barcode} : Try to find product with barcode')
     result_product = __get_product_by_barcode(product.principal_barcode)
@@ -24,7 +25,8 @@ def find_or_create_product(product, can_create_product_from_scratch):
             product_id=result_product.id,
             excel_product=product,
             product_type=product_type,
-            vat=vat
+            vat=vat,
+            laboratory=laboratory
         )
         return result_product
 
@@ -36,14 +38,14 @@ def find_or_create_product(product, can_create_product_from_scratch):
             product_id=result_product.id,
             excel_product=product,
             product_type=product_type,
-            vat=vat
+            vat=vat,
+            laboratory=laboratory
         )
         return result_product
 
     # Create product from scratch
     if can_create_product_from_scratch:
         logging.info(f'Barcode {product.principal_barcode} : Create product from scratch')
-        laboratory = find_or_create_laboratory(product.laboratory.name)
         return __create_product_from_scratch(
             product,
             product_type,
@@ -108,7 +110,7 @@ def __create_product_with_barcode(principal_barcode):
         raise apiError
 
 
-def __edit_product(product_id, excel_product, product_type, vat):
+def __edit_product(product_id, excel_product, product_type, vat, laboratory):
     api = get_manage_product_api()
     payload = clean_none_from_dict({
         'is_external_sync_enabled': False,
@@ -117,7 +119,8 @@ def __edit_product(product_id, excel_product, product_type, vat):
         'unit_weight': excel_product.weight,
         'unit_price': excel_product.unit_price,
         'type_id': product_type.id if product_type else None,
-        'vat_id': vat.id if vat else None
+        'vat_id': vat.id if vat else None,
+        'laboratory_id': laboratory.id if laboratory else None,
     })
     product = api.update_product(
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),

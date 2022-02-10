@@ -17,6 +17,8 @@ def distribution_to_dto(distribution):
         )
     elif distribution.type == QUOTATION_DISTRIBUTION:
         return AnyDistributionMode(type='QUOTATION')
+    else:
+        return None
 
 
 def __range_to_dto(sale_offer_range):

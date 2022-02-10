@@ -46,6 +46,7 @@ def __create_sale_offer(sale_offer, product_id):
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
         sale_offer_creation_parameters=SaleOfferCreationParameters(
             owner_id=sale_offer.owner_id,
+            description=sale_offer.description,
             product_id=product_id,
             rank=sale_offer.rank,
             distribution_mode=distribution_to_dto(sale_offer.distribution)
@@ -60,6 +61,7 @@ def __edit_sale_offer(reference, sale_offer):
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
         sale_offer_reference=reference,
         sale_offer_update_parameters=SaleOfferUpdateParameters(
+            description=sale_offer.description,
             rank=sale_offer.rank,
             distribution_mode=distribution_to_dto(sale_offer.distribution)
         )

@@ -1,0 +1,66 @@
+[
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": 20
+                },
+                "_product_type": {
+                    "_name": "Dispositifs m\u00e9dicaux"
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": "Mon laboratoire"
+                },
+                "_principal_barcode": "1234567890123",
+                "_name": "Produit dupliqu\u00e9",
+                "_weight": 100.0,
+                "_unit_price": 4.5,
+                "_dci": "Ma dci"
+            },
+            "_distribution_type": null,
+            "_distribution": null,
+            "_rank": null,
+            "_owner_id": null,
+            "_description": null,
+            "_update_policy": null
+        }
+    },
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": null
+                },
+                "_product_type": {
+                    "_name": null
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": null
+                },
+                "_principal_barcode": "9876543210987",
+                "_name": null,
+                "_weight": null,
+                "_unit_price": 2.39,
+                "_dci": null
+            },
+            "_distribution_type": null,
+            "_distribution": null,
+            "_rank": null,
+            "_owner_id": null,
+            "_description": null,
+            "_update_policy": null
+        }
+    }
+]

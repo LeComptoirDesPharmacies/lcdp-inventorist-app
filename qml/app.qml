@@ -45,7 +45,7 @@ ApplicationWindow {
             }
             Pane {
                 id: card
-                width: 400
+                width: 450
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.topMargin: 20
@@ -69,10 +69,8 @@ ApplicationWindow {
                         Layout.alignment: "Qt::AlignHCenter"
                         textRole: "text"
                         valueRole: "value"
-                        model: [
-                            {'text': "Boutique PharmLab", 'value': "PHARMLAB_STORE"}
-                        ]
-                        onActivated: appBackend.select_receipt(currentValue)
+                        model: appBackend.actions
+                        onActivated: appBackend.select_action(currentValue)
                         Component.onCompleted: currentIndex = indexOfValue("")
                     }
                     RowLayout {
@@ -88,7 +86,7 @@ ApplicationWindow {
                         Text {
                             id: templateLink
                             text: '<html><style type="text/css"></style><a href="'+templateUrl+'">Template '+receiptSelector.currentText+'</a></html>'
-                            onLinkActivated: Qt.openUrlExternally(link)
+                            onLinkActivated: Qt.openUrlExternally(templateUrl)
                             font.pointSize: 14
                             MouseArea {
                                 anchors.fill: parent
@@ -160,7 +158,7 @@ ApplicationWindow {
         nameFilters: [ "All files (*)"]
         onAccepted: {
             excelPath = excelFileDialog.currentFile
-            appBackend.get_excel(excelFileDialog.currentFile)
+            appBackend.set_excel_path(excelFileDialog.currentFile)
         }
         onRejected: {
             console.log("Canceled")
