@@ -86,7 +86,7 @@ ApplicationWindow {
                         Text {
                             id: templateLink
                             text: '<html><style type="text/css"></style><a href="'+templateUrl+'">Template '+receiptSelector.currentText+'</a></html>'
-                            onLinkActivated: Qt.openUrlExternally(link)
+                            onLinkActivated: Qt.openUrlExternally(templateUrl)
                             font.pointSize: 14
                             MouseArea {
                                 anchors.fill: parent

@@ -1,4 +1,4 @@
-from business.constant import CREATE_LABORATORY_SALE_OFFER_TPL
+from business.constant import CREATE_LABORATORY_SALE_OFFER_TPL, CREATE_UPDATE_PRODUCT_TPL
 from business.mappers.excel_lines_mapper import LaboratoryExcelLinesMapper, ProductExcelLinesMapper
 
 from business.services.excel import create_sale_offer_from_excel_lines, create_or_update_product_from_excel_lines
@@ -14,7 +14,7 @@ detailed_actions = {
      'name': 'Créer/Modifier des produits',
      'mapper': ProductExcelLinesMapper,
      'executor': create_or_update_product_from_excel_lines,
-     'template': ''
+     'template': CREATE_UPDATE_PRODUCT_TPL
  }
 }
 
