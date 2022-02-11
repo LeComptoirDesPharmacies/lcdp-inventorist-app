@@ -7,10 +7,12 @@ import QtQuick.Dialogs
 
 ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
-    width: 500
+    width: 600
     height: 480
     visible: true
-    flags: Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.CustomizeWindowHint | Qt.MSWindowsFixedSizeDialogHint | Qt.WindowTitleHint
+    minimumWidth: 600
+    minimumHeight: 480
+    flags: Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowTitleHint
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -44,7 +46,7 @@ ApplicationWindow {
             }
             Pane {
                 id: card
-                width: 450
+                width: parent.width*0.8
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.topMargin: 20
@@ -56,7 +58,7 @@ ApplicationWindow {
                     Text {
                         id: chooseText
                         text: qsTr("Quel type d'import souhaites-tu faire ?")
-                        font.pointSize: 18
+                        font.pointSize: 16
                         Layout.fillWidth: true
                         color: '#1E276D'
                         Layout.alignment: "Qt::AlignHCenter"
