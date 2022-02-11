@@ -18,7 +18,7 @@ def find_or_create_laboratory(laboratory_name):
         return laboratory
 
 
-@lru_cache
+@lru_cache(maxsize=128)
 def __get_laboratory_by_name(name):
     api = get_search_laboratory_api()
     laboratories = api.get_laboratories(

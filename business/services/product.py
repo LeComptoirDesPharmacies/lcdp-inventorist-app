@@ -68,7 +68,7 @@ def __get_product_by_barcode(barcode):
     return next(iter(products.records), None)
 
 
-@lru_cache
+@lru_cache(maxsize=128)
 def __find_product_type_by_name(name):
     if name:
         api = get_search_product_metadata_api()
@@ -79,7 +79,7 @@ def __find_product_type_by_name(name):
         return next(type_iterator, None)
 
 
-@lru_cache
+@lru_cache(maxsize=128)
 def __get_vat_by_value(value):
     if value:
         api = get_search_vat_api()
