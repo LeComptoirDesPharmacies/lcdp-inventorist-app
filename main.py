@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     logging.info("Start app")
     app = QGuiApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join("images", "logo.png")))
+    app.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "images", "logo.png")))
     app.aboutToQuit.connect(on_exit)
     engine = QQmlApplicationEngine()
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     app_backend = App()
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
-    engine.load(os.path.join(os.path.dirname(__file__), os.path.join("qml", "login.qml")))
+    engine.load(os.path.join(os.path.dirname(__file__), "qml", "login.qml"))
 
     if not engine.rootObjects():
          sys.exit(-1)
