@@ -31,7 +31,7 @@ class TestProduct(unittest.TestCase):
 
     def test_product_should_have_valid_weight(self):
         product = build_product('barcode', 'product_name', 'not_number_weight', 123, 'my_dci')
-        expected = [CreateProductError.INVALID_WEIGHT]
+        expected = []
         result = product.report_errors()
         self.assertEqual(expected, result)
 
