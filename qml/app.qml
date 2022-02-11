@@ -12,7 +12,6 @@ ApplicationWindow {
     visible: true
     minimumWidth: 600
     minimumHeight: 480
-    flags: Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.WindowTitleHint
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -83,13 +82,14 @@ ApplicationWindow {
                             id: templateText
                             color: '#1E276D'
                             text: qsTr("Lien template :")
-                            font.pointSize: 14
+                            font.pointSize: 12
                         }
                         Text {
                             id: templateLink
                             text: '<html><style type="text/css"></style><a href="'+templateUrl+'">Template '+receiptSelector.currentText+'</a></html>'
                             onLinkActivated: Qt.openUrlExternally(templateUrl)
-                            font.pointSize: 14
+                            font.pointSize: 12
+                            wrapMode: Text.WordWrap
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.NoButton
@@ -115,9 +115,12 @@ ApplicationWindow {
                 }
                 Text {
                     id: excelPathText
+                    Layout.preferredWidth: parent.width
                     color: '#1E276D'
+                    horizontalAlignment: Text.AlignHCenter
                     text: excelPath
                     font.pointSize: 12
+                    wrapMode: Text.WordWrap
                     Layout.alignment: "Qt::AlignHCenter"
                 }
                 Button {

@@ -56,7 +56,7 @@ if __name__ == "__main__":
     app_backend = App()
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
-    filename = os.fspath(CURRENT_DIRECTORY / "qml" / "app.qml")
+    filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
     url = QUrl.fromLocalFile(filename)
     engine.load(url)
 
