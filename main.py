@@ -4,15 +4,13 @@ import sys
 import logging
 
 import sentry_sdk
-from python_openapi_generator_cli.codegen import generate_consumer
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME
 
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
+from dotenv import load_dotenv
 
-
-# Get current script dir
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+load_dotenv(override=False)
 
 # Sentry configuration
 sentry_dsn = os.getenv("SENTRY_DSN")
@@ -30,21 +28,10 @@ def on_exit():
         logging.exception("Unabled to delete api key")
 
 
-def run_codegen():
-    generate_consumer("auth.yaml", CURRENT_DIR)
-    generate_consumer("user.yaml", CURRENT_DIR)
-    generate_consumer("laboratory.yaml", CURRENT_DIR)
-    generate_consumer("product.yaml", CURRENT_DIR)
-    generate_consumer("sale-offer.yaml", CURRENT_DIR)
-    generate_consumer("configuration.yaml", CURRENT_DIR)
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.info("Starting app")
     logging.info("Start generate api")
-    # TODO : A executer avant de package l'app pas au startup
-    # run_codegen()
     from backend.app import App
     from business.services.authentication import delete_api_key
     from backend.login import Login
@@ -56,6 +43,7 @@ if __name__ == "__main__":
 
     logging.info("Start app")
     app = QGuiApplication(sys.argv)
+    app.setWindowIcon(QIcon("images/logo.png"))
     app.aboutToQuit.connect(on_exit)
     engine = QQmlApplicationEngine()
 

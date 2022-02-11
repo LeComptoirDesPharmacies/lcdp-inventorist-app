@@ -5,6 +5,7 @@ from api.consume.gen.sale_offer.model.sale_offer_update_parameters import SaleOf
 from business.mappers.sale_offer import distribution_to_dto
 from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api
 from business.services.security import get_api_key
+from business.utils import clean_none_from_dict
 
 
 def create_sale_offer(sale_offer, product):
@@ -57,14 +58,15 @@ def __create_sale_offer(sale_offer, product_id):
 
 def __edit_sale_offer(reference, sale_offer):
     api = get_manage_sale_offer_api()
+    payload = clean_none_from_dict({
+        'description': sale_offer.description,
+        'rank': sale_offer.rank,
+        'distribution_mode': distribution_to_dto(sale_offer.distribution)
+    })
     result = api.create_sale_offer_version(
         _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
         sale_offer_reference=reference,
-        sale_offer_update_parameters=SaleOfferUpdateParameters(
-            description=sale_offer.description,
-            rank=sale_offer.rank,
-            distribution_mode=distribution_to_dto(sale_offer.distribution)
-        )
+        sale_offer_update_parameters=SaleOfferUpdateParameters(**payload)
     )
     return result
 

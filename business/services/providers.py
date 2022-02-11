@@ -1,3 +1,5 @@
+import os
+
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
 from api.consume.gen.laboratory.api_client_utils import create_search_laboratory_api, create_manage_laboratory_api
@@ -20,12 +22,13 @@ _search_sale_offer_api = None
 
 
 configuration = {
-    'host': "localhost",
-    'is_secured': False
+    'host': os.getenv("PROVIDER_HOST", "localhost"),
+    'is_secured': os.getenv("IS_PROVIDER_SECURE", "False") == "True"
 }
 
 
 def get_auth_api():
+    print('configuration', configuration)
     global _auth_api
     if not _auth_api:
         _auth_api = create_auth_api(configuration)
