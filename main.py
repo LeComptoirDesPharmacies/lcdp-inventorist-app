@@ -2,13 +2,18 @@
 import os
 import sys
 import logging
+from pathlib import Path
 
 import sentry_sdk
+from PySide6.QtCore import QUrl
+
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME
 
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from dotenv import load_dotenv
+
+CURRENT_DIRECTORY = Path(__file__).resolve().parent
 
 load_dotenv(override=False)
 
@@ -51,7 +56,9 @@ if __name__ == "__main__":
     app_backend = App()
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
-    engine.load(os.path.join(os.path.dirname(__file__), "qml", "login.qml"))
+    filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
+    url = QUrl.fromLocalFile(filename)
+    engine.load(url)
 
     if not engine.rootObjects():
          sys.exit(-1)
