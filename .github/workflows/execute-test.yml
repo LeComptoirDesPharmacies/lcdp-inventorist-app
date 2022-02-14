@@ -10,10 +10,15 @@ jobs:
   test_application:
     runs-on: ubuntu-latest
     steps:
+      - shell: bash
+        env:
+          - JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+          - JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+      - run: echo "machine lcdp.jfrog.io login $JFROG_USERNAME password $JFROG_PASSWORD" >> /root/.netrc
       - run: pip install -r requirements.txt
       - run: python codegen.py
       - run: python -m unittest discover tests -t .
