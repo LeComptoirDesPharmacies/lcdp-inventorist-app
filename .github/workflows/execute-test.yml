@@ -7,7 +7,7 @@ on:
       - 'bugfix/**'
       - 'hotfix/**'
 jobs:
-  test_application:
+  Test_application:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
