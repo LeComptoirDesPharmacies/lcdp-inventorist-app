@@ -1,8 +1,7 @@
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    - 'v*'
 
 name: Package App
 
@@ -24,16 +23,14 @@ jobs:
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
       - run: jfrog pip install -r requirements.txt
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - run: python codegen.py
       - run: pip install pyinstaller
       - run: pyinstaller app.spec
       - name: Zip project
-        run: 7z a ${{ matrix.os }}-app-${{ env.RELEASE_VERSION }}.zip dist
+        run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: ${{ matrix.os }}-app-${{ env.RELEASE_VERSION }}.zip
+          artifacts: ${{ matrix.os }}-app-${{ github.ref_name }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
