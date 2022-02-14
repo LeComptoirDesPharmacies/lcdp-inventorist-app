@@ -14,11 +14,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - name: "Configure Jfrog"
-        run: echo "machine lcdp.jfrog.io login $JFROG_USERNAME password $JFROG_PASSWORD" >> /root/.netrc
+      - uses: jfrog/setup-jfrog-cli@v2
         env:
-          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
-          JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
       - run: pip install -r requirements.txt
       - run: python codegen.py
       - run: python -m unittest discover tests -t .
