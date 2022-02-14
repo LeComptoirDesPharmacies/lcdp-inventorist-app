@@ -17,6 +17,6 @@ jobs:
       - uses: jfrog/setup-jfrog-cli@v2
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
-      - run: pip install -r requirements.txt
+      - run: jfrog rt pip-install -r requirements.txt
       - run: python codegen.py
       - run: python -m unittest discover tests -t .
