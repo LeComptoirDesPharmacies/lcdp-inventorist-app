@@ -28,8 +28,7 @@ jobs:
       - run: pip install pyinstaller
       - run: pyinstaller app.spec
       - name: Build project # This would actually build your project, using zip for an example artifact
-        run: |
-          zip --junk-paths ${{ matrix.os }}-app /dist
+        run: 7z dist ${{ github.ref }}-${{ matrix.os }}-app.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -47,6 +46,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ matrix.os }}-app
-          asset_name: ${{ matrix.os }}-app.zip
+          asset_path: ./${{ github.ref }}-${{ matrix.os }}-app
+          asset_name: ${{ github.ref }}-${{ matrix.os }}-app.zip
           asset_content_type: application/zip
