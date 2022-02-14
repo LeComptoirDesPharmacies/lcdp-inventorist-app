@@ -1,0 +1,17 @@
+name: Run python Test
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+jobs:
+  test_application:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - run: python -m unittest discover tests -t .
