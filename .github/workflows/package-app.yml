@@ -28,7 +28,7 @@ jobs:
       - run: pip install pyinstaller
       - run: pyinstaller app.spec
       - name: Build project # This would actually build your project, using zip for an example artifact
-        run: 7z dist ${{ github.ref }}-${{ matrix.os }}-app.zip
+        run: 7z a ${{ github.ref }}-${{ matrix.os }}-app.zip dist
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
