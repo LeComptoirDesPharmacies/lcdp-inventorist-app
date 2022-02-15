@@ -1,0 +1,6 @@
+--extra-index-url https://lcdp.jfrog.io/artifactory/api/pypi/lcdp-pypi-release-local/simple
+--extra-index-url https://lcdp.jfrog.io/artifactory/api/pypi/lcdp-pypi-dev-local/simple
+
+lcdp-api==1.1.18.post11+git.1097aebc
+python-openapi-generator-cli==1.0.7.post74+git.caed8447
+python-rest-client-codegen==1.0.7.post74+git.caed8447
