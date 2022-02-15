@@ -24,16 +24,16 @@ jobs:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
       - name: Install dependencies
         run: jfrog pip install -r requirements.txt
-      - name: Generate codegen
-        run: python codegen.py
-      - run: pip install pyinstaller
-      - name: Package project
-        run: pyinstaller app.spec
+      - name: Prepare app
+        run: python prepare.py
         env:
           LCDP_ENVIRONMENT: staging
           PROVIDER_HOST: www.lcdp.ovh
           IS_PROVIDER_SECURE: True
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - run: pip install pyinstaller
+      - name: Package project
+        run: pyinstaller app.spec
       - name: Zip project
         run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
       - name: Upload Release

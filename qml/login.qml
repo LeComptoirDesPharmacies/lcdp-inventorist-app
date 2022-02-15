@@ -42,7 +42,6 @@ ApplicationWindow {
                 anchors.fill: parent
                 focus: true
                 Keys.onPressed: (event) => {
-                    console.log('event', event)
                     if (event.key === Qt.Key_Return) {
                         loginButton.clicked()
                     }
