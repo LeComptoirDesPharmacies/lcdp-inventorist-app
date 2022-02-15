@@ -23,7 +23,7 @@ jobs:
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
       - name: Install dependencies
-        run: jfrog pip install -r requirements.txt
+        run: pip install -r requirements.txt
       - name: Prepare app
         run: python prepare.py
         env:

@@ -4,4 +4,4 @@ sentry-sdk==0.15.1
 openpyxl==3.0.9
 envsubst==0.1.5
 
--r jfrog-requirements.txt
+-r private-requirements.txt
