@@ -36,20 +36,10 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Zip project
         run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
-      - name: Get Previous tag
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        with:
-          fallback: 0.0.0
-      - name: 'Get next minor version'
-        id: semvers
-        uses: "WyriHaximus/github-action-next-semvers@v1"
-        with:
-          version: ${{ steps.previoustag.outputs.tag }}
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.semvers.outputs.patch }}-pre
+          name: pre-release-${{ github.github_run_id }}
           prerelease: true
           artifacts: ${{ matrix.os }}-app-${{ github.ref_name }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
