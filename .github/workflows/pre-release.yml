@@ -42,7 +42,7 @@ jobs:
           name: pre-release-${{ github.run_id }}
           tag: ${{ github.run_id }}-pre
           prerelease: true
-          commit: ${GITHUB_SHA}
+          commit: ${{ github.sha }}
           artifacts: ${{ matrix.os }}-app-${{ github.ref_name }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
