@@ -39,8 +39,10 @@ jobs:
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
-          name: pre-release-${{ github.github_run_id }}
+          name: pre-release-${{ github.run_id }}
+          tag: pre-release-${{ github.run_id }}
           prerelease: true
+          commit: ${GITHUB_SHA}
           artifacts: ${{ matrix.os }}-app-${{ github.ref_name }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
