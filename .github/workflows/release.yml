@@ -3,11 +3,11 @@ on:
     tags:
     - 'v*'
 
-name: Package App
+name: Release App
 
 jobs:
   Package_app:
-    name: Upload Release Asset
+    name: Create release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -18,14 +18,22 @@ jobs:
         uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: ${{ matrix.python-version }}
       - uses: jfrog/setup-jfrog-cli@v2
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
-      - run: jfrog pip install -r requirements.txt
-      - run: python codegen.py
+      - name: Install dependencies
+        run: jfrog pip install -r requirements.txt
+      - name: Generate codegen
+        run: python codegen.py
       - run: pip install pyinstaller
-      - run: pyinstaller app.spec
+      - name: Package project
+        run: pyinstaller app.spec
+        env:
+          LCDP_ENVIRONMENT: production
+          PROVIDER_HOST: www.lecomptoirdespharmacies.fr
+          IS_PROVIDER_SECURE: True
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Zip project
         run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
       - name: Upload Release
