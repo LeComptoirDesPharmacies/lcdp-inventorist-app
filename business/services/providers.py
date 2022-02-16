@@ -1,4 +1,4 @@
-import os
+from PySide6.QtCore import QSettings
 
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
@@ -7,6 +7,7 @@ from api.consume.gen.product.api_client_utils import create_search_product_api, 
     create_manage_product_api
 from api.consume.gen.sale_offer.api_client_utils import create_manage_sale_offer_api, create_search_sale_offer_api
 from api.consume.gen.user.api_client_utils import create_search_user_api
+from settings import get_settings
 
 _auth_api = None
 _search_user_api = None
@@ -20,15 +21,15 @@ _manage_product_api = None
 _manage_sale_offer_api = None
 _search_sale_offer_api = None
 
+settings = get_settings()
 
 configuration = {
-    'host': os.getenv("PROVIDER_HOST", "localhost"),
-    'is_secured': os.getenv("IS_PROVIDER_SECURE", "False") == "True"
+    'host': settings.value("PROVIDER_HOST"),
+    'is_secured': settings.value("IS_PROVIDER_SECURE") == "True"
 }
 
 
 def get_auth_api():
-    print('configuration', configuration)
     global _auth_api
     if not _auth_api:
         _auth_api = create_auth_api(configuration)

@@ -1,5 +1,5 @@
 version: 1
 type: pip
 resolver:
-  repo: pypi
+  repo: pypi-remote
   serverId: lcdp

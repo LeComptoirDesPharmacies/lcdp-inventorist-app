@@ -12,6 +12,11 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
         python-version: ['3.8']
     steps:
       - name: Checkout code
@@ -22,18 +27,24 @@ jobs:
       - uses: jfrog/setup-jfrog-cli@v2
         env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: jfrog pip install -r requirements.txt
-      - name: Generate codegen
-        run: python codegen.py
-      - run: pip install pyinstaller
-      - name: Package project
-        run: pyinstaller app.spec
+      - name: Prepare app
+        run: python prepare.py
         env:
           LCDP_ENVIRONMENT: production
           PROVIDER_HOST: www.lecomptoirdespharmacies.fr
           IS_PROVIDER_SECURE: True
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - run: pip install pyinstaller
+      - name: Package project
+        run: pyinstaller app.spec
       - name: Zip project
         run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
       - name: Upload Release
