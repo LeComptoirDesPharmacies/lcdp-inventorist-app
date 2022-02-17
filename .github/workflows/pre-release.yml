@@ -1,0 +1,59 @@
+on:
+  push:
+    branches:
+      - 'develop'
+
+name: Pre-Release App
+
+jobs:
+  Package_app:
+    name: Create Pre Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
+        python-version: ['3.8']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: jfrog pip install -r requirements.txt
+      - name: Prepare app
+        run: python prepare.py
+        env:
+          LCDP_ENVIRONMENT: staging
+          PROVIDER_HOST: www.lcdp.ovh
+          IS_PROVIDER_SECURE: "True"
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - run: pip install pyinstaller
+      - name: Package project
+        run: pyinstaller app.spec
+      - name: Zip project
+        run: 7z a ${{ matrix.os }}-app-${{ github.ref_name }}.zip dist/*
+      - name: Upload Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: pre-release-${{ github.run_id }}
+          tag: ${{ github.run_id }}-pre
+          prerelease: true
+          commit: ${{ github.sha }}
+          artifacts: ${{ matrix.os }}-app-${{ github.ref_name }}.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true

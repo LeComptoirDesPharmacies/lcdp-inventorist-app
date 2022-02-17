@@ -1,10 +1,9 @@
---extra-index-url https://lcdp.jfrog.io/artifactory/api/pypi/lcdp-pypi-release-local/simple
---extra-index-url https://lcdp.jfrog.io/artifactory/api/pypi/lcdp-pypi-dev-local/simple
-PySide6==6.2.2
+--extra-index-url https://pypi.python.org/simple
+
+PySide6==6.2.3
 keyring==23.4.0
 sentry-sdk==0.15.1
 openpyxl==3.0.9
-python-dotenv==0.19.1
-lcdp-api==1.1.18.post11+git.1097aebc
-python-openapi-generator-cli==1.0.7.post74+git.caed8447
-python-rest-client-codegen==1.0.7.post74+git.caed8447
+envsubst==0.1.5
+
+-r private-requirements.txt
