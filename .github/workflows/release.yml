@@ -40,7 +40,7 @@ jobs:
         env:
           LCDP_ENVIRONMENT: production
           PROVIDER_HOST: www.lecomptoirdespharmacies.fr
-          IS_PROVIDER_SECURE: True
+          IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
       - name: Package project

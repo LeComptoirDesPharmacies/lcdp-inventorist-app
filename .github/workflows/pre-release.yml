@@ -40,7 +40,7 @@ jobs:
         env:
           LCDP_ENVIRONMENT: staging
           PROVIDER_HOST: www.lcdp.ovh
-          IS_PROVIDER_SECURE: True
+          IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
       - name: Package project
