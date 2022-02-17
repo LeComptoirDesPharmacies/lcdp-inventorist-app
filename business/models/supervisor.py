@@ -26,6 +26,6 @@ class Supervisor:
 
     @property
     def errors(self):
-        return repr(self._errors)
+        return repr([error.value for error in self._errors])
 
 

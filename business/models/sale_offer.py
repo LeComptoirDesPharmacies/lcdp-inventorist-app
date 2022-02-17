@@ -62,7 +62,7 @@ class Range(SupervisedEntity):
 
 class Distribution(SupervisedEntity):
 
-    def __init__(self, supervisor, distribution_type):
+    def __init__(self, supervisor, distribution_type=None):
         super().__init__(supervisor)
         self._type = distribution_type
         self._sold_by = None
@@ -190,7 +190,7 @@ class SaleOffer(SupervisedEntity):
         if distribution_type:
             self._distribution = Distribution(self.supervisor, distribution_type)
         else:
-            self._distribution = Distribution(self.supervisor, UNITARY_DISTRIBUTION)
+            self._distribution = Distribution(self.supervisor)
         self._distribution_type = distribution_type
 
     @property

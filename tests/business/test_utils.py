@@ -44,6 +44,12 @@ class TestUtils(unittest.TestCase):
         result = rgetattr(class_a, 'class_b.prop1')
         self.assertEqual(expected, result)
 
+    def test_rgetattr_on_none(self):
+        class_a = A()
+        expected = None
+        result = rgetattr(class_a, 'class_b.prop7', None)
+        self.assertEqual(expected, result)
+
     def test_clean_none_from_dict(self):
         my_dict = {'A': 1, 'B': None, 'C': 4}
         expected = {'A': 1, 'C': 4}

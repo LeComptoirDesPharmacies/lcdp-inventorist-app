@@ -4,21 +4,21 @@ from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION,
 
 
 def distribution_to_dto(distribution):
-    if distribution.type == UNITARY_DISTRIBUTION:
-        return AnyDistributionMode(
-            type='UNITARY',
-            unit_price=distribution.discounted_price,
-            minimal_quantity=distribution.sold_by
-        )
-    elif distribution.type == RANGE_DISTRIBUTION:
-        return AnyDistributionMode(
-            type='RANGE',
-            ranges=list(map(__range_to_dto, distribution.ranges)),
-        )
-    elif distribution.type == QUOTATION_DISTRIBUTION:
-        return AnyDistributionMode(type='QUOTATION')
-    else:
-        return None
+    if distribution:
+        if distribution.type == UNITARY_DISTRIBUTION:
+            return AnyDistributionMode(
+                type='UNITARY',
+                unit_price=distribution.discounted_price,
+                minimal_quantity=distribution.sold_by
+            )
+        elif distribution.type == RANGE_DISTRIBUTION:
+            return AnyDistributionMode(
+                type='RANGE',
+                ranges=list(map(__range_to_dto, distribution.ranges)),
+            )
+        elif distribution.type == QUOTATION_DISTRIBUTION:
+            return AnyDistributionMode(type='QUOTATION')
+    return None
 
 
 def __range_to_dto(sale_offer_range):
