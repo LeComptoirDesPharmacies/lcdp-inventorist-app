@@ -2,6 +2,7 @@ import logging
 
 from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import SaleOfferCreationParameters
 from api.consume.gen.sale_offer.model.sale_offer_update_parameters import SaleOfferUpdateParameters
+from business.exceptions import CannotCreateSaleOffer
 from business.mappers.sale_offer import distribution_to_dto
 from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api
 from business.services.security import get_api_key
@@ -14,18 +15,20 @@ def create_sale_offer(sale_offer, product):
     return __create_sale_offer(sale_offer, product.id)
 
 
-def create_or_edit_sale_offer(sale_offer, product):
+def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = __find_sale_offer(
      sale_offer,
      product.id
     )
-    if not existing_sale_offer:
+    if not existing_sale_offer and can_create_sale_offer:
         return create_sale_offer(sale_offer, product)
-    else:
+    elif existing_sale_offer:
         logging.info(f'product {sale_offer.product.principal_barcode} : '
                      f'Sale offer already exist, edit existing sale offer')
         return __edit_sale_offer(existing_sale_offer.reference, sale_offer)
+    else:
+        raise CannotCreateSaleOffer()
 
 
 def __find_sale_offer(sale_offer, product_id):

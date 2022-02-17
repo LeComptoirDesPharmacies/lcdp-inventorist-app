@@ -94,7 +94,7 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
         for col in excel_mapper:
             col.set_from_excel(obj, cells.get(col.excel_column_name, None))
         if obj_unique_key:
-            obj_key = rgetattr(obj, obj_unique_key)
+            obj_key = rgetattr(obj, obj_unique_key, None)
             results[obj_key] = obj
         else:
             results[idx] = obj
@@ -105,23 +105,22 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
 def __create_sale_offer_from_excel_line(excel_line):
     sale_offer = None
     error = None
-    if excel_line.can_create_sale_offer():
-        try:
-            product = update_or_create_product(excel_line.sale_offer.product,
-                                               excel_line.can_create_product_from_scratch())
-            sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product)
-        except SaleOfferApiException as sale_offer_api_err:
-            logging.error('An API error occur in sale offer api', sale_offer_api_err)
-            error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
-        except ProductApiException as product_api_err:
-            logging.error('An API error occur in product api', product_api_err)
-            error = product_api_exception_to_muggle(product_api_err)
-        except (LaboratoryApiException, ConfigurationApiException) as api_err:
-            logging.error('An API error occur in laboratory api on configuration api', api_err)
-            error = api_exception_to_muggle(api_err)
-        except Exception as err:
-            logging.error('An error occur during line processing', err)
-            error = str(err)
+    try:
+        product = update_or_create_product(excel_line.sale_offer.product,
+                                           excel_line.can_create_product_from_scratch())
+        sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product, excel_line.can_create_sale_offer())
+    except SaleOfferApiException as sale_offer_api_err:
+        logging.error('An API error occur in sale offer api', sale_offer_api_err)
+        error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
+    except ProductApiException as product_api_err:
+        logging.error('An API error occur in product api', product_api_err)
+        error = product_api_exception_to_muggle(product_api_err)
+    except (LaboratoryApiException, ConfigurationApiException) as api_err:
+        logging.error('An API error occur in laboratory api on configuration api', api_err)
+        error = api_exception_to_muggle(api_err)
+    except Exception as err:
+        logging.error('An error occur during line processing', err)
+        error = str(err)
 
     return {
         'excel_line': excel_line,

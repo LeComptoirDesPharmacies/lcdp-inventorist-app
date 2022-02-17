@@ -27,3 +27,4 @@ class ProcessingError(Enum):
     VAT_NOT_FOUND = "La TVA saisi n'a pas été trouvé"
     FAILED_TO_CREATE_LABORATORY = "Impossible de créer ce laboratoire"
     CANNOT_CREATE_PRODUCT = "Produit non trouvé avec ce cip et impossible de le créer"
+    CANNOT_CREATE_SALE_OFFER = "Annonce non trouvé et impossible de la créer"
