@@ -1,6 +1,6 @@
 # LCDP-Inventorist-app
 
-This is a app for **Le Comptoir Des Pharmacies** personal use.
+This is an app for **Le Comptoir Des Pharmacies** personal use.
 
 This app permit to manage sale offer and product massively with excel import.
 
