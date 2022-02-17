@@ -14,4 +14,4 @@ class Column:
             rsetattr(obj, self.class_path, self.default_value)
 
     def get_from_obj(self, obj):
-        return rgetattr(obj, self.class_path)
+        return rgetattr(obj, self.class_path, None)

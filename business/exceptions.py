@@ -3,8 +3,7 @@ from business.models.errors import ProcessingError
 
 class ProcessingException(Exception):
     def __init__(self, error):
-        super().__init__()
-        self.error = error
+        super().__init__(error.value)
 
 
 class TooManyProduct(ProcessingException):
@@ -25,3 +24,8 @@ class TooManyLaboratory(ProcessingException):
 class CannotCreateProduct(ProcessingException):
     def __init__(self):
         super().__init__(ProcessingError.CANNOT_CREATE_PRODUCT)
+
+
+class CannotCreateSaleOffer(ProcessingException):
+    def __init__(self):
+        super().__init__(ProcessingError.CANNOT_CREATE_SALE_OFFER)
