@@ -14,6 +14,9 @@ class CreateProductError(Enum):
 
 class CreateSaleOfferError(Enum):
     INVALID_DISTRIBUTION = 'Type de distribution invalide'
+    INVALID_REMAINING_QUANTITY = 'Stock invalide'
+    INVALID_LAPSING_DATE = 'Date de péremption invalide'
+    INVALID_BATCH = 'Numéro de lot invalide'
     INVALID_SELLER_ID = 'Identifiant vendeur est invalide'
     INVALID_RANGE = 'Un ou plusieurs palier sont invalide'
     INVALID_DISCOUNTED_PRICE = 'Prix remisé invalide'

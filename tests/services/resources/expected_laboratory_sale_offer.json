@@ -23,6 +23,13 @@
                 "_unit_price": 16.42,
                 "_dci": " My DCI"
             },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": null,
+                "_lapsing_date": null,
+                "_batch": null
+            },
+            "_reference": null,
             "_distribution_type": "palier",
             "_distribution": {
                 "supervisor": "",
