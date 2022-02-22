@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum, auto, unique
 
 
 class AutoName(Enum):
@@ -6,5 +6,7 @@ class AutoName(Enum):
         return name
 
 
+@unique
 class UpdatePolicy(AutoName):
     PRODUCT_BARCODE = auto()
+    SALE_OFFER_REFERENCE = auto()

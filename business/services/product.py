@@ -113,7 +113,7 @@ def __create_product_with_barcode(principal_barcode):
 def __edit_product(product_id, excel_product, product_type, vat, laboratory):
     api = get_manage_product_api()
     payload = clean_none_from_dict({
-        'is_external_sync_enabled': False,
+        'is_external_sync_enabled': excel_product.external_sync,
         'name': excel_product.name,
         'dci': excel_product.dci,
         'unit_weight': excel_product.weight,

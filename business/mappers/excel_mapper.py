@@ -1,15 +1,10 @@
 from business.models.column import Column
 from business.models.sale_offer import UNITARY_DISTRIBUTION
-
-
-def add_update_policy(mapper, policy):
-    return mapper + [
-        Column("Politique de mise à jour", "sale_offer.update_policy", policy)
-    ]
+from business.models.update_policy import UpdatePolicy
 
 
 error_mapper = [
-    Column("Erreur de saisie", "supervisor.errors")
+    Column("Erreur de saisie", "supervisor.readable_errors")
 ]
 
 # TODO: add column name and asterisk as constant ? But if one change should update all excel
@@ -29,7 +24,9 @@ create_laboratory_sale_offer_mapper = [
     Column("Unité gratuite", 'sale_offer.distribution.free_unit'),
     Column("PU HT catalogue***", 'sale_offer.product.unit_price'),
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),
-    Column("Identifiant vendeur", 'sale_offer.owner_id')
+    Column("Identifiant vendeur", 'sale_offer.owner_id'),
+    Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.PRODUCT_BARCODE.value),
+    Column("Synchronistation externe", 'sale_offer.product.external_sync', False)
 ]
 
 
@@ -69,4 +66,5 @@ create_update_drugstore_sale_offer_mapper = [
     Column("PU HT catalogue***", 'sale_offer.product.unit_price'),
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),
     Column("Identifiant vendeur", 'sale_offer.owner_id'),
+    Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.SALE_OFFER_REFERENCE.value),
 ]

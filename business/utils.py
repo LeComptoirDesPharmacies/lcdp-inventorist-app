@@ -10,6 +10,15 @@ def cast_or_default(value, data_type, default=None):
         return default
 
 
+def cast_datetime_to_date(value, default=None):
+    if not value:
+        return default
+    try:
+        return value.date()
+    except Exception:
+        return default
+
+
 def rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)

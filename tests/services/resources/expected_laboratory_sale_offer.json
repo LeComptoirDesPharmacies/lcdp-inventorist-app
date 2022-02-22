@@ -21,7 +21,8 @@
                 "_name": "GEL\u00c9E ROYALEN - POT 30 G",
                 "_weight": 70.0,
                 "_unit_price": 16.42,
-                "_dci": " My DCI"
+                "_dci": " My DCI",
+                "_external_sync": false
             },
             "_stock": {
                 "supervisor": "",
@@ -49,7 +50,7 @@
             "_rank": 470,
             "_owner_id": 12,
             "_description": "Compl\u00e9ment alimentaire gel\u00e9e royale riche en nutriments\nGel\u00e9e royal de type 1 et BIO",
-            "_update_policy": null
+            "_update_policy": "PRODUCT_BARCODE"
         }
     }
 }

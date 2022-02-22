@@ -1,4 +1,4 @@
-from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, add_update_policy, \
+from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, \
     create_update_product_mapper, create_update_drugstore_sale_offer_mapper
 from business.models.excel_line import ExcelLine
 from business.models.excel_parameter import ExcelParameter
@@ -83,7 +83,6 @@ class ProductExcelLinesMapper(ExcelLinesMapper):
 class DrugstoreExcelLinesMapper(ExcelLinesMapper):
     def __init__(self, excel_path):
         super().__init__(excel_path, create_update_drugstore_sale_offer_mapper)
-        self.unique_key = "sale_offer.reference"
 
     @staticmethod
     def condition(key, value):

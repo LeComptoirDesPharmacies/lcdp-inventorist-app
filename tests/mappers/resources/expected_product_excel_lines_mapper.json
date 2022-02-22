@@ -21,7 +21,8 @@
                 "_name": "Produit dupliqu\u00e9",
                 "_weight": 100.0,
                 "_unit_price": 4.5,
-                "_dci": "Ma dci"
+                "_dci": "Ma dci",
+                "_external_sync": null
             },
             "_stock": {
                 "supervisor": "",
@@ -60,7 +61,8 @@
                 "_name": null,
                 "_weight": null,
                 "_unit_price": 2.39,
-                "_dci": null
+                "_dci": null,
+                "_external_sync": null
             },
             "_stock": {
                 "supervisor": "",

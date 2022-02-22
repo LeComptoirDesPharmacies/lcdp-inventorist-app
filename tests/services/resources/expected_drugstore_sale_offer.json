@@ -21,12 +21,13 @@
                 "_name": "Mon produit",
                 "_weight": 500.0,
                 "_unit_price": 10.0,
-                "_dci": "Ma DCI"
+                "_dci": "Ma DCI",
+                "_external_sync": null
             },
             "_stock": {
                 "supervisor": "",
                 "_remaining_quantity": 120,
-                "_lapsing_date": "2029-04-01 00:00:00",
+                "_lapsing_date": "2029-04-01",
                 "_batch": "LEKEO2"
             },
             "_reference": "2103302923",
@@ -42,7 +43,7 @@
             "_rank": null,
             "_owner_id": 999,
             "_description": null,
-            "_update_policy": null
+            "_update_policy": "SALE_OFFER_REFERENCE"
         }
     }
 }

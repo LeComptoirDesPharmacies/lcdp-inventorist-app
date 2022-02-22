@@ -23,3 +23,6 @@ def generate_temp_json_file(content):
     temp_file.close()
     return temp_file
 
+
+def compare_file_error_msg(expected, result):
+    return f"\nContent of files are not the same \n Expected : {expected.name} \n Result : {result.name}"
