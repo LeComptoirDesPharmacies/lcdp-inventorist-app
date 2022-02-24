@@ -51,6 +51,7 @@ class Product(SupervisedEntity):
         self._weight = None
         self._unit_price = None
         self._dci = None
+        self._external_sync = None
 
     @property
     def principal_barcode(self):
@@ -103,6 +104,14 @@ class Product(SupervisedEntity):
     @property
     def laboratory(self):
         return self._laboratory
+
+    @property
+    def external_sync(self):
+        return self._external_sync
+
+    @external_sync.setter
+    def external_sync(self, external_sync):
+        self._external_sync = external_sync
 
     def report_errors(self):
         errors = []

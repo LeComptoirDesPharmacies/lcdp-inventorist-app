@@ -1,5 +1,3 @@
-from PySide6.QtCore import QSettings
-
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
 from api.consume.gen.laboratory.api_client_utils import create_search_laboratory_api, create_manage_laboratory_api

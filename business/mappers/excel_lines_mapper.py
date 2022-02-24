@@ -1,5 +1,5 @@
-from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, add_update_policy, \
-    create_update_product_mapper
+from business.mappers.excel_mapper import parameter_mapper, create_laboratory_sale_offer_mapper, \
+    create_update_product_mapper, create_update_drugstore_sale_offer_mapper
 from business.models.excel_line import ExcelLine
 from business.models.excel_parameter import ExcelParameter
 from business.services.excel import excel_to_dict
@@ -78,3 +78,12 @@ class ProductExcelLinesMapper(ExcelLinesMapper):
     def __init__(self, excel_path):
         super().__init__(excel_path, create_update_product_mapper)
         self.unique_key = "sale_offer.product.principal_barcode"
+
+
+class DrugstoreExcelLinesMapper(ExcelLinesMapper):
+    def __init__(self, excel_path):
+        super().__init__(excel_path, create_update_drugstore_sale_offer_mapper)
+
+    @staticmethod
+    def condition(key, value):
+        return value.sale_offer.product.principal_barcode is not None

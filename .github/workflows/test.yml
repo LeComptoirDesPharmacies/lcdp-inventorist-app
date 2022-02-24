@@ -29,4 +29,4 @@ jobs:
       - name: Prepare app
         run: python prepare.py
       - name: Run tests
-        run: python -m unittest discover tests -t .
+        run: python -m nose2 tests -v

@@ -1,6 +1,10 @@
 import unittest
+from datetime import datetime
 
-from business.utils import cast_or_default, rsetattr, rgetattr, clean_none_from_dict, ConditionalDict
+from nose2.tools import params
+
+from business.utils import cast_or_default, rsetattr, rgetattr, clean_none_from_dict, ConditionalDict, \
+    cast_datetime_to_date
 
 
 class A:
@@ -75,3 +79,12 @@ class TestUtils(unittest.TestCase):
         my_dict["A"] = 5
         expected = {"A": 10}
         self.assertEqual(expected, my_dict)
+
+    def test_cast_datetime_to_date(self):
+        expected = datetime.today().date()
+        result = cast_datetime_to_date(datetime.today())
+        self.assertEqual(expected, result)
+
+    @params(None, 1, 'a', False)
+    def test_invalid_cast_datetime_to_date_return_default_value(self, value):
+        self.assertIsNone(cast_datetime_to_date(value))

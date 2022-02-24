@@ -14,6 +14,9 @@ class CreateProductError(Enum):
 
 class CreateSaleOfferError(Enum):
     INVALID_DISTRIBUTION = 'Type de distribution invalide'
+    INVALID_REMAINING_QUANTITY = 'Stock invalide'
+    INVALID_LAPSING_DATE = 'Date de péremption invalide'
+    INVALID_BATCH = 'Numéro de lot invalide'
     INVALID_SELLER_ID = 'Identifiant vendeur est invalide'
     INVALID_RANGE = 'Un ou plusieurs palier sont invalide'
     INVALID_DISCOUNTED_PRICE = 'Prix remisé invalide'
@@ -28,3 +31,4 @@ class ProcessingError(Enum):
     FAILED_TO_CREATE_LABORATORY = "Impossible de créer ce laboratoire"
     CANNOT_CREATE_PRODUCT = "Produit non trouvé avec ce cip et impossible de le créer"
     CANNOT_CREATE_SALE_OFFER = "Annonce non trouvé et impossible de la créer"
+    CANNOT_UPDATE_SALE_OFFER_BY_REFERENCE = "Annonce non trouvé avec la référence donnée, mise à jour impossible"
