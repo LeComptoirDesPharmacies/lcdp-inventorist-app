@@ -19,7 +19,7 @@ class TestVat(unittest.TestCase):
 
     def setUp(self):
         self.search_patch = patch('business.services.vat.get_search_vat_api')
-        self.get_api_key_patch = patch('business.services.sale_offer.get_api_key')
+        self.get_api_key_patch = patch('business.services.vat.get_api_key')
         search_mock = self.search_patch.start()
         self.search_api = search_mock.return_value
         get_api_key_patch_mock = self.get_api_key_patch.start()
