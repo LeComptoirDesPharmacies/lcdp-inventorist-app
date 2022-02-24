@@ -18,7 +18,7 @@ class TestExcelLinesMapper(unittest.TestCase):
 
         result = generate_temp_json_file(mapper.map_to_obj())
 
-        expected = open(os.path.join(CURRENT_DIR, 'resources/expected_laboratory_excel_lines_mapper.json'), "r")
+        expected = open(os.path.join(CURRENT_DIR, 'resources', 'expected_laboratory_excel_lines_mapper.json'), "r")
         expected.close()
         self.assertTrue(filecmp.cmp(expected.name, result.name), compare_file_error_msg(expected, result))
 
@@ -27,7 +27,7 @@ class TestExcelLinesMapper(unittest.TestCase):
 
         result = generate_temp_json_file(mapper.map_to_obj())
 
-        expected = open(os.path.join(CURRENT_DIR, 'resources/expected_product_excel_lines_mapper.json'), "r")
+        expected = open(os.path.join(CURRENT_DIR, 'resources', 'expected_product_excel_lines_mapper.json'), "r")
         expected.close()
         self.assertTrue(filecmp.cmp(expected.name, result.name), compare_file_error_msg(expected, result))
 
@@ -36,6 +36,6 @@ class TestExcelLinesMapper(unittest.TestCase):
 
         result = generate_temp_json_file(mapper.map_to_obj())
 
-        expected = open(os.path.join(CURRENT_DIR, 'resources/expected_drugstore_excel_lines_mapper.json'), "r")
+        expected = open(os.path.join(CURRENT_DIR, 'resources', 'expected_drugstore_excel_lines_mapper.json'), "r")
         expected.close()
         self.assertTrue(filecmp.cmp(expected.name, result.name), compare_file_error_msg(expected, result))

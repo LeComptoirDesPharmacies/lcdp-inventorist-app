@@ -1,5 +1,4 @@
 import logging
-from functools import lru_cache
 
 from api.consume.gen.laboratory.model.laboratory_creation_parameters import LaboratoryCreationParameters
 from business.exceptions import TooManyLaboratory

@@ -34,7 +34,7 @@ class TestLaboratory(unittest.TestCase):
         (None, None, 'BATCH', [CreateSaleOfferError.INVALID_REMAINING_QUANTITY,
                                CreateSaleOfferError.INVALID_LAPSING_DATE]),
         (datetime.datetime.today(), None, None, [CreateSaleOfferError.INVALID_REMAINING_QUANTITY,
-                                             CreateSaleOfferError.INVALID_BATCH]),
+                                                 CreateSaleOfferError.INVALID_BATCH]),
         (None, 1, None, [CreateSaleOfferError.INVALID_LAPSING_DATE, CreateSaleOfferError.INVALID_BATCH]),
     )
     def test_invalid_stock_when_one_attribute_is_none(self, lapsing_date, remaining_quantity, batch, expected):

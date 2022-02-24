@@ -40,7 +40,7 @@ class TestExcel(unittest.TestCase):
             max_row=5
         )
 
-        expected = open(os.path.join(CURRENT_DIR, 'resources/expected_laboratory_sale_offer.json'), "r")
+        expected = open(os.path.join(CURRENT_DIR, 'resources', 'expected_laboratory_sale_offer.json'), "r")
         result = generate_temp_json_file(my_dict)
         expected.close()
         self.assertTrue(filecmp.cmp(expected.name, result.name), compare_file_error_msg(expected, result))
@@ -56,7 +56,7 @@ class TestExcel(unittest.TestCase):
             max_row=4
         )
 
-        expected = open(os.path.join(CURRENT_DIR, 'resources/expected_drugstore_sale_offer.json'), "r")
+        expected = open(os.path.join(CURRENT_DIR, 'resources', 'expected_drugstore_sale_offer.json'), "r")
         result = generate_temp_json_file(my_dict)
         expected.close()
         self.assertTrue(filecmp.cmp(expected.name, result.name), compare_file_error_msg(expected, result))

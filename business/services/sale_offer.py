@@ -10,13 +10,13 @@ from business.services.security import get_api_key
 from business.utils import clean_none_from_dict
 
 
-def create_sale_offer(sale_offer, product):
+def __create_sale_offer_from_scratch(sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : '
                  f'No sale offer is already exist, create sale offer')
     return __create_sale_offer(sale_offer, product.id)
 
 
-def find_sale_offer(sale_offer, product):
+def __find_existing_sale_offer(sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
@@ -31,21 +31,22 @@ def find_sale_offer(sale_offer, product):
     return existing_sale_offer
 
 
-def edit_sale_offer(existing_sale_offer, sale_offer):
+def __edit_existing_sale_offer(existing_sale_offer, sale_offer):
     logging.info(f'product {sale_offer.product.principal_barcode} : '
                  f'Sale offer already exist, edit existing sale offer')
     return __edit_sale_offer(existing_sale_offer.reference, sale_offer)
 
 
 def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
-    existing_sale_offer = find_sale_offer(sale_offer, product)
+    if sale_offer and product:
+        existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
 
-    if existing_sale_offer:
-        return edit_sale_offer(existing_sale_offer, sale_offer)
-    elif not existing_sale_offer and can_create_sale_offer:
-        return create_sale_offer(sale_offer, product)
-    else:
-        raise CannotCreateSaleOffer()
+        if existing_sale_offer:
+            return __edit_existing_sale_offer(existing_sale_offer, sale_offer)
+        elif not existing_sale_offer and can_create_sale_offer:
+            return __create_sale_offer_from_scratch(sale_offer, product)
+
+    raise CannotCreateSaleOffer()
 
 
 def __find_sale_offer(sale_offer, product_id):
