@@ -1,4 +1,5 @@
-from business.constant import CREATE_LABORATORY_SALE_OFFER_TPL, CREATE_UPDATE_PRODUCT_TPL
+from business.constant import CREATE_LABORATORY_SALE_OFFER_TPL, CREATE_UPDATE_PRODUCT_TPL, \
+    CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL
 from business.mappers.excel_lines_mapper import LaboratoryExcelLinesMapper, ProductExcelLinesMapper, \
     DrugstoreExcelLinesMapper
 
@@ -21,7 +22,7 @@ detailed_actions = {
         'name': 'Créer/Modifier des annonces PharmDestock',
         'mapper': DrugstoreExcelLinesMapper,
         'executor': create_sale_offer_from_excel_lines,
-        'template': 'TODO'
+        'template': CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL
     }
 }
 

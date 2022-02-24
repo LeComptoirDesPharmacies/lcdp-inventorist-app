@@ -11,3 +11,6 @@ CREATE_LABORATORY_SALE_OFFER_TPL = "https://docs.google.com/spreadsheets/d/1NKjB
 
 CREATE_UPDATE_PRODUCT_TPL = "https://docs.google.com/spreadsheets/d/1Pd325Eb-5mLBzTU58QLCoHQNvrqBT0Fh/edit?usp" \
                         "=sharing&ouid=110512712826531059999&rtpof=true&sd=true"
+
+CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL = "https://docs.google.com/spreadsheets/d/1yVgPQBtmeINrzarfgWsB34tdLEAglxxM/" \
+                                         "edit?usp=sharing&ouid=110512712826531059999&rtpof=true&sd=true"
