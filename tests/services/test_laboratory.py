@@ -10,14 +10,18 @@ class TestLaboratory(unittest.TestCase):
     def setUp(self):
         self.search_patch = patch('business.services.laboratory.get_search_laboratory_api')
         self.manage_patch = patch('business.services.laboratory.get_manage_laboratory_api')
+        self.get_api_key_patch = patch('business.services.laboratory.get_api_key')
         search_mock = self.search_patch.start()
         manage_mock = self.manage_patch.start()
+        get_api_key_patch_mock = self.get_api_key_patch.start()
+        get_api_key_patch_mock.return_value = {}
         self.search_api = search_mock.return_value
         self.manage_api = manage_mock.return_value
 
     def tearDown(self) -> None:
         self.search_patch.stop()
         self.manage_patch.stop()
+        self.get_api_key_patch.stop()
 
     def test_find_or_create_laboratory_with_none_name(self):
         laboratory_name = None

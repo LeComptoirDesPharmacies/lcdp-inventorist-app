@@ -24,12 +24,15 @@ class TestProduct(unittest.TestCase):
         self.search_manage_laboratory_patch = patch('business.services.product.find_or_create_laboratory')
         self.search_product_patch = patch('business.services.product.get_search_product_api')
         self.manage_product_patch = patch('business.services.product.get_manage_product_api')
+        self.get_api_key_patch = patch('business.services.product.get_api_key')
 
         search_product_meta_mock = self.search_product_meta_patch.start()
         search_product_mock = self.search_product_patch.start()
         manage_product_mock = self.manage_product_patch.start()
         search_vat_mock = self.search_vat_patch.start()
         search_manage_laboratory_mock = self.search_manage_laboratory_patch.start()
+        get_api_key_patch_mock = self.get_api_key_patch.start()
+        get_api_key_patch_mock.return_value = {}
 
         self.search_product_api = search_product_mock.return_value
         self.manage_product_api = manage_product_mock.return_value
@@ -55,6 +58,7 @@ class TestProduct(unittest.TestCase):
         self.search_manage_laboratory_patch.stop()
         self.search_product_patch.stop()
         self.manage_product_patch.stop()
+        self.get_api_key_patch.stop()
 
     def test_update_or_create_product_with_none_product(self):
         with self.assertRaises(CannotCreateProduct):

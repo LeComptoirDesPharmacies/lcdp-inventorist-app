@@ -19,11 +19,15 @@ class TestVat(unittest.TestCase):
 
     def setUp(self):
         self.search_patch = patch('business.services.vat.get_search_vat_api')
+        self.get_api_key_patch = patch('business.services.sale_offer.get_api_key')
         search_mock = self.search_patch.start()
         self.search_api = search_mock.return_value
+        get_api_key_patch_mock = self.get_api_key_patch.start()
+        get_api_key_patch_mock.return_value = {}
 
     def tearDown(self) -> None:
         self.search_patch.stop()
+        self.get_api_key_patch.stop()
 
     def test_get_vat_by_none_value(self):
         self.search_api.get_vats.return_value = MY_VATS

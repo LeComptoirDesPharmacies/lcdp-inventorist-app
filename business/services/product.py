@@ -4,9 +4,9 @@ from functools import lru_cache
 from api.consume.gen.product import ApiException
 from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
-from business.exceptions import TooManyProduct, VatNotFound, CannotCreateProduct
+from business.exceptions import TooManyProduct, CannotCreateProduct
 from business.services.laboratory import find_or_create_laboratory
-from business.services.providers import get_search_product_api, get_search_product_metadata_api, get_search_vat_api, \
+from business.services.providers import get_search_product_api, get_search_product_metadata_api, \
     get_manage_product_api
 from business.services.security import get_api_key
 from business.services.vat import get_vat_by_value
