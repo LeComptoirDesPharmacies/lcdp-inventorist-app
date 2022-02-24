@@ -1,5 +1,4 @@
 import logging
-from functools import lru_cache
 
 from api.consume.gen.laboratory.model.laboratory_creation_parameters import LaboratoryCreationParameters
 from business.exceptions import TooManyLaboratory
@@ -18,7 +17,6 @@ def find_or_create_laboratory(laboratory_name):
         return laboratory
 
 
-@lru_cache(maxsize=128)
 def __get_laboratory_by_name(name):
     api = get_search_laboratory_api()
     laboratories = api.get_laboratories(

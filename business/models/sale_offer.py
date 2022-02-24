@@ -1,5 +1,6 @@
 from business.models.errors import CreateSaleOfferError
 from business.models.product import Product
+from business.models.stock import Stock
 from business.models.supervisor import SupervisedEntity
 import numbers
 
@@ -60,6 +61,10 @@ class Range(SupervisedEntity):
         return errors
 
 
+# The problem is that I need to set distribution type before any other attribute otherwise
+# my object will not be usable.
+# Excel mapper should not be constructed depended on this issue
+# TODO: Create a Draft class with all value of the excel and then create models objects
 class Distribution(SupervisedEntity):
 
     def __init__(self, supervisor, distribution_type=None):
@@ -146,12 +151,30 @@ class SaleOffer(SupervisedEntity):
     def __init__(self, supervisor):
         super().__init__(supervisor)
         self._product = Product(supervisor)
+        self._stock = Stock(supervisor)
+        self._reference = None
         self._distribution_type = None
         self._distribution = None
         self._rank = None
         self._owner_id = None
         self._description = None
         self._update_policy = None
+
+    @property
+    def reference(self):
+        return self._reference
+
+    @reference.setter
+    def reference(self, reference):
+        self._reference = cast_or_default(reference, str)
+
+    @property
+    def stock(self):
+        return self._stock
+
+    @stock.setter
+    def stock(self, stock):
+        self._stock = stock
 
     @property
     def owner_id(self):

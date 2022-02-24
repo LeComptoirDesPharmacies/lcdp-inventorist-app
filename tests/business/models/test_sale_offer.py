@@ -4,6 +4,8 @@ from business.models.errors import CreateSaleOfferError
 from business.models.sale_offer import SaleOffer, Range
 from business.models.supervisor import Supervisor
 
+from nose2.tools import params
+
 
 def build_sale_offer(owner_id, rank, distribution_type):
     sale_offer = SaleOffer(Supervisor())
@@ -39,19 +41,25 @@ class TestSaleOffer(unittest.TestCase):
         another_sale_offer.product.principal_barcode = 'barcode'
         self.assertTrue(initial_sale_offer.should_merge(another_sale_offer))
 
-    def test_sale_offer_cant_be_merge(self):
-        initial_sale_offer = build_sale_offer(123, None, 'palier')
-        another_sale_offer = build_sale_offer(123, None, 'palier')
-        initial_sale_offer.product.principal_barcode = 'barcode'
-        another_sale_offer.product.principal_barcode = 'new_barcode'
-        self.assertFalse(initial_sale_offer.should_merge(another_sale_offer))
-
-    #TODO: voir sur connexion comment c'était fait test avec different parametre
-    def test_sale_offer_cant_be_merge_2(self):
-        initial_sale_offer = build_sale_offer(123, None, 'palier')
-        another_sale_offer = build_sale_offer(123, None, 'unitaire')
-        initial_sale_offer.product.principal_barcode = 'barcode'
-        another_sale_offer.product.principal_barcode = 'new_barcode'
+    @params(
+        {
+            'sale_offer_1': build_sale_offer(123, None, 'palier'),
+            'sale_offer_2':  build_sale_offer(123, None, 'palier'),
+            'sale_offer_1_code': 'barcode',
+            'sale_offer_2_code': 'new_barcode'
+        },
+        {
+            'sale_offer_1': build_sale_offer(123, None, 'palier'),
+            'sale_offer_2':  build_sale_offer(123, None, 'unitaire'),
+            'sale_offer_1_code': 'barcode',
+            'sale_offer_2_code': 'barcode'
+         }
+    )
+    def test_sale_offer_cant_be_merge(self, sale_offers_dict):
+        initial_sale_offer = sale_offers_dict['sale_offer_1']
+        another_sale_offer = sale_offers_dict['sale_offer_2']
+        initial_sale_offer.product.principal_barcode = sale_offers_dict['sale_offer_1_code']
+        another_sale_offer.product.principal_barcode = sale_offers_dict['sale_offer_2_code']
         self.assertFalse(initial_sale_offer.should_merge(another_sale_offer))
 
     def test_sale_offer_merge(self):

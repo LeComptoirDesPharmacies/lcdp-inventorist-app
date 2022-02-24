@@ -1,0 +1,190 @@
+[
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": 5.5
+                },
+                "_product_type": {
+                    "_name": "Dispositifs m\u00e9dicaux"
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": "Mon laboratoire"
+                },
+                "_principal_barcode": "2312432423432",
+                "_name": "Mon produit",
+                "_weight": 500.0,
+                "_unit_price": 10.0,
+                "_dci": "Ma DCI",
+                "_external_sync": null
+            },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": 120,
+                "_lapsing_date": "2029-04-01",
+                "_batch": "LEKEO2"
+            },
+            "_reference": "2103302923",
+            "_distribution_type": "unitaire",
+            "_distribution": {
+                "supervisor": "",
+                "_type": "unitaire",
+                "_sold_by": 30,
+                "_discounted_price": 5.0,
+                "_free_unit": null,
+                "_ranges": []
+            },
+            "_rank": null,
+            "_owner_id": 999,
+            "_description": null,
+            "_update_policy": "SALE_OFFER_REFERENCE"
+        }
+    },
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": null
+                },
+                "_product_type": {
+                    "_name": null
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": null
+                },
+                "_principal_barcode": "Sans reference annonce",
+                "_name": null,
+                "_weight": null,
+                "_unit_price": null,
+                "_dci": null,
+                "_external_sync": null
+            },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": 23,
+                "_lapsing_date": "2030-11-01",
+                "_batch": "Mon lot"
+            },
+            "_reference": null,
+            "_distribution_type": "unitaire",
+            "_distribution": {
+                "supervisor": "",
+                "_type": "unitaire",
+                "_sold_by": 12,
+                "_discounted_price": 50.0,
+                "_free_unit": null,
+                "_ranges": []
+            },
+            "_rank": null,
+            "_owner_id": 999,
+            "_description": null,
+            "_update_policy": "SALE_OFFER_REFERENCE"
+        }
+    },
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": 5.5
+                },
+                "_product_type": {
+                    "_name": "Parapharmacie"
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": "Mon laboratoire 2"
+                },
+                "_principal_barcode": "163173712931",
+                "_name": "Dernier ajoute",
+                "_weight": 100.0,
+                "_unit_price": 10.0,
+                "_dci": "Ma DCI 2",
+                "_external_sync": null
+            },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": 120,
+                "_lapsing_date": "2040-06-01",
+                "_batch": "LEKEO1"
+            },
+            "_reference": "2103302923",
+            "_distribution_type": "unitaire",
+            "_distribution": {
+                "supervisor": "",
+                "_type": "unitaire",
+                "_sold_by": 30,
+                "_discounted_price": 5.0,
+                "_free_unit": null,
+                "_ranges": []
+            },
+            "_rank": null,
+            "_owner_id": 999,
+            "_description": null,
+            "_update_policy": "SALE_OFFER_REFERENCE"
+        }
+    },
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": null
+                },
+                "_product_type": {
+                    "_name": null
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": null
+                },
+                "_principal_barcode": "Sans reference annonce 2",
+                "_name": null,
+                "_weight": null,
+                "_unit_price": null,
+                "_dci": null,
+                "_external_sync": null
+            },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": 20,
+                "_lapsing_date": "2030-11-01",
+                "_batch": "Mon lot 2"
+            },
+            "_reference": null,
+            "_distribution_type": "unitaire",
+            "_distribution": {
+                "supervisor": "",
+                "_type": "unitaire",
+                "_sold_by": 10,
+                "_discounted_price": 10.0,
+                "_free_unit": null,
+                "_ranges": []
+            },
+            "_rank": null,
+            "_owner_id": 999,
+            "_description": null,
+            "_update_policy": "SALE_OFFER_REFERENCE"
+        }
+    }
+]
