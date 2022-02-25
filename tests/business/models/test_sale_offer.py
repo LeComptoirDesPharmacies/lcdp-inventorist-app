@@ -53,6 +53,18 @@ class TestSaleOffer(unittest.TestCase):
             'sale_offer_2':  build_sale_offer(123, None, 'unitaire'),
             'sale_offer_1_code': 'barcode',
             'sale_offer_2_code': 'barcode'
+         },
+        {
+            'sale_offer_1': build_sale_offer(123, None, None),
+            'sale_offer_2':  build_sale_offer(123, None, None),
+            'sale_offer_1_code': 'barcode',
+            'sale_offer_2_code': 'barcode'
+         },
+        {
+            'sale_offer_1': SaleOffer(Supervisor()),
+            'sale_offer_2':  SaleOffer(Supervisor()),
+            'sale_offer_1_code': 'barcode',
+            'sale_offer_2_code': 'barcode'
          }
     )
     def test_sale_offer_cant_be_merge(self, sale_offers_dict):

@@ -229,7 +229,9 @@ class SaleOffer(SupervisedEntity):
         self._update_policy = update_policy
 
     def should_merge(self, next_sale_offer):
-        return self.distribution.type == RANGE_DISTRIBUTION and \
+        return self.distribution and \
+                self.distribution.type == RANGE_DISTRIBUTION and \
+                next_sale_offer.distribution and \
                 next_sale_offer.distribution.type == RANGE_DISTRIBUTION and \
                 self.product.principal_barcode == next_sale_offer.product.principal_barcode
 
