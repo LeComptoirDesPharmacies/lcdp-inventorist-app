@@ -34,9 +34,9 @@ class TestVat(unittest.TestCase):
         result = get_vat_by_value(None)
         self.assertIsNone(result)
 
-    @params(5.5, 20, 2.1, 10, 0)
-    def test_get_vat_by_value(self, value):
-        expected = value/100
+    @params((5.5, 0.055), (20, 0.2), (2.1, 0.021), (10, 0.1), (0, 0),
+            (0.055, 0.055), (0.021, 0.021), (0.2, 0.2), (0.1, 0.1))
+    def test_get_vat_by_value(self, value, expected):
         self.search_api.get_vats.return_value = MY_VATS
         result = get_vat_by_value(value)
         self.assertEqual(expected, result.value)
