@@ -3,7 +3,7 @@ import datetime
 
 from business.models.errors import CreateSaleOfferError
 from business.models.supervisor import SupervisedEntity
-from business.utils import cast_datetime_to_date
+from business.utils import cast_datetime_to_date, cast_or_default
 
 
 class Stock(SupervisedEntity):
@@ -36,7 +36,7 @@ class Stock(SupervisedEntity):
 
     @batch.setter
     def batch(self, batch):
-        self._batch = batch
+        self._batch = cast_or_default(batch, str)
 
     def is_empty(self):
         return not self.remaining_quantity and not self.lapsing_date and not self.batch
