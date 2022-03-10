@@ -17,29 +17,33 @@ a = Analysis(['main.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='LCDP - Inventorist App',
           debug=False, # Set to True for debug
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
           console=False, # Set to True for debug
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None )
-app = BUNDLE(exe,
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='LCDP - Inventorist App')
+app = BUNDLE(coll,
              name='LCDP - Inventorist App.app',
-             icon=None,
+             version=os.getenv("GITHUB_REF_NAME", "v0.0.0"),
+             icon='images/icon.ico',
              bundle_identifier=None)

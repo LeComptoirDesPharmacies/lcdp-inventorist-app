@@ -14,12 +14,12 @@ def __create_api_key(email, password):
     ))
     search_user_api = get_search_user_api()
     user = search_user_api.get_current_user(
-        _request_auth=search_user_api.api_client.create_auth_settings('bearerAuth', response.access_token)
+        _request_auths=[search_user_api.api_client.create_auth_settings('bearerAuth', response.access_token)]
     )
     manage_api_key_api = get_manage_api_key_api()
     token = manage_api_key_api.create_api_key(
         {'name': API_KEY_NAME, 'owner_id': user.id, 'is_internal': False},
-        _request_auth=manage_api_key_api.api_client.create_auth_settings('bearerAuth', response.access_token)
+        _request_auths=[manage_api_key_api.api_client.create_auth_settings('bearerAuth', response.access_token)]
     )
     return token, user
 
@@ -37,7 +37,7 @@ def delete_api_key():
     if api_key and api_key_id:
         manage_api_key_api = get_manage_api_key_api()
         manage_api_key_api.delete_api_key(
-            _request_auth=manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+            _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
             api_key_id=get_setting(API_KEY_ID_NAME)
         )
         remove_setting(API_KEY_ID_NAME)

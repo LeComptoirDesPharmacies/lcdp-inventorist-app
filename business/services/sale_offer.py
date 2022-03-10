@@ -1,5 +1,6 @@
 import logging
 
+from api.consume.gen.sale_offer import ApiException
 from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import SaleOfferCreationParameters
 from api.consume.gen.sale_offer.model.sale_offer_update_parameters import SaleOfferUpdateParameters
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference
@@ -34,7 +35,7 @@ def __find_existing_sale_offer(sale_offer, product):
 def __edit_existing_sale_offer(existing_sale_offer, sale_offer):
     logging.info(f'product {sale_offer.product.principal_barcode} : '
                  f'Sale offer already exist, edit existing sale offer')
-    return __edit_sale_offer(existing_sale_offer.reference, sale_offer)
+    return __edit_sale_offer(existing_sale_offer, sale_offer)
 
 
 def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
@@ -52,7 +53,7 @@ def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
 def __find_sale_offer(sale_offer, product_id):
     api = get_search_sale_offer_api()
     sale_offers = api.get_sale_offers(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         p_eq=[product_id],
         o_eq=[sale_offer.owner_id],
         st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY'],
@@ -65,7 +66,7 @@ def __find_sale_offer(sale_offer, product_id):
 def __get_sale_offer(reference):
     api = get_search_sale_offer_api()
     sale_offer = api.get_sale_offer(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         sale_offer_reference=reference
     )
     if not sale_offer:
@@ -76,7 +77,7 @@ def __get_sale_offer(reference):
 def __create_sale_offer(sale_offer, product_id):
     api = get_manage_sale_offer_api()
     result = api.create_sale_offer(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         sale_offer_creation_parameters=SaleOfferCreationParameters(
             owner_id=sale_offer.owner_id,
             description=sale_offer.description,
@@ -89,18 +90,32 @@ def __create_sale_offer(sale_offer, product_id):
     return result
 
 
-def __edit_sale_offer(reference, sale_offer):
-    api = get_manage_sale_offer_api()
-    payload = clean_none_from_dict({
-        'description': sale_offer.description,
-        'rank': sale_offer.rank,
-        'distribution_mode': distribution_to_dto(sale_offer.distribution),
-        'stock': stock_to_dto(sale_offer.stock)
-    })
-    result = api.create_sale_offer_version(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-        sale_offer_reference=reference,
-        sale_offer_update_parameters=SaleOfferUpdateParameters(**payload)
-    )
+def __edit_sale_offer(old_sale_offer, new_sale_offer):
+    try:
+        api = get_manage_sale_offer_api()
+        payload = clean_none_from_dict({
+            'description': new_sale_offer.description,
+            'rank': new_sale_offer.rank,
+            'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
+            'stock': stock_to_dto(new_sale_offer.stock)
+        })
+        result = api.create_sale_offer_version(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            sale_offer_reference=old_sale_offer.reference,
+            sale_offer_update_parameters=SaleOfferUpdateParameters(**payload)
+        )
+    except ApiException as apiError:
+        if str(apiError.status) == '417':
+            return old_sale_offer
+        raise apiError
     return result
 
+
+def delete_deprecated_sale_offers(refs, owner_id):
+    api = get_manage_sale_offer_api()
+    api.delete_sale_offers(
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+        o_eq=[owner_id],
+        ref_neq=refs,
+        st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY'],
+    )
