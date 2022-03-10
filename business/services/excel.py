@@ -156,4 +156,5 @@ def clean_laboratory_sale_offers(results):
                    map(lambda r: r['result'].reference if r['result'] else None, results)
                    )
         )
-        delete_deprecated_sale_offers(succeeded_sale_offer_ref, owner_id)
+        if owner_id and succeeded_sale_offer_ref:
+            delete_deprecated_sale_offers(succeeded_sale_offer_ref, owner_id)
