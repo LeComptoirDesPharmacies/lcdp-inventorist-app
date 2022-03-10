@@ -12,7 +12,7 @@ from business.services.excel import create_excel_summary
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset):
+    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
@@ -20,6 +20,7 @@ class Worker(QRunnable):
         self.state_signal = state_signal
         self.result_signal = result_signal
         self.reset = reset
+        self.should_clean = should_clean
 
     def run(self):
         try:
@@ -46,6 +47,11 @@ class Worker(QRunnable):
         executor = self.action['executor']
         results = executor(lines)
 
+        if self.should_clean and self.action['cleaner']:
+            self.state_signal.emit("Nettoyage en cours...", "INFO")
+            cleaner = self.action['cleaner']
+            cleaner(results)
+
         self.state_signal.emit("Création du rapport...", "INFO")
         report_path = create_excel_summary(results, mapper.excel_mapper)
         self.result_signal.emit(report_path)
@@ -55,6 +61,7 @@ class Worker(QRunnable):
 
 class App(QObject):
     signalLoading = Signal(bool)
+    signalCanClean = Signal(bool)
     signalState = Signal(str, str)
     signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)
@@ -68,6 +75,7 @@ class App(QObject):
         self.selected_action = None
         self.signalActions.emit(simple_actions)
         self.excel_path = None
+        self._should_clean = False
 
     @Slot(str)
     def select_action(self, action_type):
@@ -75,12 +83,15 @@ class App(QObject):
             self.selected_action = detailed_actions[action_type]
         if self.selected_action:
             self.signalTemplateUrl.emit(self.selected_action['template'])
+            self.signalCanClean.emit(self.selected_action['cleaner'] is not None)
 
     def do_reset(self):
         self.selected_action = None
         self.excel_path = None
         self.signalTemplateUrl.emit("")
         self.signalReset.emit()
+        self.signalCanClean.emit(False)
+        self.should_clean = False
 
     @Slot()
     def start(self):
@@ -90,7 +101,8 @@ class App(QObject):
             loading_signal=self.signalLoading,
             result_signal=self.signalReportPath,
             state_signal=self.signalState,
-            reset=self.do_reset
+            reset=self.do_reset,
+            should_clean=self._should_clean,
         )
         self.thread_pool.start(worker)
 
@@ -101,6 +113,14 @@ class App(QObject):
     @Property(type=list, constant=True)
     def actions(self):
         return self._actions
+
+    @Property(type=bool)
+    def should_clean(self):
+        return self._should_clean
+
+    @should_clean.setter
+    def should_clean(self, should_clean):
+        self._should_clean = should_clean
 
     @Slot(str)
     def open_file(self, file_path):
