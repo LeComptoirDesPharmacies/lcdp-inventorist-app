@@ -59,7 +59,7 @@ def update_or_create_product(product, can_create_product_from_scratch):
 def __get_product_by_barcode(barcode):
     api = get_search_product_api()
     products = api.get_products(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         q=barcode, p=0, pp=2
     )
     if products and len(products.records) > 1:
@@ -72,7 +72,7 @@ def __find_product_type_by_name(name):
     if name:
         api = get_search_product_metadata_api()
         product_types = api.get_product_types(
-            _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key())
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())]
         )
         type_iterator = filter(lambda x: x.name == name, product_types)
         return next(type_iterator, None)
@@ -86,7 +86,7 @@ def __create_product_with_barcode(principal_barcode):
             barcodes=Barcodes(principal=principal_barcode)
         )
         product = api.create_product(
-            _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
             product_creation_or_update_parameters=payload
         )
         return product
@@ -109,7 +109,7 @@ def __edit_product(product_id, excel_product, product_type, vat, laboratory):
         'laboratory_id': laboratory.id if laboratory else None,
     })
     product = api.update_product(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         product_id=product_id,
         product_creation_or_update_parameters=ProductCreationOrUpdateParameters(**payload)
     )
@@ -119,7 +119,7 @@ def __edit_product(product_id, excel_product, product_type, vat, laboratory):
 def __create_product_from_scratch(product, product_type, vat, laboratory):
     api = get_manage_product_api()
     product = api.create_product(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         product_creation_or_update_parameters=ProductCreationOrUpdateParameters(
             is_external_sync_enabled=False,
             name=product.name,

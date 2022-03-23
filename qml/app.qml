@@ -20,6 +20,7 @@ ApplicationWindow {
     property string templateUrl: ""
     property string excelPath: ""
     property bool loading: false
+    property bool canClean: false
 
     function isEmpty(str){
         return str == ""
@@ -105,6 +106,15 @@ ApplicationWindow {
                 anchors.topMargin: 15
                 width: parent.width
                 spacing: 5
+               CheckBox{
+                    id: shouldClean
+                    text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
+                    visible: canClean
+                    Layout.alignment: "Qt::AlignHCenter"
+                    onCheckedChanged : {
+                        appBackend.should_clean = checked
+                    }
+                }
                 Button {
                     id: selectFileButton
                     enabled: !isEmpty(templateUrl)
@@ -199,6 +209,10 @@ ApplicationWindow {
 
         function onSignalReportPath(path){
             reportPath = path
+        }
+
+        function onSignalCanClean(signalCanClean){
+            canClean = signalCanClean
         }
 
         function onSignalReset(){

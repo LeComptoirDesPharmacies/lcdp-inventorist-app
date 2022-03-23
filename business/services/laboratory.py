@@ -20,7 +20,7 @@ def find_or_create_laboratory(laboratory_name):
 def __get_laboratory_by_name(name):
     api = get_search_laboratory_api()
     laboratories = api.get_laboratories(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         name_ili=name, p=0, pp=2
     )
     if laboratories and len(laboratories.records) > 1:
@@ -31,7 +31,7 @@ def __get_laboratory_by_name(name):
 def __create_laboratory(name):
     api = get_manage_laboratory_api()
     laboratory = api.create_laboratory(
-        _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         laboratory_creation_parameters=LaboratoryCreationParameters(name=name)
     )
     return laboratory

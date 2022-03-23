@@ -13,7 +13,7 @@ from business.mappers.excel_mapper import error_mapper
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle
 from business.services.product import update_or_create_product
-from business.services.sale_offer import create_or_edit_sale_offer
+from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers
 from business.utils import rgetattr
 
 
@@ -146,3 +146,15 @@ def __create_or_update_product_from_excel_line(excel_line):
         'result': product,
         'error': error
     }
+
+
+def clean_laboratory_sale_offers(results):
+    if results:
+        owner_id = results[0]['excel_line'].sale_offer.owner_id
+        succeeded_sale_offer_ref = list(
+            filter(lambda o: o is not None,
+                   map(lambda r: r['result'].reference if r['result'] else None, results)
+                   )
+        )
+        if owner_id and succeeded_sale_offer_ref:
+            delete_deprecated_sale_offers(succeeded_sale_offer_ref, owner_id)

@@ -3,9 +3,6 @@
 def sale_offer_api_exception_to_muggle(api_exception):
     def get_explanation(status):
         explanation = None
-        if status == 417:
-            explanation = "Les données transmisent sont soit identique à une annonce déjà existante, " \
-                          "soit incorrect pour la création/modification d'annonce"
         if status == 403:
             explanation = "Le client n'a pas le droit de vendre ce produit ou n'a pas de mandat SEPA valide"
         if status == 400:
