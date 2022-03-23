@@ -54,6 +54,7 @@ if __name__ == "__main__":
     logging.info("Start app engine")
     app = QGuiApplication(sys.argv)
     app.aboutToQuit.connect(on_exit)
+    app.setWindowIcon(QIcon(os.path.join(CURRENT_DIRECTORY, "images", "icon.ico")))
     engine = QQmlApplicationEngine()
 
     login_backend = Login()
