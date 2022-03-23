@@ -35,6 +35,7 @@ exe = EXE(pyz,
           codesign_identity=None,
           icon='images/icon.ico',
           entitlements_file=None )
+
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
