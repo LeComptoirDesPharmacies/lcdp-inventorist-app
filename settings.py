@@ -12,12 +12,12 @@ def setup_settings():
     try:
         config_file = open(os.path.join(CURRENT_DIR, 'config.json'), "r")
         config_json = json.loads(config_file.read())
-        new_settings = QSettings()
-        new_settings.setDefaultFormat(QSettings.IniFormat)
+        new_settings = QSettings(scope=QSettings.UserScope, format=QSettings.IniFormat)
         new_settings.setValue("SENTRY_DSN", config_json['SENTRY_DSN'])
         new_settings.setValue("LCDP_ENVIRONMENT", config_json['LCDP_ENVIRONMENT'])
         new_settings.setValue("PROVIDER_HOST", config_json['PROVIDER_HOST'])
         new_settings.setValue("IS_PROVIDER_SECURE", config_json['IS_PROVIDER_SECURE'])
+        print('JSON HOST', config_json['PROVIDER_HOST'])
         return new_settings
     except OSError as osErr:
         logging.exception("Cannot read config.json file, please execute prepare.py", osErr)
