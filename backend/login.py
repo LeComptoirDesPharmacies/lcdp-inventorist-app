@@ -32,7 +32,6 @@ class Worker(QRunnable):
             self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
             logging.exception("An unknown exception occur during authentication", err)
             capture_exception(err)
-            traceback.print_exc()
         finally:
             self.loading_signal.emit(False)
 
