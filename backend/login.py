@@ -1,4 +1,5 @@
 import logging
+import traceback
 from PySide6.QtCore import QObject, Slot, Signal, QRunnable, QThreadPool
 from sentry_sdk import capture_exception
 from api.consume.gen.auth import ApiException as AuthApiException
@@ -32,6 +33,7 @@ class Worker(QRunnable):
             logging.exception("An unknown exception occur during authentication", err)
             capture_exception(err)
         finally:
+            traceback.print_exc()
             self.loading_signal.emit(False)
 
 
