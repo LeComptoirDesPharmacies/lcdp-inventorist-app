@@ -26,10 +26,13 @@ configuration = {
     'is_secured': settings.value("IS_PROVIDER_SECURE") == "True"
 }
 
+print('HOST', settings.value("PROVIDER_HOST"))
+
 
 def get_auth_api():
     global _auth_api
     if not _auth_api:
+        print('configuration', configuration)
         _auth_api = create_auth_api(configuration)
     return _auth_api
 
