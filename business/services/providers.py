@@ -30,7 +30,6 @@ configuration = {
 def get_auth_api():
     global _auth_api
     if not _auth_api:
-        print('CONFIGURATION', configuration)
         _auth_api = create_auth_api(configuration)
     return _auth_api
 
