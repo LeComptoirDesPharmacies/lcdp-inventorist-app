@@ -21,7 +21,7 @@ def __get_laboratory_by_name(name):
     api = get_search_laboratory_api()
     laboratories = api.get_laboratories(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-        name_ili=name, p=0, pp=2
+        name_eq=name, p=0, pp=2
     )
     if laboratories and len(laboratories.records) > 1:
         raise TooManyLaboratory()
