@@ -12,7 +12,7 @@ def setup_settings():
     try:
         config_file = open(os.path.join(CURRENT_DIR, 'config.json'), "r")
         config_json = json.loads(config_file.read())
-        new_settings = QSettings(scope=QSettings.UserScope, format=QSettings.IniFormat)
+        new_settings = QSettings(QSettings.IniFormat, QSettings.UserScope, None)
         new_settings.setValue("SENTRY_DSN", config_json['SENTRY_DSN'])
         new_settings.setValue("LCDP_ENVIRONMENT", config_json['LCDP_ENVIRONMENT'])
         new_settings.setValue("PROVIDER_HOST", config_json['PROVIDER_HOST'])
