@@ -16,7 +16,8 @@ def product_api_exception_to_muggle(api_exception):
     def get_explanation(status):
         explanation = None
         if status == 409:
-            explanation = "Le produit existe déjà sous un même CIP 13, EAN ou CIP 7"
+            explanation = "Le produit existe déjà sous un même CIP 13, EAN ou CIP 7 sur la plateforme. " \
+                          "Veuillez archiver les autres produits possédant ce CIP."
         return explanation
     return api_exception_to_muggle(api_exception, get_explanation)
 

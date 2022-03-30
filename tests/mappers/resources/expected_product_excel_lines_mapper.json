@@ -22,7 +22,8 @@
                 "_weight": 100.0,
                 "_unit_price": 4.5,
                 "_dci": "Ma dci",
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": "VALIDATED"
             },
             "_stock": {
                 "supervisor": "",
@@ -62,7 +63,8 @@
                 "_weight": null,
                 "_unit_price": 2.39,
                 "_dci": null,
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": "VALIDATED"
             },
             "_stock": {
                 "supervisor": "",
