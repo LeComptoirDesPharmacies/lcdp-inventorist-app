@@ -4,6 +4,7 @@ from functools import lru_cache
 from api.consume.gen.product import ApiException
 from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
+from api.consume.gen.product.model.product_status import ProductStatus
 from business.exceptions import TooManyProduct, CannotCreateProduct
 from business.services.laboratory import find_or_create_laboratory
 from business.services.providers import get_search_product_api, get_search_product_metadata_api, \
@@ -136,3 +137,22 @@ def __create_product_from_scratch(product, product_type, vat, laboratory):
         )
     )
     return product
+
+
+def __set_product_status(product, status):
+    try:
+        api = get_manage_product_api()
+        api.update_product(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            product_id=product.id,
+            product_creation_or_update_parameters=ProductCreationOrUpdateParameters(
+                status=ProductStatus(value=status)
+            )
+        )
+    except ApiException as ape:
+        logging.exception("Failed to set product status", ape)
+
+
+def change_product_status(product, new_status):
+    if product and new_status:
+        __set_product_status(product, new_status)

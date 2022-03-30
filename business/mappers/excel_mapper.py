@@ -26,7 +26,8 @@ create_laboratory_sale_offer_mapper = [
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),
     Column("Identifiant vendeur", 'sale_offer.owner_id'),
     Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.PRODUCT_BARCODE.value),
-    Column("Synchronistation externe", 'sale_offer.product.external_sync', False)
+    Column("Synchronistation externe", 'sale_offer.product.external_sync', False),
+    Column("Statut produit", 'sale_offer.product.status', "VALIDATED")
 ]
 
 
@@ -39,6 +40,7 @@ create_update_product_mapper = [
     Column("Poid unitaire en gramme (approximatif )", 'sale_offer.product.weight'),
     Column("Type de produit", 'sale_offer.product.product_type.name'),
     Column("TVA", 'sale_offer.product.vat.value'),
+    Column("Statut produit", 'sale_offer.product.status', "VALIDATED")
 ]
 
 
