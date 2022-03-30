@@ -22,7 +22,8 @@
                 "_weight": 500.0,
                 "_unit_price": 10.0,
                 "_dci": "Ma DCI",
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": null
             },
             "_stock": {
                 "supervisor": "",
@@ -69,7 +70,8 @@
                 "_weight": null,
                 "_unit_price": null,
                 "_dci": null,
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": null
             },
             "_stock": {
                 "supervisor": "",
@@ -116,7 +118,8 @@
                 "_weight": 100.0,
                 "_unit_price": 10.0,
                 "_dci": "Ma DCI 2",
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": null
             },
             "_stock": {
                 "supervisor": "",
@@ -163,7 +166,8 @@
                 "_weight": null,
                 "_unit_price": null,
                 "_dci": null,
-                "_external_sync": null
+                "_external_sync": null,
+                "_status": null
             },
             "_stock": {
                 "supervisor": "",
