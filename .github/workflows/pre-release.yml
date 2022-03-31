@@ -44,9 +44,9 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ github.ref_name }}
+        run: pyinstaller app.spec --distpath ./${{ matrix.os }}-app/${{ github.ref_name }}
       - name: Zip project
-        run: 7z a ${{ matrix.os }}-app.zip ${{ github.ref_name }}/*
+        run: 7z a ${{ matrix.os }}-app.zip ./${{ matrix.os }}-app/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
