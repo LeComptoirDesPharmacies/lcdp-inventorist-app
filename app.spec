@@ -25,11 +25,11 @@ exe = EXE(pyz,
           [],
           exclude_binaries=True,
           name='LCDP - Inventorist App',
-          debug=False, # Set to True for debug
+          debug=True, # Set to True for debug
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False, # Set to True for debug
+          console=True, # Set to True for debug
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
