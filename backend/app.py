@@ -126,4 +126,7 @@ class App(QObject):
 
     @Slot(QUrl)
     def set_excel_path(self, url):
-        self.excel_path = os.path.abspath(url.toLocalFile())
+        if url:
+            self.excel_path = os.path.abspath(url.toLocalFile())
+        else:
+            self.excel_path = None
