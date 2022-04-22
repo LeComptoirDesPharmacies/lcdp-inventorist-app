@@ -7,5 +7,6 @@ openpyxl==3.0.9
 envsubst==0.1.5
 nose2==0.11.0
 Pillow==9.1.0
+python-certifi-win32==1.6
 
 -r private-requirements.txt
