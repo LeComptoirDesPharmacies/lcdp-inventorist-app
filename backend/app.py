@@ -29,7 +29,7 @@ class Worker(QRunnable):
             self.state_signal.emit("Récupération du fichier excel...", "INFO")
             parsed_url = urlparse(self.excel_path)
             print('self.excel_path', self.excel_path)
-            excel_os_path = os.path.abspath(parsed_url.path)
+            excel_os_path = parsed_url.path
             print('excel_os_path', excel_os_path)
             self.execute(excel_os_path)
         except Exception as err:
