@@ -2,10 +2,11 @@ import logging
 import os
 import subprocess
 import sys
+from typing import Optional
 from urllib.parse import urlparse
 from sentry_sdk import capture_exception
 
-from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property
+from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property, QUrl
 
 from business.actions import detailed_actions, simple_actions
 from business.services.excel import create_excel_summary
@@ -25,11 +26,8 @@ class Worker(QRunnable):
     def run(self):
         try:
             self.loading_signal.emit(True)
-
             self.state_signal.emit("Récupération du fichier excel...", "INFO")
-            parsed_url = urlparse(self.excel_path)
-            excel_os_path = os.path.abspath(os.path.join(parsed_url.netloc, parsed_url.path))
-            self.execute(excel_os_path)
+            self.execute(self.excel_path)
         except Exception as err:
             self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
@@ -106,10 +104,6 @@ class App(QObject):
         )
         self.thread_pool.start(worker)
 
-    @Slot(str)
-    def set_excel_path(self, excel_path):
-        self.excel_path = excel_path
-
     @Property(type=list, constant=True)
     def actions(self):
         return self._actions
@@ -129,3 +123,10 @@ class App(QObject):
         else:
             opener = "open" if sys.platform == "darwin" else "xdg-open"
             subprocess.call([opener, file_path])
+
+    @Slot(QUrl)
+    def set_excel_path(self, url):
+        if url:
+            self.excel_path = os.path.abspath(url.toLocalFile())
+        else:
+            self.excel_path = None

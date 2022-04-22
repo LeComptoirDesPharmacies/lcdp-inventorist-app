@@ -44,9 +44,9 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ github.ref_name }}
+        run: pyinstaller app.spec --distpath ./${{ matrix.os }}-${{ github.ref_name }}-app
       - name: Zip project
-        run: 7z a ${{ matrix.os }}-app.zip ${{ github.ref_name }}/*
+        run: 7z a ${{ matrix.os }}-${{ github.ref_name }}-app.zip ./${{ matrix.os }}-${{ github.ref_name }}-app/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
@@ -54,6 +54,6 @@ jobs:
           tag: ${{ github.run_id }}-pre
           prerelease: true
           commit: ${{ github.sha }}
-          artifacts: ${{ matrix.os }}-app.zip
+          artifacts: ${{ matrix.os }}-${{ github.ref_name }}-app.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
