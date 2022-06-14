@@ -22,7 +22,7 @@
                 "_weight": 100.0,
                 "_unit_price": 4.5,
                 "_dci": "Ma dci",
-                "_external_sync": null,
+                "_external_sync": true,
                 "_status": "VALIDATED"
             },
             "_stock": {
@@ -63,6 +63,47 @@
                 "_weight": null,
                 "_unit_price": 2.39,
                 "_dci": null,
+                "_external_sync": false,
+                "_status": "VALIDATED"
+            },
+            "_stock": {
+                "supervisor": "",
+                "_remaining_quantity": null,
+                "_lapsing_date": null,
+                "_batch": null
+            },
+            "_reference": null,
+            "_distribution_type": null,
+            "_distribution": null,
+            "_rank": null,
+            "_owner_id": null,
+            "_description": null,
+            "_update_policy": null
+        }
+    },
+    {
+        "_supervisor": "",
+        "_sale_offer": {
+            "supervisor": "",
+            "_product": {
+                "supervisor": "",
+                "_vat": {
+                    "supervisor": "",
+                    "_value": 0
+                },
+                "_product_type": {
+                    "_name": "Hom\u00e9opathie"
+                },
+                "_laboratory": {
+                    "supervisor": "",
+                    "_id": null,
+                    "_name": "Nouveau laboratoire"
+                },
+                "_principal_barcode": "1234567890129",
+                "_name": "Autre produit",
+                "_weight": 1100.0,
+                "_unit_price": 9.5,
+                "_dci": "Ma dci",
                 "_external_sync": null,
                 "_status": "VALIDATED"
             },

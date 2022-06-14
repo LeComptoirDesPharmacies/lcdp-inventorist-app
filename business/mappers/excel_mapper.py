@@ -40,6 +40,7 @@ create_update_product_mapper = [
     Column("Poid unitaire en gramme (approximatif )", 'sale_offer.product.weight'),
     Column("Type de produit", 'sale_offer.product.product_type.name'),
     Column("TVA", 'sale_offer.product.vat.value'),
+    Column("Synchronistation externe", 'sale_offer.product.external_sync'),
     Column("Statut produit", 'sale_offer.product.status', "VALIDATED")
 ]
 
