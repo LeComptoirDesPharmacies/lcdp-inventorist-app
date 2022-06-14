@@ -22,7 +22,7 @@
                 "_weight": 70.0,
                 "_unit_price": 16.42,
                 "_dci": " My DCI",
-                "_external_sync": false,
+                "_external_sync": true,
                 "_status": "VALIDATED"
             },
             "_stock": {
