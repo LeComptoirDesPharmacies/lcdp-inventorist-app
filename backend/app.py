@@ -2,8 +2,6 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Optional
-from urllib.parse import urlparse
 from sentry_sdk import capture_exception
 
 from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property, QUrl

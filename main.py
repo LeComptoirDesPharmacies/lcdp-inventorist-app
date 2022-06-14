@@ -33,9 +33,11 @@ def configure_sentry():
     settings = get_settings()
     sentry_dsn = settings.value("SENTRY_DSN")
     lcdp_environment = settings.value("LCDP_ENVIRONMENT")
+    version = settings.value("VERSION")
     sentry_sdk.init(
         dsn=sentry_dsn,
         environment=lcdp_environment,
+        release=version,
     )
 
 

@@ -1,6 +1,16 @@
 import functools
 
 
+def cast_yes_to_bool(value):
+    if value is None or isinstance(value, bool):
+        return value
+
+    if isinstance(value, str) and value.strip().upper() == 'OUI':
+        return True
+
+    return False
+
+
 def cast_or_default(value, data_type, default=None):
     if not value:
         return default

@@ -4,6 +4,7 @@ from sentry_sdk import capture_exception
 from api.consume.gen.auth import ApiException as AuthApiException
 
 from business.services.authentication import authenticate
+from sentry_sdk import set_user
 
 
 class Worker(QRunnable):
@@ -21,6 +22,7 @@ class Worker(QRunnable):
             self.state_signal.emit("Connexion en cours...", "INFO")
             user = authenticate(self.email, self.password)
             if user:
+                set_user({"id": user.id, "email": user.email})
                 self.connected_signal.emit(True)
                 self.state_signal.emit("Connecté", "SUCCESS")
         except AuthApiException as auth_ex:

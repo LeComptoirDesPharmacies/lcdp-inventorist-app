@@ -48,6 +48,15 @@ Then start the app with :
 
 `python main.py`
 
+### Test
+Run :
+
+`python prepare.py`
+
+And then :
+
+`python -m nose2 tests -v`
+
 
 ## TODO
 
