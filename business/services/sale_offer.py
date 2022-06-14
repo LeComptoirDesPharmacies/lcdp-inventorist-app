@@ -2,7 +2,7 @@ import logging
 
 from api.consume.gen.sale_offer import ApiException
 from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import SaleOfferCreationParameters
-from api.consume.gen.sale_offer.model.sale_offer_update_parameters import SaleOfferUpdateParameters
+from api.consume.gen.sale_offer.model.sale_offer_new_version_parameters import SaleOfferNewVersionParameters
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference
 from business.mappers.sale_offer import distribution_to_dto, stock_to_dto
 from business.models.update_policy import UpdatePolicy
@@ -102,7 +102,7 @@ def __edit_sale_offer(old_sale_offer, new_sale_offer):
         result = api.create_sale_offer_version(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
             sale_offer_reference=old_sale_offer.reference,
-            sale_offer_update_parameters=SaleOfferUpdateParameters(**payload)
+            sale_offer_update_parameters=SaleOfferNewVersionParameters(**payload)
         )
     except ApiException as apiError:
         if str(apiError.status) == '417':
