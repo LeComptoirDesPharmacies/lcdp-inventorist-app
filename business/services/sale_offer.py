@@ -102,7 +102,7 @@ def __edit_sale_offer(old_sale_offer, new_sale_offer):
         result = api.create_sale_offer_version(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
             sale_offer_reference=old_sale_offer.reference,
-            sale_offer_update_parameters=SaleOfferNewVersionParameters(**payload)
+            sale_offer_new_version_parameters=SaleOfferNewVersionParameters(**payload)
         )
     except ApiException as apiError:
         if str(apiError.status) == '417':
