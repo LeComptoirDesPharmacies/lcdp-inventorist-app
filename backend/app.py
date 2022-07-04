@@ -39,14 +39,14 @@ class Worker(QRunnable):
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO")
-        executor = self.action['executor']
-        results = executor(lines)
-
         if self.should_clean and self.action['cleaner']:
             self.state_signal.emit("Nettoyage en cours...", "INFO")
             cleaner = self.action['cleaner']
-            cleaner(results)
+            cleaner(lines)
+
+        self.state_signal.emit("Création/Modification des ressources...", "INFO")
+        executor = self.action['executor']
+        results = executor(lines)
 
         self.state_signal.emit("Création du rapport...", "INFO")
         report_path = create_excel_summary(results, mapper.excel_mapper)
