@@ -150,13 +150,7 @@ def __create_or_update_product_from_excel_line(excel_line):
     }
 
 
-def clean_laboratory_sale_offers(results):
-    if results:
-        owner_id = results[0]['excel_line'].sale_offer.owner_id
-        succeeded_sale_offer_ref = list(
-            filter(lambda o: o is not None,
-                   map(lambda r: r['result'].reference if r['result'] else None, results)
-                   )
-        )
-        if owner_id and succeeded_sale_offer_ref:
-            delete_deprecated_sale_offers(succeeded_sale_offer_ref, owner_id)
+def clean_laboratory_sale_offers(lines):
+    owner_id = next((line.sale_offer.owner_id for line in lines if line.sale_offer.owner_id), None)
+    if owner_id:
+        delete_deprecated_sale_offers(owner_id)
