@@ -21,7 +21,7 @@ def __find_existing_sale_offer(sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
-        existing_sale_offer = __find_sale_offer(
+        existing_sale_offer = __find_sale_offer_for_version(
             sale_offer,
             product.id
         )
@@ -38,25 +38,36 @@ def __edit_existing_sale_offer(existing_sale_offer, sale_offer):
     return __edit_sale_offer(existing_sale_offer, sale_offer)
 
 
+def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
+    logging.info(f'product {sale_offer.product.principal_barcode} : '
+                 f'Sale offer already exist, clone existing sale offer')
+    return __clone_sale_offer(existing_sale_offer, sale_offer)
+
+
 def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
     if sale_offer and product:
         existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
 
         if existing_sale_offer:
-            return __edit_existing_sale_offer(existing_sale_offer, sale_offer)
+            if not existing_sale_offer.status.value == 'DISABLED':
+                return __edit_existing_sale_offer(existing_sale_offer, sale_offer)
+            else:
+                return __clone_existing_sale_offer(existing_sale_offer, sale_offer)
+
         elif not existing_sale_offer and can_create_sale_offer:
             return __create_sale_offer_from_scratch(sale_offer, product)
 
     raise CannotCreateSaleOffer()
 
 
-def __find_sale_offer(sale_offer, product_id):
+def __find_sale_offer_for_version(sale_offer, product_id):
     api = get_search_sale_offer_api()
     sale_offers = api.get_sale_offers(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         p_eq=[product_id],
         o_eq=[sale_offer.owner_id],
-        st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY'],
+        st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'],
+        order_by=['JOURNAL_STATUS_UPDATED_AT:desc'],
         p=0,
         pp=1,
     )
@@ -111,11 +122,29 @@ def __edit_sale_offer(old_sale_offer, new_sale_offer):
     return result
 
 
-def delete_deprecated_sale_offers(refs, owner_id):
+def __clone_sale_offer(old_sale_offer, new_sale_offer):
+    try:
+        api = get_manage_sale_offer_api()
+        payload = clean_none_from_dict({
+            'description': new_sale_offer.description,
+            'rank': new_sale_offer.rank,
+            'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
+            'stock': stock_to_dto(new_sale_offer.stock)
+        })
+        result = api.create_sale_offer(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            _from=old_sale_offer.reference,
+            sale_offer_creation_parameters=SaleOfferCreationParameters(**payload)
+        )
+    except ApiException as apiError:
+        raise apiError
+    return result
+
+
+def delete_deprecated_sale_offers(owner_id):
     api = get_manage_sale_offer_api()
     api.delete_sale_offers(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         o_eq=[owner_id],
-        ref_neq=refs,
         st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY'],
     )
