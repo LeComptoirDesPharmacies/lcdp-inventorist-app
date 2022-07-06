@@ -61,7 +61,9 @@ def __get_product_by_barcode(barcode):
     api = get_search_product_api()
     products = api.get_products(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-        q=barcode, p=0, pp=2
+        q=barcode,
+        st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
+        p=0, pp=2
     )
     if products and len(products.records) > 1:
         raise TooManyProduct()
