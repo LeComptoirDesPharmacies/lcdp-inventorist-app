@@ -70,6 +70,17 @@ def __get_product_by_barcode(barcode):
     return next(iter(products.records), None)
 
 
+def __get_product_by_id(product_id):
+    try:
+        api = get_search_product_api()
+        return api.get_product(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            product_id=int(product_id)
+        )
+    except ApiException as apiError:
+        raise apiError
+
+
 @lru_cache(maxsize=128)
 def __find_product_type_by_name(name):
     if name:
@@ -96,6 +107,8 @@ def __create_product_with_barcode(principal_barcode):
     except ApiException as apiError:
         if str(apiError.status) == '400':
             return None
+        if str(apiError.status) == '409':
+            return __get_product_by_id(apiError.body)
         raise apiError
 
 
