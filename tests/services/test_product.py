@@ -111,6 +111,21 @@ class TestProduct(unittest.TestCase):
         with self.assertRaises(CannotCreateProduct):
             update_or_create_product(self.mocked_product, False)
 
+    def test_update_or_create_product_with_product_creation_by_barcode_api_exception_409(self):
+        expected = MagicMock(id=2, name="new product name")
+
+        self.search_product_api.get_product.return_value = expected
+        self.manage_product_api.update_product.return_value = expected
+        self.search_product_api.get_products.return_value = MagicMock(
+            records=[]
+        )
+        self.manage_product_api.create_product.side_effect = ApiException(
+            http_resp=Mock(status=409, data='2', getheaders=lambda: None, reason="Product already exist")
+        )
+        result = update_or_create_product(self.mocked_product, False)
+        self.search_product_api.get_product.assert_called_once()
+        self.assertEqual(expected, result)
+
     def test_update_or_create_product_with_product_creation_by_barcode_api_exception(self):
         self.search_product_api.get_products.return_value = MagicMock(
             records=[]
