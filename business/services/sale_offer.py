@@ -3,10 +3,12 @@ import logging
 from api.consume.gen.sale_offer import ApiException
 from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import SaleOfferCreationParameters
 from api.consume.gen.sale_offer.model.sale_offer_new_version_parameters import SaleOfferNewVersionParameters
+from api.consume.gen.sale_offer.model.sale_offer_status import SaleOfferStatus
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference
 from business.mappers.sale_offer import distribution_to_dto, stock_to_dto
 from business.models.update_policy import UpdatePolicy
-from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api
+from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api, \
+    get_manage_sale_offer_status_api
 from business.services.security import get_api_key
 from business.utils import clean_none_from_dict
 
@@ -148,3 +150,28 @@ def delete_deprecated_sale_offers(owner_id):
         o_eq=[owner_id],
         st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY'],
     )
+
+
+def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
+
+    sale_offer_status = None
+
+    if sale_offer_status_excel == 'DISABLED':
+        # Disabled the sale_offer
+        sale_offer_status = SaleOfferStatus('DISABLED')
+    elif sale_offer_status_excel == 'ARCHIVED':
+        # Archived the sale_offer
+        sale_offer_status = SaleOfferStatus('ARCHIVED')
+    elif sale_offer_status_excel == 'HOLIDAY':
+        # Holiday the sale_offer
+        sale_offer_status = SaleOfferStatus('HOLIDAY')
+
+    if sale_offer_status is not None:
+        logging.info(f'Sale offer {sale_offer_reference} status change it {sale_offer_status_excel}')
+        __update_sale_offer_status(sale_offer_reference, sale_offer_status)
+
+
+def __update_sale_offer_status(sale_offer_reference, status):
+    api = get_manage_sale_offer_status_api()
+    api.update_sale_offer_status(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                                 sale_offer_reference=sale_offer_reference, body=status)

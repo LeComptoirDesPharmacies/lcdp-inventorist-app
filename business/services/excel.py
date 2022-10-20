@@ -13,7 +13,8 @@ from business.mappers.excel_mapper import error_mapper
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle
 from business.services.product import update_or_create_product, change_product_status
-from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers
+from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, \
+    change_sale_offer_status
 from business.utils import rgetattr
 
 
@@ -110,6 +111,8 @@ def __create_sale_offer_from_excel_line(excel_line):
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
         sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product, excel_line.can_create_sale_offer())
+        change_sale_offer_status(excel_line.sale_offer.status, sale_offer.reference)
+
     except SaleOfferApiException as sale_offer_api_err:
         logging.error('An API error occur in sale offer api', sale_offer_api_err)
         error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
