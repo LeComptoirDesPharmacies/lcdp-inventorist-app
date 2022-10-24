@@ -156,15 +156,17 @@ def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
 
     sale_offer_status = None
 
-    if sale_offer_status_excel == 'DISABLED':
-        # Disabled the sale_offer
-        sale_offer_status = SaleOfferStatus('DISABLED')
-    elif sale_offer_status_excel == 'ARCHIVED':
-        # Archived the sale_offer
-        sale_offer_status = SaleOfferStatus('ARCHIVED')
-    elif sale_offer_status_excel == 'HOLIDAY':
-        # Holiday the sale_offer
-        sale_offer_status = SaleOfferStatus('HOLIDAY')
+    if sale_offer_status_excel is not None:
+        uppercase_status = sale_offer_status_excel.upper()
+        if uppercase_status == 'DISABLED':
+            # Disabled the sale_offer
+            sale_offer_status = SaleOfferStatus('DISABLED')
+        elif uppercase_status == 'ARCHIVED':
+            # Archived the sale_offer
+            sale_offer_status = SaleOfferStatus('ARCHIVED')
+        elif uppercase_status == 'HOLIDAY':
+            # Holiday the sale_offer
+            sale_offer_status = SaleOfferStatus('HOLIDAY')
 
     if sale_offer_status is not None:
         logging.info(f'Sale offer {sale_offer_reference} status change it {sale_offer_status_excel}')
@@ -172,6 +174,9 @@ def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
 
 
 def __update_sale_offer_status(sale_offer_reference, status):
-    api = get_manage_sale_offer_status_api()
-    api.update_sale_offer_status(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-                                 sale_offer_reference=sale_offer_reference, body=status)
+    try:
+        api = get_manage_sale_offer_status_api()
+        api.update_sale_offer_status(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                                     sale_offer_reference=sale_offer_reference, body=status)
+    except ApiException as apiError:
+        raise apiError

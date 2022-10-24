@@ -28,7 +28,7 @@ create_laboratory_sale_offer_mapper = [
     Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.PRODUCT_BARCODE.value),
     Column("Synchronistation externe", 'sale_offer.product.external_sync', False),
     Column("Statut produit", 'sale_offer.product.status', "VALIDATED"),
-    Column("Statut annonce", 'sale_offer.status', 'ENABLED'),
+    Column("Statut annonce", 'sale_offer.status'),
 ]
 
 
