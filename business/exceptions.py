@@ -34,3 +34,8 @@ class CannotCreateSaleOffer(ProcessingException):
 class SaleOfferNotFoundByReference(ProcessingException):
     def __init__(self):
         super().__init__(ProcessingError.CANNOT_UPDATE_SALE_OFFER_BY_REFERENCE)
+
+
+class CannotUpdateSaleOfferStatus(ProcessingException):
+    def __init__(self):
+        super().__init__(ProcessingError.CANNOT_UPDATE_SALE_OFFER_STATUS)
