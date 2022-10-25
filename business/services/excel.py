@@ -112,14 +112,12 @@ def __create_sale_offer_from_excel_line(excel_line):
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
         sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product, excel_line.can_create_sale_offer())
-        change_sale_offer_status(excel_line.sale_offer.status, sale_offer.reference)
-
     except SaleOfferApiException as sale_offer_api_err:
         logging.error('An API error occur in sale offer api', sale_offer_api_err)
         error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
     except CannotUpdateSaleOfferStatus as sale_offer_status_error:
         logging.error('An API error occur during the sale offer status update', sale_offer_status_error)
-        error = api_exception_to_muggle(sale_offer_status_error)
+        error = str(sale_offer_status_error)
     except ProductApiException as product_api_err:
         logging.error('An API error occur in product api', product_api_err)
         error = product_api_exception_to_muggle(product_api_err)

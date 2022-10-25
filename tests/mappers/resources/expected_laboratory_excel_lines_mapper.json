@@ -57,8 +57,8 @@
             "_rank": 470,
             "_owner_id": 12,
             "_description": "Compl\u00e9ment alimentaire gel\u00e9e royale riche en nutriments\nGel\u00e9e royal de type 1 et BIO",
-            "_update_policy": "PRODUCT_BARCODE",
-            "status": "ENABLED"
+            "_status": "ENABLED",
+            "_update_policy": "PRODUCT_BARCODE"
         }
     },
     {
@@ -106,8 +106,8 @@
             "_rank": 500,
             "_owner_id": 12,
             "_description": "Pour ceux qui n'aime pas le gout de la Gel\u00e9e Royale fraiche, voici une pr\u00e9sentation lyophilis\u00e9e qui apporte tout autant de bons nutriments",
-            "_update_policy": "PRODUCT_BARCODE",
-            "status": "ARCHIVED"
+            "_status": "ARCHIVED",
+            "_update_policy": "PRODUCT_BARCODE"
         }
     },
     {
@@ -155,8 +155,8 @@
             "_rank": 610,
             "_owner_id": 12,
             "_description": "Une pr\u00e9sentation originale et nomade dont le flacon d\u00e9livre la juste dose \u00e0 chaque pression. Gel\u00e9e royale de type 1 dont la qualit\u00e9 sera pr\u00e9serv\u00e9e jusqu'\u00e0 la derni\u00e8re goutte.",
-            "_update_policy": "PRODUCT_BARCODE",
-            "status": "ENABLED"
+            "_status": "ENABLED",
+            "_update_policy": "PRODUCT_BARCODE"
         }
     },
     {
@@ -204,8 +204,8 @@
             "_rank": 590,
             "_owner_id": 12,
             "_description": "Gel\u00e9e Royale de type 1 et BIO en ampoule",
-            "_update_policy": "PRODUCT_BARCODE",
-            "status": "ENABLED"
+            "_status": "ENABLED",
+            "_update_policy": "PRODUCT_BARCODE"
         }
     }
 ]

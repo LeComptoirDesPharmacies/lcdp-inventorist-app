@@ -47,17 +47,22 @@ def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
 
 
 def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
+    new_sale_offer = None
     if sale_offer and product:
         existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
 
         if existing_sale_offer:
             if not existing_sale_offer.status.value == 'DISABLED':
-                return __edit_existing_sale_offer(existing_sale_offer, sale_offer)
+                new_sale_offer = __edit_existing_sale_offer(existing_sale_offer, sale_offer)
             else:
-                return __clone_existing_sale_offer(existing_sale_offer, sale_offer)
+                new_sale_offer = __clone_existing_sale_offer(existing_sale_offer, sale_offer)
 
         elif not existing_sale_offer and can_create_sale_offer:
-            return __create_sale_offer_from_scratch(sale_offer, product)
+            new_sale_offer = __create_sale_offer_from_scratch(sale_offer, product)
+
+        if new_sale_offer:
+            change_sale_offer_status(sale_offer.status, new_sale_offer.reference)
+            return new_sale_offer
 
     raise CannotCreateSaleOffer()
 
@@ -155,17 +160,16 @@ def delete_deprecated_sale_offers(owner_id):
 def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
 
     if sale_offer_status_excel is not None:
-        uppercase_status = sale_offer_status_excel.upper()
-        sale_offer_status = SaleOfferStatus(uppercase_status)
-
-        logging.info(f'Change sale offer {sale_offer_reference} status to {sale_offer_status_excel}')
-        __update_sale_offer_status(sale_offer_reference, sale_offer_status)
+        status = sale_offer_status_excel.upper()
+        logging.info(f'Change sale offer {sale_offer_reference} status to {status}')
+        __update_sale_offer_status(sale_offer_reference, status)
 
 
 def __update_sale_offer_status(sale_offer_reference, status):
     try:
         api = get_manage_sale_offer_status_api()
+        body = SaleOfferStatus(status)
         api.update_sale_offer_status(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-                                     sale_offer_reference=sale_offer_reference, body=status)
-    except ApiException:
+                                     sale_offer_reference=sale_offer_reference, body=body)
+    except Exception:
         raise CannotUpdateSaleOfferStatus()

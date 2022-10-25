@@ -51,8 +51,8 @@
             "_rank": 470,
             "_owner_id": 12,
             "_description": "Compl\u00e9ment alimentaire gel\u00e9e royale riche en nutriments\nGel\u00e9e royal de type 1 et BIO",
-            "_update_policy": "PRODUCT_BARCODE",
-            "status": "ENABLED"
+            "_status": "ENABLED",
+            "_update_policy": "PRODUCT_BARCODE"
         }
     }
 }
