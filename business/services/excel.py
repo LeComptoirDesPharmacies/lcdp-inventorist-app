@@ -9,11 +9,13 @@ from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
 from api.consume.gen.product import ApiException as ProductApiException
 from api.consume.gen.laboratory import ApiException as LaboratoryApiException
 from api.consume.gen.configuration import ApiException as ConfigurationApiException
+from business.exceptions import CannotUpdateSaleOfferStatus
 from business.mappers.excel_mapper import error_mapper
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle
 from business.services.product import update_or_create_product, change_product_status
-from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers
+from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, \
+    change_sale_offer_status
 from business.utils import rgetattr
 
 
@@ -113,6 +115,9 @@ def __create_sale_offer_from_excel_line(excel_line):
     except SaleOfferApiException as sale_offer_api_err:
         logging.error('An API error occur in sale offer api', sale_offer_api_err)
         error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
+    except CannotUpdateSaleOfferStatus as sale_offer_status_error:
+        logging.error('An API error occur during the sale offer status update', sale_offer_status_error)
+        error = str(sale_offer_status_error)
     except ProductApiException as product_api_err:
         logging.error('An API error occur in product api', product_api_err)
         error = product_api_exception_to_muggle(product_api_err)

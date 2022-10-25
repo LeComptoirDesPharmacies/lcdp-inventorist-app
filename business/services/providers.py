@@ -3,7 +3,8 @@ from api.consume.gen.configuration.api_client_utils import create_search_vat_api
 from api.consume.gen.laboratory.api_client_utils import create_search_laboratory_api, create_manage_laboratory_api
 from api.consume.gen.product.api_client_utils import create_search_product_api, create_search_product_metadata_api, \
     create_manage_product_api
-from api.consume.gen.sale_offer.api_client_utils import create_manage_sale_offer_api, create_search_sale_offer_api
+from api.consume.gen.sale_offer.api_client_utils import create_manage_sale_offer_api, create_search_sale_offer_api, \
+    create_manage_sale_offer_status_api
 from api.consume.gen.user.api_client_utils import create_search_user_api
 from settings import get_settings
 
@@ -18,6 +19,7 @@ _search_vat_api = None
 _manage_product_api = None
 _manage_sale_offer_api = None
 _search_sale_offer_api = None
+_manage_sale_offer_status_api = None
 
 settings = get_settings()
 
@@ -102,3 +104,10 @@ def get_search_sale_offer_api():
     if not _search_sale_offer_api:
         _search_sale_offer_api = create_search_sale_offer_api(configuration)
     return _search_sale_offer_api
+
+
+def get_manage_sale_offer_status_api():
+    global _manage_sale_offer_status_api
+    if not _manage_sale_offer_status_api:
+        _manage_sale_offer_status_api = create_manage_sale_offer_status_api(configuration)
+    return _manage_sale_offer_status_api

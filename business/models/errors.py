@@ -32,3 +32,4 @@ class ProcessingError(Enum):
     CANNOT_CREATE_PRODUCT = "Produit non trouvé avec ce cip et impossible de le créer"
     CANNOT_CREATE_SALE_OFFER = "Annonce non trouvé et impossible de la créer"
     CANNOT_UPDATE_SALE_OFFER_BY_REFERENCE = "Annonce non trouvé avec la référence donnée, mise à jour impossible"
+    CANNOT_UPDATE_SALE_OFFER_STATUS = "Impossible de modifier le status de l'annonce"

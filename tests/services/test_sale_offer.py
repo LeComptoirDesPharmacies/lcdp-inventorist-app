@@ -5,7 +5,7 @@ from nose2.tools import params
 
 from api.consume.gen.sale_offer.model.any_distribution_mode import AnyDistributionMode
 from api.consume.gen.sale_offer.model.stock import Stock
-from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference
+from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference, CannotUpdateSaleOfferStatus
 from business.models.product import Product
 from business.models.sale_offer import SaleOffer
 from business.models.update_policy import UpdatePolicy
@@ -17,12 +17,14 @@ class TestSaleOffer(unittest.TestCase):
     def setUp(self):
         self.search_sale_offer_patch = patch('business.services.sale_offer.get_search_sale_offer_api')
         self.manage_sale_offer_patch = patch('business.services.sale_offer.get_manage_sale_offer_api')
+        self.manage_sale_offer_status_patch = patch('business.services.sale_offer.get_manage_sale_offer_status_api')
         self.distribution_to_dto_patch = patch('business.services.sale_offer.distribution_to_dto')
         self.stock_to_dto_patch = patch('business.services.sale_offer.stock_to_dto')
         self.get_api_key_patch = patch('business.services.sale_offer.get_api_key')
 
         search_sale_offer_mock = self.search_sale_offer_patch.start()
         manage_sale_offer_mock = self.manage_sale_offer_patch.start()
+        manage_sale_offer_status_mock = self.manage_sale_offer_status_patch.start()
         distribution_to_dto_mock = self.distribution_to_dto_patch.start()
         stock_to_dto_mock = self.stock_to_dto_patch.start()
         get_api_key_patch_mock = self.get_api_key_patch.start()
@@ -30,6 +32,7 @@ class TestSaleOffer(unittest.TestCase):
 
         self.search_sale_offer_api = search_sale_offer_mock.return_value
         self.manage_sale_offer_api = manage_sale_offer_mock.return_value
+        self.manage_sale_offer_status_api = manage_sale_offer_status_mock.return_value
 
         stock_to_dto_mock.return_value = Stock()
         distribution_to_dto_mock.return_value = AnyDistributionMode(type='QUOTATION')
@@ -42,6 +45,7 @@ class TestSaleOffer(unittest.TestCase):
         self.mocked_sale_offer.owner_id = 4
         self.mocked_sale_offer.description = "Ma description"
         self.mocked_sale_offer.rank = 90
+        self.mocked_sale_offer.status = "enabled"
 
     def tearDown(self):
         self.search_sale_offer_patch.stop()
@@ -49,6 +53,7 @@ class TestSaleOffer(unittest.TestCase):
         self.stock_to_dto_patch.stop()
         self.distribution_to_dto_patch.stop()
         self.get_api_key_patch.stop()
+        self.manage_sale_offer_status_patch.stop()
 
     @params(
         (Mock(SaleOffer), None),
@@ -131,3 +136,13 @@ class TestSaleOffer(unittest.TestCase):
         find_existing_mock.return_value = None
         with self.assertRaises(CannotCreateSaleOffer):
             create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, False)
+
+    def test_create_or_edit_sale_offer_with_invalid_status(self):
+        expected = MagicMock(description="My sale offer")
+
+        self.mocked_sale_offer.status = 'invalid_status'
+        self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[])
+        self.manage_sale_offer_api.create_sale_offer.return_value = expected
+
+        with self.assertRaises(CannotUpdateSaleOfferStatus):
+            create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)

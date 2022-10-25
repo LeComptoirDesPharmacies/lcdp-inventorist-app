@@ -158,6 +158,7 @@ class SaleOffer(SupervisedEntity):
         self._rank = None
         self._owner_id = None
         self._description = None
+        self._status = None
         self._update_policy = None
 
     @property
@@ -219,6 +220,14 @@ class SaleOffer(SupervisedEntity):
     @property
     def distribution(self):
         return self._distribution
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        self._status = status
 
     @property
     def update_policy(self):
