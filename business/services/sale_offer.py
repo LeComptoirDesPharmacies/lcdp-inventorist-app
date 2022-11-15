@@ -68,13 +68,19 @@ def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
 
 
 def __find_sale_offer_for_version(sale_offer, product_id):
+    return __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['ENABLED']) or \
+           __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['WAITING_FOR_PRODUCT',
+                                                                          'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'])
+
+
+def __find_sale_offer_for_status(product_id, owner_id, status):
     api = get_search_sale_offer_api()
     sale_offers = api.get_sale_offers(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         p_eq=[product_id],
-        o_eq=[sale_offer.owner_id],
-        st_eq=['ENABLED', 'WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'],
-        order_by=['JOURNAL_STATUS_UPDATED_AT:desc'],
+        o_eq=[owner_id],
+        st_eq=status,
+        order_by=['CREATED_AT:desc'],
         p=0,
         pp=1,
     )
