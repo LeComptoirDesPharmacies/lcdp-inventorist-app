@@ -43,16 +43,12 @@ class Stock(SupervisedEntity):
 
     def report_errors(self):
         errors = []
-        if self.remaining_quantity or self.lapsing_date or self.batch:
+        if self.remaining_quantity and not isinstance(self.remaining_quantity, numbers.Number):
+            errors.append(CreateSaleOfferError.INVALID_REMAINING_QUANTITY)
 
-            if not self.remaining_quantity or not isinstance(self.remaining_quantity, numbers.Number):
-                errors.append(CreateSaleOfferError.INVALID_REMAINING_QUANTITY)
+        if self.lapsing_date and not isinstance(self.lapsing_date, datetime.date):
+            errors.append(CreateSaleOfferError.INVALID_LAPSING_DATE)
 
-            if not self.lapsing_date and not isinstance(self.lapsing_date, datetime.date):
-                errors.append(CreateSaleOfferError.INVALID_LAPSING_DATE)
-
-            if not self.batch:
-                errors.append(CreateSaleOfferError.INVALID_BATCH)
         return errors
 
 

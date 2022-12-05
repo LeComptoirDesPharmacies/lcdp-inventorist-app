@@ -21,6 +21,7 @@ create_laboratory_sale_offer_mapper = [
     Column("Description produit", 'sale_offer.description'),
     Column("Distribution*", 'sale_offer.distribution_type'),
     Column("Vendu par (nombre) - colisage*", 'sale_offer.distribution.sold_by'),
+    Column("Stock", 'sale_offer.stock.remaining_quantity'),
     Column("Unité gratuite", 'sale_offer.distribution.free_unit'),
     Column("PU HT catalogue***", 'sale_offer.product.unit_price'),
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),

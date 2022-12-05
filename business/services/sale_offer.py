@@ -129,7 +129,7 @@ def __edit_sale_offer(old_sale_offer, new_sale_offer):
             sale_offer_new_version_parameters=SaleOfferNewVersionParameters(**payload)
         )
     except ApiException as apiError:
-        if str(apiError.status) == '417':
+        if str(apiError.status) == '417' or str(apiError.status) == '409':
             return old_sale_offer
         raise apiError
     return result
