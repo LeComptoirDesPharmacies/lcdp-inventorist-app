@@ -27,7 +27,7 @@
             },
             "_stock": {
                 "supervisor": "",
-                "_remaining_quantity": null,
+                "_remaining_quantity": 2,
                 "_lapsing_date": null,
                 "_batch": null
             },

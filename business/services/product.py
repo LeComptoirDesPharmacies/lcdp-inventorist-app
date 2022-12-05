@@ -124,12 +124,17 @@ def __edit_product(product_id, excel_product, product_type, vat, laboratory):
         'vat_id': vat.id if vat else None,
         'laboratory_id': laboratory.id if laboratory else None,
     })
-    product = api.update_product(
-        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-        product_id=product_id,
-        product_creation_or_update_parameters=ProductCreationOrUpdateParameters(**payload)
-    )
-    return product
+    try:
+        product = api.update_product(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            product_id=product_id,
+            product_creation_or_update_parameters=ProductCreationOrUpdateParameters(**payload)
+        )
+        return product
+    except ApiException as apiError:
+        if str(apiError.status) == '409':
+            return __get_product_by_id(apiError.body)
+        raise apiError
 
 
 def __create_product_from_scratch(product, product_type, vat, laboratory):

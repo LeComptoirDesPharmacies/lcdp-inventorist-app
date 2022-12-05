@@ -28,16 +28,9 @@ class TestLaboratory(unittest.TestCase):
         self.assertEqual(expected, result)
 
     @params(
-        (datetime.datetime.today(), None, 'BATCH', [CreateSaleOfferError.INVALID_REMAINING_QUANTITY]),
-        (datetime.datetime.today(), 1, None, [CreateSaleOfferError.INVALID_BATCH]),
-        (None, 1, 'BATCH', [CreateSaleOfferError.INVALID_LAPSING_DATE]),
-        (None, None, 'BATCH', [CreateSaleOfferError.INVALID_REMAINING_QUANTITY,
-                               CreateSaleOfferError.INVALID_LAPSING_DATE]),
-        (datetime.datetime.today(), None, None, [CreateSaleOfferError.INVALID_REMAINING_QUANTITY,
-                                                 CreateSaleOfferError.INVALID_BATCH]),
-        (None, 1, None, [CreateSaleOfferError.INVALID_LAPSING_DATE, CreateSaleOfferError.INVALID_BATCH]),
+        (None, 'NOT A NUMBER', 'BATCH', [CreateSaleOfferError.INVALID_REMAINING_QUANTITY]),
     )
-    def test_invalid_stock_when_one_attribute_is_none(self, lapsing_date, remaining_quantity, batch, expected):
+    def test_invalid_stock_when_remaining_quantity_is_invalid(self, lapsing_date, remaining_quantity, batch, expected):
         supervisor = Supervisor()
         stock = Stock(supervisor)
         stock.lapsing_date = lapsing_date
