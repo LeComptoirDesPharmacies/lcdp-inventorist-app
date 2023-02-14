@@ -35,7 +35,8 @@ class TestSaleOffer(unittest.TestCase):
         self.manage_sale_offer_status_api = manage_sale_offer_status_mock.return_value
 
         stock_to_dto_mock.return_value = Stock()
-        distribution_to_dto_mock.return_value = AnyDistributionMode(type='QUOTATION')
+        distribution_to_dto_mock.return_value = AnyDistributionMode(type='QUOTATION', minimal_quantity=1,
+                                                                    maximal_quantity=None, sold_by=1)
 
         self.mocked_product = MagicMock(Product)
         self.mocked_product.id = 1
@@ -74,7 +75,7 @@ class TestSaleOffer(unittest.TestCase):
         result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer.assert_not_called()
-        self.assertEqual(expected,  result)
+        self.assertEqual(expected, result)
 
     def test_create_or_edit_sale_offer_with_barcode_existing_sale_offer_not_found(self):
         expected = MagicMock(description="create my sale offer")
@@ -86,7 +87,7 @@ class TestSaleOffer(unittest.TestCase):
         result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer_version.assert_not_called()
-        self.assertEqual(expected,  result)
+        self.assertEqual(expected, result)
 
     def test_create_or_edit_sale_offer_with_barcode_existing_sale_offer_not_found_and_inability_to_create_sale_offer(
             self
@@ -111,7 +112,7 @@ class TestSaleOffer(unittest.TestCase):
         result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer.assert_not_called()
-        self.assertEqual(expected,  result)
+        self.assertEqual(expected, result)
 
     def test_create_or_edit_sale_offer_with_reference_existing_sale_offer_not_found(self):
         self.mocked_sale_offer.update_policy = UpdatePolicy.SALE_OFFER_REFERENCE.value
@@ -126,7 +127,7 @@ class TestSaleOffer(unittest.TestCase):
         find_existing_mock.return_value = None
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
         result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
-        self.assertEqual(expected,  result)
+        self.assertEqual(expected, result)
 
     @patch("business.services.sale_offer.__find_existing_sale_offer")
     def test_create_or_edit_sale_offer_with_no_existing_sale_offer_and_inability_to_create_sale_offer(
