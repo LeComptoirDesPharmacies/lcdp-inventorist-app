@@ -10,15 +10,21 @@ def distribution_to_dto(distribution):
             return AnyDistributionMode(
                 type='UNITARY',
                 unit_price=distribution.discounted_price,
-                minimal_quantity=distribution.sold_by
+                sold_by=distribution.sold_by,
+                minimal_quantity=1,
+                maximal_quantity=None
             )
         elif distribution.type == RANGE_DISTRIBUTION:
             return AnyDistributionMode(
                 type='RANGE',
+                sold_by=1,
+                minimal_quantity=1,
+                maximal_quantity=None,
                 ranges=list(map(__range_to_dto, distribution.ranges)),
             )
         elif distribution.type == QUOTATION_DISTRIBUTION:
-            return AnyDistributionMode(type='QUOTATION')
+            return AnyDistributionMode(type='QUOTATION', minimal_quantity=1,
+                                       maximal_quantity=None, sold_by=1)
     return None
 
 
