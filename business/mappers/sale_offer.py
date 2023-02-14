@@ -17,7 +17,6 @@ def distribution_to_dto(distribution):
         elif distribution.type == RANGE_DISTRIBUTION:
             return AnyDistributionMode(
                 type='RANGE',
-                sold_by=1,
                 minimal_quantity=1,
                 maximal_quantity=None,
                 ranges=list(map(__range_to_dto, distribution.ranges)),
