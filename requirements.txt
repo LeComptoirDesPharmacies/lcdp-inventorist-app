@@ -1,5 +1,3 @@
---extra-index-url https://pypi.python.org/simple
-
 PySide6==6.2.3
 keyring==23.4.0
 sentry-sdk==0.15.1
@@ -7,5 +5,6 @@ openpyxl==3.0.9
 envsubst==0.1.5
 nose2==0.11.0
 Pillow==9.1.1
-
--r private-requirements.txt
+lcdp-api==1.5.1.post3+git.82a309e7
+python-openapi-generator-cli==1.2.4.post3+git.328a902d
+python-rest-client-codegen==1.2.4.post3+git.328a902d
