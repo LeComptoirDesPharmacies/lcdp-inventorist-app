@@ -2,6 +2,7 @@ from api.consume.gen.sale_offer.model.any_distribution_mode import AnyDistributi
 from api.consume.gen.sale_offer.model.distribution_range import DistributionRange
 from api.consume.gen.sale_offer.model.stock import Stock
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
+from business.utils import clean_none_from_dict
 
 
 def distribution_to_dto(distribution):
@@ -43,3 +44,13 @@ def stock_to_dto(stock):
             batch=stock.batch
         )
     return Stock()
+
+def stock_to_patch_dto(stock):
+    if stock and not stock.is_empty():
+        return Stock(**clean_none_from_dict({
+                'remaining_quantity': stock.remaining_quantity,
+                'lapsing_date': stock.lapsing_date,
+                'batch': stock.batch
+            })
+        )
+    return None

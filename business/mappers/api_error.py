@@ -6,7 +6,7 @@ def sale_offer_api_exception_to_muggle(api_exception):
         if status == 403:
             explanation = "Le client n'a pas le droit de vendre ce produit ou n'a pas de mandat SEPA valide"
         if status == 400:
-            explanation = "Le prix remisé est supérieur au prix unitaire ou la date de péremption est trop proche"
+            explanation = "Un champs obligatoire de l'annonce est incorrecte ou pas renseigné"
         return explanation
 
     return api_exception_to_muggle(api_exception, get_explanation)
