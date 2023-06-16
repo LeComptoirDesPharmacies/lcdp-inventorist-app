@@ -5,7 +5,7 @@ from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import Sale
 from api.consume.gen.sale_offer.model.sale_offer_new_version_parameters import SaleOfferNewVersionParameters
 from api.consume.gen.sale_offer.model.sale_offer_status import SaleOfferStatus
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference, CannotUpdateSaleOfferStatus
-from business.mappers.sale_offer import distribution_to_dto, stock_to_dto
+from business.mappers.sale_offer import distribution_to_dto, stock_to_dto, stock_to_patch_dto
 from business.models.update_policy import UpdatePolicy
 from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api, \
     get_manage_sale_offer_status_api
@@ -121,7 +121,7 @@ def __edit_sale_offer(old_sale_offer, new_sale_offer):
             'description': new_sale_offer.description,
             'rank': new_sale_offer.rank,
             'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
-            'stock': stock_to_dto(new_sale_offer.stock)
+            'stock': stock_to_patch_dto(new_sale_offer.stock)
         })
         result = api.create_sale_offer_version(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
@@ -142,7 +142,7 @@ def __clone_sale_offer(old_sale_offer, new_sale_offer):
             'description': new_sale_offer.description,
             'rank': new_sale_offer.rank,
             'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
-            'stock': stock_to_dto(new_sale_offer.stock)
+            'stock': stock_to_patch_dto(new_sale_offer.stock)
         })
         result = api.create_sale_offer(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
