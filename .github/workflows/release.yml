@@ -24,9 +24,6 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: jfrog/setup-jfrog-cli@v2
-        env:
-          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
       - uses: actions/cache@v2
         with:
           path: ${{ matrix.path }}
@@ -34,7 +31,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
-        run: jfrog pip install -r requirements.txt
+        run: | 
+          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEV_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp-dev/ --extra-index-url https://${{ secrets.PROD_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
       - name: Prepare app
         run: python prepare.py
         env:

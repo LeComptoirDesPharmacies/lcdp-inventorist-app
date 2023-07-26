@@ -12,8 +12,8 @@ This app permit to manage sale offer and product massively with excel import.
 
 ## Requirements
 
-- Access to LCDP jfrog Artifactory
-- Jfrog CLI or `pip.conf` with jfrog extra index url
+- Access to LCDP gemfury
+-  `pip.conf` with gemfury extra index url
 - Python **3.8**
 
 ## Configure
@@ -33,7 +33,6 @@ Default values can be changed in `config.json.tpl`
 
 #### Install dependencies
 
-- With jfrog cli : `jfrog pip install -r requirements.txt`
 - With pip.conf : `pip install -r requirements.txt`
 
 #### Prepare
