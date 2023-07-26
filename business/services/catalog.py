@@ -1,3 +1,5 @@
+import logging
+
 from api.consume.gen.catalog import ApiException
 from api.consume.gen.catalog.model.product_insight_create_or_update_parameters import \
     ProductInsightCreateOrUpdateParameters
@@ -8,12 +10,15 @@ from business.utils import clean_none_from_dict
 
 def update_or_create_product_insight(product, excel_product, product_type, vat, laboratory):
     if product.source.lcdp_catalog and product.source.lcdp_catalog.id:
+        logging.info(f'Product insight already link with product. Update insight {product.source.lcdp_catalog.id}')
         return __update_product_insight(product.source.lcdp_catalog.id, product.barcodes, excel_product, product_type, vat, laboratory)
 
     product_insight = __get_product_insight_by_barcodes(product.barcodes)
     if product_insight:
+        logging.info(f'Product insight found by barcode. Update insight {product.source.lcdp_catalog.id}')
         return __update_product_insight(product_insight.id, product.barcodes, excel_product, product_type, vat, laboratory)
 
+    logging.info(f'Create a new product insight')
     return __create_product_insight(product, excel_product, product_type, vat, laboratory)
 
 def __update_product_insight(product_insight_id, barcodes, excel_product, product_type, vat, laboratory):
