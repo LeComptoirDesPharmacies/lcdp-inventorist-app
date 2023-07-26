@@ -22,7 +22,6 @@
                 "_weight": 70.0,
                 "_unit_price": 16.42,
                 "_dci": " My DCI",
-                "_external_sync": true,
                 "_status": "VALIDATED"
             },
             "_stock": {
@@ -84,7 +83,6 @@
                 "_weight": 55.0,
                 "_unit_price": 9.84,
                 "_dci": " My DCI",
-                "_external_sync": true,
                 "_status": "VALIDATED"
             },
             "_stock": {
@@ -133,7 +131,6 @@
                 "_weight": 75.0,
                 "_unit_price": 18.03,
                 "_dci": " My DCI",
-                "_external_sync": false,
                 "_status": "VALIDATED"
             },
             "_stock": {
@@ -182,7 +179,6 @@
                 "_weight": 520.0,
                 "_unit_price": 16.26,
                 "_dci": " My DCI",
-                "_external_sync": false,
                 "_status": "VALIDATED"
             },
             "_stock": {
