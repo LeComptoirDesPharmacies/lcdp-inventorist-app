@@ -36,6 +36,8 @@ def __update_product_insight(product_insight_id, barcodes, excel_product, produc
         )
         return product_insight
     except ApiException as apiError:
+        if str(apiError.status) == '409':
+            raise TooManyProductInsight()
         raise apiError
 
 def __get_product_insight_by_barcodes(barcodes):
@@ -68,6 +70,8 @@ def __create_product_insight(product, excel_product, product_type, vat, laborato
         )
         return product_insight
     except ApiException as apiError:
+        if str(apiError.status) == '409':
+            raise TooManyProductInsight()
         raise apiError
 
 def __create_product_insight_signature(barcodes):

@@ -61,6 +61,7 @@ class TestProduct(unittest.TestCase):
         self.search_product_patch.stop()
         self.manage_product_patch.stop()
         self.get_api_key_patch.stop()
+        self.search_manage_product_insight_patch.stop()
 
     def test_update_or_create_product_with_none_product(self):
         with self.assertRaises(CannotCreateProduct):
