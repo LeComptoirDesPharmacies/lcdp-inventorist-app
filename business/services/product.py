@@ -6,6 +6,7 @@ from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
 from api.consume.gen.product.model.product_status import ProductStatus
 from business.exceptions import TooManyProduct, CannotCreateProduct
+from business.services.catalog import update_or_create_product_insight
 from business.services.laboratory import find_or_create_laboratory
 from business.services.providers import get_search_product_api, get_search_product_metadata_api, \
     get_manage_product_api
@@ -23,25 +24,27 @@ def update_or_create_product(product, can_create_product_from_scratch):
         logging.info(f'Barcode {product.principal_barcode} : Try to find product with barcode')
         result_product = __get_product_by_barcode(product.principal_barcode)
         if result_product:
-            return __edit_product(
-                product_id=result_product.id,
+            update_or_create_product_insight(
+                product=result_product,
                 excel_product=product,
                 product_type=product_type,
                 vat=vat,
                 laboratory=laboratory
             )
+            return __sync_product(result_product.id)
 
         logging.info(f'Barcode {product.principal_barcode} : '
                      f'Product not found in database, try to create product from providers.')
         result_product = __create_product_with_barcode(product.principal_barcode)
         if result_product:
-            return __edit_product(
-                product_id=result_product.id,
+            update_or_create_product_insight(
+                product=result_product,
                 excel_product=product,
                 product_type=product_type,
                 vat=vat,
                 laboratory=laboratory
             )
+            return __sync_product(result_product.id)
 
         # Create product from scratch
         if can_create_product_from_scratch:
@@ -96,11 +99,11 @@ def __create_product_with_barcode(principal_barcode):
     try:
         api = get_manage_product_api()
         payload = ProductCreationOrUpdateParameters(
-            is_external_sync_enabled=True,
             barcodes=Barcodes(principal=principal_barcode)
         )
         product = api.create_product(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            x_with_sync=True,
             product_creation_or_update_parameters=payload
         )
         return product
@@ -112,28 +115,17 @@ def __create_product_with_barcode(principal_barcode):
         raise apiError
 
 
-def __edit_product(product_id, excel_product, product_type, vat, laboratory):
+def __sync_product(product_id):
     api = get_manage_product_api()
-    payload = clean_none_from_dict({
-        'is_external_sync_enabled': excel_product.external_sync,
-        'name': excel_product.name,
-        'dci': excel_product.dci,
-        'unit_weight': excel_product.weight,
-        'unit_price': excel_product.unit_price,
-        'type_id': product_type.id if product_type else None,
-        'vat_id': vat.id if vat else None,
-        'laboratory_id': laboratory.id if laboratory else None,
-    })
     try:
         product = api.update_product(
             _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            x_with_sync=True,
             product_id=product_id,
-            product_creation_or_update_parameters=ProductCreationOrUpdateParameters(**payload)
+            product_creation_or_update_parameters=ProductCreationOrUpdateParameters()
         )
         return product
     except ApiException as apiError:
-        if str(apiError.status) == '409':
-            return __get_product_by_id(apiError.body)
         raise apiError
 
 
@@ -141,8 +133,8 @@ def __create_product_from_scratch(product, product_type, vat, laboratory):
     api = get_manage_product_api()
     product = api.create_product(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+        x_with_sync=True,
         product_creation_or_update_parameters=ProductCreationOrUpdateParameters(
-            is_external_sync_enabled=False,
             name=product.name,
             dci=product.dci,
             unit_weight=product.weight,

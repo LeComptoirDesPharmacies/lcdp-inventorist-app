@@ -25,12 +25,14 @@ class TestProduct(unittest.TestCase):
         self.search_product_patch = patch('business.services.product.get_search_product_api')
         self.manage_product_patch = patch('business.services.product.get_manage_product_api')
         self.get_api_key_patch = patch('business.services.product.get_api_key')
+        self.search_manage_product_insight_patch = patch('business.services.product.update_or_create_product_insight')
 
         search_product_meta_mock = self.search_product_meta_patch.start()
         search_product_mock = self.search_product_patch.start()
         manage_product_mock = self.manage_product_patch.start()
         search_vat_mock = self.search_vat_patch.start()
         search_manage_laboratory_mock = self.search_manage_laboratory_patch.start()
+        search_manage_product_insight_mock = self.search_manage_product_insight_patch.start()
         get_api_key_patch_mock = self.get_api_key_patch.start()
         get_api_key_patch_mock.return_value = {}
 
@@ -41,6 +43,7 @@ class TestProduct(unittest.TestCase):
         self.search_product_meta_api.get_product_types.return_value = MY_PRODUCT_TYPES
         search_vat_mock.return_value = MagicMock(id='VAT1', value=0.2)
         search_manage_laboratory_mock.return_value = MagicMock(id=1, name="My laboratory")
+        search_manage_product_insight_mock.return_value = MagicMock(id= 2)
 
         self.mocked_product = MagicMock(Product)
         self.mocked_product.id = 1
@@ -50,7 +53,6 @@ class TestProduct(unittest.TestCase):
         self.mocked_product.unit_price = 10.20
         self.mocked_product.product_type.name = "medicament"
         self.mocked_product.principal_barcode = "My barcode"
-        self.mocked_product.external_sync = True
 
     def tearDown(self):
         self.search_product_meta_patch.stop()
@@ -59,6 +61,7 @@ class TestProduct(unittest.TestCase):
         self.search_product_patch.stop()
         self.manage_product_patch.stop()
         self.get_api_key_patch.stop()
+        self.search_manage_product_insight_patch.stop()
 
     def test_update_or_create_product_with_none_product(self):
         with self.assertRaises(CannotCreateProduct):
