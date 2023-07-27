@@ -22,6 +22,18 @@ def product_api_exception_to_muggle(api_exception):
     return api_exception_to_muggle(api_exception, get_explanation)
 
 
+def product_insight_api_exception_to_muggle(api_exception):
+    def get_explanation(status):
+        explanation = None
+        if status == 409:
+            explanation = "Ce produit existe déjà sous un même CIP/EAN dans le catalogue."
+        if status == 404:
+            explanation = "Le laboratoire, le type de produit ou la TVA est introuvable " \
+                          "dans le catalogue. Prévenir l'administrateur"
+        return explanation
+    return api_exception_to_muggle(api_exception, get_explanation)
+
+
 def api_exception_to_muggle(api_exception, get_explanation=None):
     to = []
 

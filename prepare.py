@@ -15,6 +15,7 @@ def run_codegen():
     generate_consumer("product.yaml", CURRENT_DIR)
     generate_consumer("sale-offer.yaml", CURRENT_DIR)
     generate_consumer("configuration.yaml", CURRENT_DIR)
+    generate_consumer("catalog.yaml", CURRENT_DIR)
 
 
 def write_config():

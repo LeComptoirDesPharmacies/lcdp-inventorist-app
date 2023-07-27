@@ -1,4 +1,5 @@
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
+from api.consume.gen.catalog.api_client_utils import create_manage_product_insight_api, create_search_product_insight_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
 from api.consume.gen.laboratory.api_client_utils import create_search_laboratory_api, create_manage_laboratory_api
 from api.consume.gen.product.api_client_utils import create_search_product_api, create_search_product_metadata_api, \
@@ -20,6 +21,8 @@ _manage_product_api = None
 _manage_sale_offer_api = None
 _search_sale_offer_api = None
 _manage_sale_offer_status_api = None
+_manage_product_insight_api = None
+_search_product_insight_api = None
 
 settings = get_settings()
 
@@ -111,3 +114,16 @@ def get_manage_sale_offer_status_api():
     if not _manage_sale_offer_status_api:
         _manage_sale_offer_status_api = create_manage_sale_offer_status_api(configuration)
     return _manage_sale_offer_status_api
+
+
+def get_manage_product_insight_api():
+    global _manage_product_insight_api
+    if not _manage_product_insight_api:
+        _manage_product_insight_api = create_manage_product_insight_api(configuration)
+    return _manage_product_insight_api
+
+def get_search_product_insight_api():
+    global _search_product_insight_api
+    if not _search_product_insight_api:
+        _search_product_insight_api = create_search_product_insight_api(configuration)
+    return _search_product_insight_api
