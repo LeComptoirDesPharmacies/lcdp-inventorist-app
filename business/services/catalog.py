@@ -19,31 +19,27 @@ def update_or_create_product_insight(product, excel_product, product_type, vat, 
         return __update_product_insight(product_insight.id, product.barcodes, excel_product, product_type, vat, laboratory)
 
     logging.info(f'Create a new product insight')
-    return __create_product_insight(product, excel_product, product_type, vat, laboratory)
+    return __create_product_insight(product.barcodes, excel_product, product_type, vat, laboratory)
 
 def __update_product_insight(product_insight_id, barcodes, excel_product, product_type, vat, laboratory):
     api = get_manage_product_insight_api()
-    payload = clean_none_from_dict({
-        'signatures': __create_product_insight_signature(barcodes),
-        'name': excel_product.name,
-        'dci': excel_product.dci,
-        'unit_weight': excel_product.weight,
-        'unit_price': excel_product.unit_price,
-        'type_id': product_type.id if product_type else None,
-        'vat_id': vat.id if vat else None,
-        'laboratory_id': laboratory.id if laboratory else None,
-    })
-    try:
-        product_insight = api.update_product_insight(
-            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-            product_insight_id=product_insight_id,
-            product_insight_create_or_update_parameters=ProductInsightCreateOrUpdateParameters(**payload)
-        )
-        return product_insight
-    except ApiException as apiError:
-        if str(apiError.status) == '409':
-            raise TooManyProductInsight()
-        raise apiError
+    payload = __generate_product_insight_create_or_update_payload(
+        barcodes,
+        excel_product,
+        product_type,
+        vat,
+        laboratory
+    )
+    if payload:
+        try:
+            product_insight = api.update_product_insight(
+                _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                product_insight_id=product_insight_id,
+                product_insight_create_or_update_parameters=ProductInsightCreateOrUpdateParameters(**payload)
+            )
+            return product_insight
+        except ApiException as apiError:
+            raise apiError
 
 def __get_product_insight_by_barcodes(barcodes):
     api = get_search_product_insight_api()
@@ -56,10 +52,28 @@ def __get_product_insight_by_barcodes(barcodes):
     return next(iter(product_insights.records), None)
 
 
-def __create_product_insight(product, excel_product, product_type, vat, laboratory):
+def __create_product_insight(barcodes, excel_product, product_type, vat, laboratory):
     api = get_manage_product_insight_api()
+    payload = __generate_product_insight_create_or_update_payload(
+        barcodes,
+        excel_product,
+        product_type,
+        vat,
+        laboratory
+    )
+    if payload:
+        try:
+            product_insight = api.create_product_insight(
+                _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                product_insight_create_or_update_parameters=ProductInsightCreateOrUpdateParameters(**payload)
+            )
+            return product_insight
+        except ApiException as apiError:
+            raise apiError
+
+
+def __generate_product_insight_create_or_update_payload(barcodes, excel_product, product_type, vat, laboratory):
     payload = clean_none_from_dict({
-        'signatures': __create_product_insight_signature(product.barcodes),
         'name': excel_product.name,
         'dci': excel_product.dci,
         'unit_weight': excel_product.weight,
@@ -68,16 +82,15 @@ def __create_product_insight(product, excel_product, product_type, vat, laborato
         'vat_id': vat.id if vat else None,
         'laboratory_id': laboratory.id if laboratory else None,
     })
-    try:
-        product_insight = api.create_product_insight(
-            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-            product_insight_create_or_update_parameters=ProductInsightCreateOrUpdateParameters(**payload)
-        )
-        return product_insight
-    except ApiException as apiError:
-        if str(apiError.status) == '409':
-            raise TooManyProductInsight()
-        raise apiError
+
+    # If dict is empty, no modification needed
+    if not payload:
+        logging.info("Abort product insight update or creation, no modification needed")
+        return None
+
+    payload['signatures'] = __create_product_insight_signature(barcodes)
+
+    return payload
 
 def __create_product_insight_signature(barcodes):
     signatures = set([])
