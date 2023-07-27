@@ -15,7 +15,7 @@ def update_or_create_product_insight(product, excel_product, product_type, vat, 
 
     product_insight = __get_product_insight_by_barcodes(product.barcodes)
     if product_insight:
-        logging.info(f'Product insight found by barcode. Update insight {product.source.lcdp_catalog.id}')
+        logging.info(f'Product insight found by barcode. Update insight {product_insight.id}')
         return __update_product_insight(product_insight.id, product.barcodes, excel_product, product_type, vat, laboratory)
 
     logging.info(f'Create a new product insight')
