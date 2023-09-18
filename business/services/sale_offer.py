@@ -4,11 +4,11 @@ from api.consume.gen.sale_offer import ApiException
 from api.consume.gen.sale_offer.model.sale_offer_creation_parameters import SaleOfferCreationParameters
 from api.consume.gen.sale_offer.model.sale_offer_new_version_parameters import SaleOfferNewVersionParameters
 from api.consume.gen.sale_offer.model.sale_offer_status import SaleOfferStatus
+from api.consume.gen.sale_offer.model.sale_offer_update_parameters import SaleOfferUpdateParameters
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference, CannotUpdateSaleOfferStatus
 from business.mappers.sale_offer import distribution_to_dto, stock_to_dto, stock_to_patch_dto
 from business.models.update_policy import UpdatePolicy
-from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api, \
-    get_manage_sale_offer_status_api
+from business.services.providers import get_manage_sale_offer_api, get_search_sale_offer_api
 from business.services.security import get_api_key
 from business.utils import clean_none_from_dict
 
@@ -173,9 +173,10 @@ def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
 
 def __update_sale_offer_status(sale_offer_reference, status):
     try:
-        api = get_manage_sale_offer_status_api()
-        body = SaleOfferStatus(status)
-        api.update_sale_offer_status(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-                                     sale_offer_reference=sale_offer_reference, body=body)
+        api = get_manage_sale_offer_api()
+        status = SaleOfferStatus(status)
+        api.update_sale_offer(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                                sale_offer_reference=sale_offer_reference,
+                                sale_offer_update_parameters=SaleOfferUpdateParameters(status=status))
     except Exception:
         raise CannotUpdateSaleOfferStatus()
