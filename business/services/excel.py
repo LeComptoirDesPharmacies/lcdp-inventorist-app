@@ -162,7 +162,7 @@ def __create_or_update_product_from_excel_line(excel_line):
     }
 
 
-def clean_laboratory_sale_offers(lines):
+def clean_sale_offers(lines):
     owner_id = next((line.sale_offer.owner_id for line in lines if line.sale_offer.owner_id), None)
     if owner_id:
         delete_deprecated_sale_offers(owner_id)
