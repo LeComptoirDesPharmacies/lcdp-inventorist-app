@@ -17,14 +17,12 @@ class TestSaleOffer(unittest.TestCase):
     def setUp(self):
         self.search_sale_offer_patch = patch('business.services.sale_offer.get_search_sale_offer_api')
         self.manage_sale_offer_patch = patch('business.services.sale_offer.get_manage_sale_offer_api')
-        self.manage_sale_offer_status_patch = patch('business.services.sale_offer.get_manage_sale_offer_status_api')
         self.distribution_to_dto_patch = patch('business.services.sale_offer.distribution_to_dto')
         self.stock_to_dto_patch = patch('business.services.sale_offer.stock_to_dto')
         self.get_api_key_patch = patch('business.services.sale_offer.get_api_key')
 
         search_sale_offer_mock = self.search_sale_offer_patch.start()
         manage_sale_offer_mock = self.manage_sale_offer_patch.start()
-        manage_sale_offer_status_mock = self.manage_sale_offer_status_patch.start()
         distribution_to_dto_mock = self.distribution_to_dto_patch.start()
         stock_to_dto_mock = self.stock_to_dto_patch.start()
         get_api_key_patch_mock = self.get_api_key_patch.start()
@@ -32,7 +30,6 @@ class TestSaleOffer(unittest.TestCase):
 
         self.search_sale_offer_api = search_sale_offer_mock.return_value
         self.manage_sale_offer_api = manage_sale_offer_mock.return_value
-        self.manage_sale_offer_status_api = manage_sale_offer_status_mock.return_value
 
         stock_to_dto_mock.return_value = Stock()
         distribution_to_dto_mock.return_value = AnyDistributionMode(type='QUOTATION', minimal_quantity=1,
@@ -54,7 +51,6 @@ class TestSaleOffer(unittest.TestCase):
         self.stock_to_dto_patch.stop()
         self.distribution_to_dto_patch.stop()
         self.get_api_key_patch.stop()
-        self.manage_sale_offer_status_patch.stop()
 
     @params(
         (Mock(SaleOffer), None),
