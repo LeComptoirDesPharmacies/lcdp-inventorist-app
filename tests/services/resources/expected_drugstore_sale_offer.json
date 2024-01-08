@@ -36,6 +36,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 30,
+                "_maximal_quantity": null,
                 "_discounted_price": 5.0,
                 "_free_unit": null,
                 "_ranges": []

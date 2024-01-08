@@ -71,6 +71,7 @@ class Distribution(SupervisedEntity):
         super().__init__(supervisor)
         self._type = distribution_type
         self._sold_by = None
+        self._maximal_quantity = None
         self._discounted_price = None
         self._free_unit = None
         if distribution_type == RANGE_DISTRIBUTION:
@@ -108,6 +109,14 @@ class Distribution(SupervisedEntity):
             self._sold_by = sold_by
 
     @property
+    def maximal_quantity(self):
+        return self._maximal_quantity
+
+    @maximal_quantity.setter
+    def maximal_quantity(self, maximal_quantity):
+        self._maximal_quantity = maximal_quantity
+
+    @property
     def discounted_price(self):
         if self.type == RANGE_DISTRIBUTION:
             return repr(list(map(lambda r: r.discounted_price, self.ranges)))
@@ -133,6 +142,9 @@ class Distribution(SupervisedEntity):
         else:
             self._free_unit = cast_or_default(free_unit, int, 0)
 
+    def is_valid_maximal_quantity(self):
+        return self.maximal_quantity is None or (self.maximal_quantity and isinstance(self.sold_by, numbers.Number))
+
     def report_errors(self):
         errors = []
         if not self.type or self.type not in [UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION]:
@@ -143,6 +155,8 @@ class Distribution(SupervisedEntity):
                 errors.append(CreateSaleOfferError.INVALID_DISCOUNTED_PRICE)
             if not self.sold_by or not isinstance(self.sold_by, numbers.Number):
                 errors.append(CreateSaleOfferError.INVALID_SOLD_BY)
+            if not self.is_valid_maximal_quantity():
+                errors.append(CreateSaleOfferError.INVALID_MAXIMAL_QUANTITY)
         return errors
 
 
