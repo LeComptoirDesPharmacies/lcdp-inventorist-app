@@ -36,6 +36,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 30,
+                "_maximal_quantity": null,
                 "_discounted_price": 5.0,
                 "_free_unit": null,
                 "_ranges": []
@@ -84,6 +85,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 12,
+                "_maximal_quantity": null,
                 "_discounted_price": 50.0,
                 "_free_unit": null,
                 "_ranges": []
@@ -132,6 +134,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 30,
+                "_maximal_quantity": 12,
                 "_discounted_price": 5.0,
                 "_free_unit": null,
                 "_ranges": []
@@ -180,6 +183,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 10,
+                "_maximal_quantity": null,
                 "_discounted_price": 10.0,
                 "_free_unit": null,
                 "_ranges": []

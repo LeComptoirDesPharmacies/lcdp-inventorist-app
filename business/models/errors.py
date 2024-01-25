@@ -21,6 +21,7 @@ class CreateSaleOfferError(Enum):
     INVALID_RANGE = 'Un ou plusieurs palier sont invalide'
     INVALID_DISCOUNTED_PRICE = 'Prix remisé invalide'
     INVALID_SOLD_BY = 'Le colisage est invalide'
+    INVALID_MAXIMAL_QUANTITY = 'La quantité maximale est invalide'
     INVALID_CIP = 'CIP invalide'
 
 

@@ -13,18 +13,22 @@ def distribution_to_dto(distribution):
                 unit_price=distribution.discounted_price,
                 sold_by=distribution.sold_by,
                 minimal_quantity=1,
-                maximal_quantity=None
+                maximal_quantity=distribution.maximal_quantity
             )
         elif distribution.type == RANGE_DISTRIBUTION:
             return AnyDistributionMode(
                 type='RANGE',
                 minimal_quantity=1,
-                maximal_quantity=None,
+                maximal_quantity=distribution.maximal_quantity,
                 ranges=list(map(__range_to_dto, distribution.ranges)),
             )
         elif distribution.type == QUOTATION_DISTRIBUTION:
-            return AnyDistributionMode(type='QUOTATION', minimal_quantity=1,
-                                       maximal_quantity=None, sold_by=1)
+            return AnyDistributionMode(
+                type='QUOTATION',
+                sold_by=1,
+                minimal_quantity=1,
+                maximal_quantity=distribution.maximal_quantity
+            )
     return None
 
 

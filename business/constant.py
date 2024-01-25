@@ -6,12 +6,12 @@ API_KEY_ID_NAME = 'apiKeyId'
 
 # Import template
 
-# TODO: tout rassembler dans un dossier gerer par les devs
-CREATE_LABORATORY_SALE_OFFER_TPL = "https://docs.google.com/spreadsheets/d/13Qe0KgtAstHJCtb0LPr_tOMaRVS06x5_/edit?usp" \
-                                   "=sharing&ouid=110512712826531059999&rtpof=true&sd=true"
+# Files available on webmaster's drive in the folder named "Intégration produits"
+CREATE_LABORATORY_SALE_OFFER_TPL = ("https://docs.google.com/spreadsheets/d/1C7yYGYC7ArWWhEzJA_zpnx7OoEk_LmGG/edit?usp"
+                                    "=drive_link&ouid=113182943247309099469&rtpof=true&sd=true")
 
-CREATE_UPDATE_PRODUCT_TPL = "https://docs.google.com/spreadsheets/d/1L_qbQ3l-KI0pQx4LiBxlwbQI0km2DQhT/edit?usp" \
-                            "=sharing&ouid=110512712826531059999&rtpof=true&sd=true"
+CREATE_UPDATE_PRODUCT_TPL = ("https://docs.google.com/spreadsheets/d/1v7WIttHnIgM26AUsvIPumDwzw7MOwAtn/edit?usp"
+                             "=drive_link&ouid=113182943247309099469&rtpof=true&sd=true")
 
-CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL = "https://docs.google.com/spreadsheets/d/1yVgPQBtmeINrzarfgWsB34tdLEAglxxM/" \
-                                         "edit?usp=sharing&ouid=110512712826531059999&rtpof=true&sd=true"
+CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL = ("https://docs.google.com/spreadsheets/d/1Ni-ecc9yFdmMnSFp9AY0iCBYUBtZGN3W"
+                                          "/edit?usp=drive_link&ouid=113182943247309099469&rtpof=true&sd=true")

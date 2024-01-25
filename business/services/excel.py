@@ -89,18 +89,21 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
         results = custom_dict
 
     wb = load_workbook(excel_path, read_only=True)
-    ws = wb[sheet_name]
-    column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
-    for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, values_only=True)):
-        obj = obj_class()
-        cells = {column_indices[col]: value for col, value in enumerate(row)}
-        for col in excel_mapper:
-            col.set_from_excel(obj, cells.get(col.excel_column_name, None))
-        if obj_unique_key:
-            obj_key = rgetattr(obj, obj_unique_key, None)
-            results[obj_key] = obj
-        else:
-            results[idx] = obj
+    try:
+        ws = wb[sheet_name]
+        column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
+        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, values_only=True)):
+            obj = obj_class()
+            cells = {column_indices[col]: value for col, value in enumerate(row)}
+            for col in excel_mapper:
+                col.set_from_excel(obj, cells.get(col.excel_column_name, None))
+            if obj_unique_key:
+                obj_key = rgetattr(obj, obj_unique_key, None)
+                results[obj_key] = obj
+            else:
+                results[idx] = obj
+    finally:
+        wb.close()
 
     return results
 

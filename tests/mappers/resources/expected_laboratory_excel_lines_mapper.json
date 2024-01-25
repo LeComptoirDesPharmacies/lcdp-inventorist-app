@@ -36,6 +36,7 @@
                 "supervisor": "",
                 "_type": "palier",
                 "_sold_by": null,
+                "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
                 "_ranges": [
@@ -97,6 +98,7 @@
                 "supervisor": "",
                 "_type": "devis",
                 "_sold_by": 6,
+                "_maximal_quantity": null,
                 "_discounted_price": 7.38,
                 "_free_unit": null,
                 "_ranges": []
@@ -145,6 +147,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 6,
+                "_maximal_quantity": 12,
                 "_discounted_price": 13.5225,
                 "_free_unit": null,
                 "_ranges": []
@@ -193,6 +196,7 @@
                 "supervisor": "",
                 "_type": "unitaire",
                 "_sold_by": 6,
+                "_maximal_quantity": null,
                 "_discounted_price": 20.0,
                 "_free_unit": null,
                 "_ranges": []
