@@ -53,7 +53,7 @@ class TestProduct(unittest.TestCase):
         self.mocked_product.unit_price = 10.20
         self.mocked_product.product_type.name = "medicament"
         self.mocked_product.principal_barcode = "My barcode"
-        self.mocked_product.is_empty = False
+        self.mocked_product.is_empty = lambda: False
 
     def tearDown(self):
         self.search_product_meta_patch.stop()
