@@ -86,4 +86,4 @@ class DrugstoreExcelLinesMapper(ExcelLinesMapper):
 
     @staticmethod
     def condition(key, value):
-        return value.sale_offer.product.principal_barcode is not None
+        return value.sale_offer.reference is not None or value.sale_offer.product.principal_barcode is not None

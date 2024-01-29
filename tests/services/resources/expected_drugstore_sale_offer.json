@@ -5,6 +5,7 @@
             "supervisor": "",
             "_product": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_vat": {
                     "supervisor": "",
                     "_value": 5.5
@@ -26,6 +27,7 @@
             },
             "_stock": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_remaining_quantity": 120,
                 "_lapsing_date": "2029-04-01",
                 "_batch": "LEKEO2"
@@ -34,6 +36,7 @@
             "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_type": "unitaire",
                 "_sold_by": 30,
                 "_maximal_quantity": null,

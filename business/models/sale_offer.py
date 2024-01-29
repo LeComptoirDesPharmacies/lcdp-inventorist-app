@@ -78,6 +78,12 @@ class Distribution(SupervisedEntity):
             self._ranges = [Range(self.supervisor)]
         else:
             self._ranges = []
+        self._is_empty = True
+
+    def __setattr__(self, name, value):
+        super(Distribution, self).__setattr__(name, value)
+        if name != '_is_empty' and value is not None:
+            self._is_empty = False
 
     @property
     def type(self):
@@ -159,6 +165,8 @@ class Distribution(SupervisedEntity):
                 errors.append(CreateSaleOfferError.INVALID_MAXIMAL_QUANTITY)
         return errors
 
+    def is_empty(self):
+        return self._is_empty
 
 class SaleOffer(SupervisedEntity):
 

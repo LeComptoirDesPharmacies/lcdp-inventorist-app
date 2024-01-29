@@ -5,6 +5,7 @@
             "supervisor": "",
             "_product": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_vat": {
                     "supervisor": "",
                     "_value": 5.5
@@ -26,6 +27,7 @@
             },
             "_stock": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_remaining_quantity": 2,
                 "_lapsing_date": null,
                 "_batch": null
@@ -34,6 +36,7 @@
             "_distribution_type": "palier",
             "_distribution": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_type": "palier",
                 "_sold_by": null,
                 "_maximal_quantity": null,
@@ -67,6 +70,7 @@
             "supervisor": "",
             "_product": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_vat": {
                     "supervisor": "",
                     "_value": 5.5
@@ -88,6 +92,7 @@
             },
             "_stock": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_remaining_quantity": 3,
                 "_lapsing_date": null,
                 "_batch": null
@@ -96,6 +101,7 @@
             "_distribution_type": "devis",
             "_distribution": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_type": "devis",
                 "_sold_by": 6,
                 "_maximal_quantity": null,
@@ -116,6 +122,7 @@
             "supervisor": "",
             "_product": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_vat": {
                     "supervisor": "",
                     "_value": 5.5
@@ -137,6 +144,7 @@
             },
             "_stock": {
                 "supervisor": "",
+                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
                 "_batch": null
@@ -145,6 +153,7 @@
             "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": 12,
@@ -165,6 +174,7 @@
             "supervisor": "",
             "_product": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_vat": {
                     "supervisor": "",
                     "_value": 5.5
@@ -186,6 +196,7 @@
             },
             "_stock": {
                 "supervisor": "",
+                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
                 "_batch": null
@@ -194,6 +205,7 @@
             "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
+                "_is_empty": false,
                 "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": null,

@@ -52,6 +52,12 @@ class Product(SupervisedEntity):
         self._unit_price = None
         self._dci = None
         self._status = None
+        self._is_empty = True
+
+    def __setattr__(self, name, value):
+        super(Product, self).__setattr__(name, value)
+        if name != '_is_empty' and value is not None:
+            self._is_empty = False
 
     @property
     def principal_barcode(self):
@@ -122,3 +128,6 @@ class Product(SupervisedEntity):
         if not self.unit_price or not isinstance(self.unit_price, numbers.Number):
             errors.append(CreateProductError.INVALID_UNIT_PRICE)
         return errors
+
+    def is_empty(self):
+        return self._is_empty
