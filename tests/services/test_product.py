@@ -53,6 +53,7 @@ class TestProduct(unittest.TestCase):
         self.mocked_product.unit_price = 10.20
         self.mocked_product.product_type.name = "medicament"
         self.mocked_product.principal_barcode = "My barcode"
+        self.mocked_product.is_empty = lambda: False
 
     def tearDown(self):
         self.search_product_meta_patch.stop()
@@ -64,8 +65,8 @@ class TestProduct(unittest.TestCase):
         self.search_manage_product_insight_patch.stop()
 
     def test_update_or_create_product_with_none_product(self):
-        with self.assertRaises(CannotCreateProduct):
-            update_or_create_product(None, True)
+        result = update_or_create_product(None, True)
+        self.assertIsNone(result, "Product from udpate on None should be None")
 
     def test_update_or_create_product_with_product_found_by_barcode(self):
         expected = MagicMock(id=2, name="new product name")

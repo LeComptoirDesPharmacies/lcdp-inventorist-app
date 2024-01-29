@@ -16,7 +16,7 @@ from business.utils import clean_none_from_dict
 
 
 def update_or_create_product(product, can_create_product_from_scratch):
-    if product:
+    if product and not product.is_empty():
         product_type = __find_product_type_by_name(product.product_type.name)
         vat = get_vat_by_value(product.vat.value)
         laboratory = find_or_create_laboratory(product.laboratory.name)
@@ -56,8 +56,8 @@ def update_or_create_product(product, can_create_product_from_scratch):
                 laboratory
             )
 
-    logging.info(f'Cannot find and create product')
-    raise CannotCreateProduct()
+        logging.info(f'Cannot find and create product')
+        raise CannotCreateProduct()
 
 
 def __get_product_by_barcode(barcode):
