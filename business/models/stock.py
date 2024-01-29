@@ -13,6 +13,12 @@ class Stock(SupervisedEntity):
         self._remaining_quantity = None
         self._lapsing_date = None
         self._batch = None
+        self._is_empty = True
+
+    def __setattr__(self, name, value):
+        super(Stock, self).__setattr__(name, value)
+        if name != '_is_empty' and value is not None:
+            self._is_empty = False
 
     @property
     def remaining_quantity(self):
@@ -39,7 +45,7 @@ class Stock(SupervisedEntity):
         self._batch = cast_or_default(batch, str)
 
     def is_empty(self):
-        return not self.remaining_quantity and not self.lapsing_date and not self.batch
+        return self._is_empty
 
     def report_errors(self):
         errors = []

@@ -48,7 +48,8 @@ def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
 
 def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
     new_sale_offer = None
-    if sale_offer and product:
+
+    if sale_offer:
         existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
 
         if existing_sale_offer:
@@ -57,7 +58,7 @@ def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
             else:
                 new_sale_offer = __clone_existing_sale_offer(existing_sale_offer, sale_offer)
 
-        elif not existing_sale_offer and can_create_sale_offer:
+        elif not existing_sale_offer and product and can_create_sale_offer:
             new_sale_offer = __create_sale_offer_from_scratch(sale_offer, product)
 
         if new_sale_offer:

@@ -6,7 +6,7 @@ from business.utils import clean_none_from_dict
 
 
 def distribution_to_dto(distribution):
-    if distribution:
+    if distribution and not distribution.is_empty():
         if distribution.type == UNITARY_DISTRIBUTION:
             return AnyDistributionMode(
                 type='UNITARY',
