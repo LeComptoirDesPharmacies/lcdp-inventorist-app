@@ -37,6 +37,21 @@ ApplicationWindow {
                 font.pixelSize: 22
                 horizontalAlignment: Text.AlignHCenter
             }
+            footer: ColumnLayout {
+                id: footer
+
+                Label {
+                    id: newVersion
+                    text: qsTr(newVersionAvailable)
+                    color: '#FF0000'
+                    leftPadding: 10
+                }
+                Label {
+                    id: currentVersion
+                    text: qsTr(version)
+                    leftPadding: 10
+                }
+            }
             RowLayout {
                 id: rowLayout
                 anchors.fill: parent
