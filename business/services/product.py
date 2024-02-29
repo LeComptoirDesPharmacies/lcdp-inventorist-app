@@ -66,8 +66,8 @@ def update_or_create_product(product, can_create_product_from_scratch):
                 laboratory
             )
 
-    logging.info(f'Cannot find and create product')
-    raise CannotCreateProduct()
+        logging.info(f'Cannot find and create product')
+        raise CannotCreateProduct()
 
 
 def __get_product_by_barcode(barcode):
