@@ -45,6 +45,7 @@ def update_or_create_product(product, can_create_product_from_scratch):
         if result_product:
             # check if product excel are equals to the product insight
             if product_excel_is_different_from_product_insight(product, result_product):
+                logging.info(f'Barcode {product.principal_barcode} : Update product insight with excel data')
                 update_or_create_product_insight(
                     product=result_product,
                     excel_product=product,
@@ -54,6 +55,7 @@ def update_or_create_product(product, can_create_product_from_scratch):
                 )
                 return __sync_product(result_product.id)
             else:
+                logging.info(f'Barcode {product.principal_barcode} : Product insight is up to date')
                 return result_product
 
         # Create product from scratch
