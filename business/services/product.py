@@ -57,7 +57,7 @@ def update_or_create_product(product, can_create_product_from_scratch):
                 return result_product
 
         # Create product from scratch
-        if not result_product and can_create_product_from_scratch:
+        if can_create_product_from_scratch:
             logging.info(f'Barcode {product.principal_barcode} : Create product from scratch')
             return __create_product_from_scratch(
                 product,
