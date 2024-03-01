@@ -14,7 +14,7 @@ from business.services.security import get_api_key
 from business.services.vat import get_vat_by_value
 
 
-def product_excel_is_different_from_product_insight(product, result_product):
+def product_excel_is_different_from_product(product, result_product):
     return ((product.unit_price is not None
              and product.unit_price != result_product.unit_price)
             or (product.name is not None
@@ -43,8 +43,8 @@ def update_or_create_product(product, can_create_product_from_scratch):
             product.principal_barcode)
 
         if result_product:
-            # check if product excel are equals to the product insight
-            if product_excel_is_different_from_product_insight(product, result_product):
+            # check if product excel are equals to the product
+            if product_excel_is_different_from_product(product, result_product):
                 logging.info(f'Barcode {product.principal_barcode} : Update product insight with excel data')
                 update_or_create_product_insight(
                     product=result_product,
@@ -55,7 +55,7 @@ def update_or_create_product(product, can_create_product_from_scratch):
                 )
                 return __sync_product(result_product.id)
             else:
-                logging.info(f'Barcode {product.principal_barcode} : Product insight is up to date')
+                logging.info(f'Barcode {product.principal_barcode} : Product is up to date')
                 return result_product
 
         # Create product from scratch
