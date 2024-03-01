@@ -44,6 +44,12 @@ ApplicationWindow {
                 font.pixelSize: 22
                 horizontalAlignment: Text.AlignHCenter
             }
+            footer: Label {
+                id: footer
+                text: qsTr(version)
+                leftPadding: 10
+                horizontalAlignment: Text.AlignHCenter
+            }
             Pane {
                 id: card
                 width: parent.width*0.8
