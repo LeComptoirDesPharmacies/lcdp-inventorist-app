@@ -12,7 +12,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 
 from backend.app import App
 from backend.login import Login
-from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_TAG
+from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE
 from business.services.authentication import delete_api_key
 from settings import get_settings
 
@@ -58,11 +58,14 @@ if __name__ == "__main__":
     engine = QQmlApplicationEngine()
 
     engine.rootContext().setContextProperty("newVersionAvailable", "")
+    engine.rootContext().setContextProperty("newVersionUrl", "")
     try:
-        latestAppTag = requests.get(GITHUB_REPOSITORY_LATEST_TAG).json()[0].get("name")
+        latestRelease = requests.get(GITHUB_REPOSITORY_LATEST_RELEASE).json()
+        latestAppTag = latestRelease.get("name")
         if latestAppTag != settings.value("VERSION"):
             logging.info("New version available")
             engine.rootContext().setContextProperty("newVersionAvailable", "Nouvelle version disponible : " + latestAppTag)
+            engine.rootContext().setContextProperty("newVersionUrl", latestRelease.get("html_url"))
     except Exception as e:
         logging.info("Error while getting latest tag from github")
 

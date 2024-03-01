@@ -48,6 +48,7 @@ ApplicationWindow {
                 id: footer
                 text: qsTr(version)
                 leftPadding: 10
+                horizontalAlignment: Text.AlignHCenter
             }
             Pane {
                 id: card

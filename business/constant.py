@@ -17,4 +17,4 @@ CREATE_UPDATE_DRUGSTORE_SALE_OFFER_TPL = ("https://docs.google.com/spreadsheets/
                                           "/edit?usp=drive_link&ouid=113182943247309099469&rtpof=true&sd=true")
 
 # get the latest tag
-GITHUB_REPOSITORY_LATEST_TAG = "https://api.github.com/repos/LeComptoirDesPharmacies/lcdp-inventorist-app/tags?per_page=1"
+GITHUB_REPOSITORY_LATEST_RELEASE = "https://api.github.com/repos/LeComptoirDesPharmacies/lcdp-inventorist-app/releases/latest"

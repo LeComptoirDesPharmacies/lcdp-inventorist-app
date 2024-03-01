@@ -16,7 +16,7 @@ ApplicationWindow {
     Material.accent: '#3AB872'
 
 
-    function isEmpty(str){
+    function isEmpty(str) {
         return str == ""
     }
 
@@ -37,19 +37,40 @@ ApplicationWindow {
                 font.pixelSize: 22
                 horizontalAlignment: Text.AlignHCenter
             }
-            footer: ColumnLayout {
+            footer: Pane {
                 id: footer
-
-                Label {
-                    id: newVersion
-                    text: qsTr(newVersionAvailable)
-                    color: '#FF0000'
-                    leftPadding: 10
-                }
-                Label {
-                    id: currentVersion
-                    text: qsTr(version)
-                    leftPadding: 10
+                ColumnLayout {
+                    id: footerColumn
+                    anchors.fill: parent
+                    Label {
+                        id: newVersion
+                        Layout.fillWidth: true
+                        text: qsTr(newVersionAvailable)
+                        color: '#FF0000'
+                        font.pointSize: 18
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                    Text {
+                        id: link
+                        Layout.fillWidth: true
+                        text: '<html><style type="text/css"></style><a href="' + newVersionUrl + '">Cliquez ici pour télécharger la nouvelle version</a></html>'
+                        onLinkActivated: Qt.openUrlExternally(newVersionUrl)
+                        font.pointSize: 18
+                        horizontalAlignment: Text.AlignHCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.NoButton
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                        visible: !isEmpty(newVersionAvailable)
+                    }
+                    Label {
+                        id: currentVersion
+                        Layout.fillWidth: true
+                        text: qsTr(version)
+                        horizontalAlignment: Text.AlignHCenter
+                    }
                 }
             }
             RowLayout {
@@ -111,12 +132,12 @@ ApplicationWindow {
                     }
 
                     ProgressBar {
-                       id: loader
-                       indeterminate: true
-                       anchors.horizontalCenter: parent.horizontalCenter
-                       anchors.top: loginButton.bottom
-                       anchors.topMargin: 15
-                       visible: false
+                        id: loader
+                        indeterminate: true
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: loginButton.bottom
+                        anchors.topMargin: 15
+                        visible: false
                     }
 
                     Label {
@@ -132,17 +153,17 @@ ApplicationWindow {
             }
         }
     }
-    
+
     Connections {
         target: loginBackend
 
-        function onSignalLoading(isLoading){
+        function onSignalLoading(isLoading) {
             loginButton.enabled = !isLoading
             loader.visible = isLoading
         }
 
         function onSignalConnected(isConnected) {
-            if(isConnected){
+            if (isConnected) {
                 var component = Qt.createComponent("app.qml")
                 var window = component.createObject()
                 window.show()
@@ -150,11 +171,11 @@ ApplicationWindow {
             }
         }
 
-        function onSignalState(state, type){
+        function onSignalState(state, type) {
             var color = Material.color(Material.Indigo)
-            if(type == "ERROR"){
+            if (type == "ERROR") {
                 color = Material.color(Material.Red)
-            } else if (type == "SUCCESS"){
+            } else if (type == "SUCCESS") {
                 color = Material.color(Material.Green)
             }
             loginState.text = state
