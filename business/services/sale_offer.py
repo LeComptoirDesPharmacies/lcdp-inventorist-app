@@ -70,8 +70,8 @@ def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
 
 def __find_sale_offer_for_version(sale_offer, product_id):
     return __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['ENABLED']) or \
-           __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['WAITING_FOR_PRODUCT',
-                                                                          'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'])
+        __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['WAITING_FOR_PRODUCT',
+                                                                       'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'])
 
 
 def __find_sale_offer_for_status(product_id, owner_id, status):
@@ -115,25 +115,70 @@ def __create_sale_offer(sale_offer, product_id):
     return result
 
 
+def sale_offer_is_different_from_sale_offer(sale_offer, sale_offer_excel):
+    distribution = distribution_to_dto(sale_offer_excel.distribution)
+    stock = stock_to_dto(sale_offer_excel.stock)
+
+    distribution_is_different = distribution is not None and (
+            sale_offer.distribution_mode.get('maximalQuantity', None) != distribution.get('maximal_quantity', None)
+            or sale_offer.distribution_mode.get('soldBy', None) != distribution.get('sold_by', None)
+            or sale_offer.distribution_mode.get('type', None) != distribution.get('type', None)
+            or sale_offer.distribution_mode.get('unitPrice', None) != distribution.get('unit_price', None))
+
+    ranges_are_different = False
+    ranges = sale_offer.distribution_mode.get('ranges', None)
+    if ranges is not None and distribution.get('ranges', None):
+        # example sale_offer.ranges [{'quantity': 2, 'unitPrice': 5.02, 'freeUnits': 1, 'id': 188506, 'rebate': 62}]
+        # example distribution.ranges [{'free_units': 1, 'quantity': 2, 'unit_price': 5.02}]
+        ranges_mapped = list(map(lambda r:
+                                 {
+                                     'free_units': r.get('freeUnits', None),
+                                     'quantity': r.get('quantity', None),
+                                     'unit_price': r.get('unitPrice', None),
+                                 },
+                                 ranges))
+        pairs = zip(ranges_mapped, distribution.get('ranges', None))
+        ranges_are_different = not any(x != y for x, y in pairs)
+
+    # sale_offer.stock can be None if distribution is RANGE
+    stock_is_different = (sale_offer.get('stock', None) is not None
+                          and ((stock.get('lapsing_date', None) is not None
+                                and sale_offer.stock.get('lapsing_date', None) != stock.get('lapsing_date', None))
+                               or (stock.get('remaining_quantity', None) is not None
+                                   and sale_offer.stock.get('remaining_quantity', None) != stock.get(
+                                'remaining_quantity', None))
+                               or (stock.get('batch', None) is not None
+                                   and sale_offer.stock.get('batch', None) != stock.get('batch', None))))
+
+    return (sale_offer.rank != sale_offer_excel.rank
+            or sale_offer.description != sale_offer_excel.description
+            or distribution_is_different
+            or stock_is_different
+            or ranges_are_different)
+
+
 def __edit_sale_offer(old_sale_offer, new_sale_offer):
-    try:
-        api = get_manage_sale_offer_api()
-        payload = clean_none_from_dict({
-            'description': new_sale_offer.description,
-            'rank': new_sale_offer.rank,
-            'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
-            'stock': stock_to_patch_dto(new_sale_offer.stock)
-        })
-        result = api.create_sale_offer_version(
-            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-            sale_offer_reference=old_sale_offer.reference,
-            sale_offer_new_version_parameters=SaleOfferNewVersionParameters(**payload)
-        )
-    except ApiException as apiError:
-        if str(apiError.status) == '417' or str(apiError.status) == '409':
-            return old_sale_offer
-        raise apiError
-    return result
+    if sale_offer_is_different_from_sale_offer(old_sale_offer, new_sale_offer):
+        try:
+            api = get_manage_sale_offer_api()
+            payload = clean_none_from_dict({
+                'description': new_sale_offer.description,
+                'rank': new_sale_offer.rank,
+                'distribution_mode': distribution_to_dto(new_sale_offer.distribution),
+                'stock': stock_to_patch_dto(new_sale_offer.stock)
+            })
+            result = api.create_sale_offer_version(
+                _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+                sale_offer_reference=old_sale_offer.reference,
+                sale_offer_new_version_parameters=SaleOfferNewVersionParameters(**payload)
+            )
+        except ApiException as apiError:
+            if str(apiError.status) == '417' or str(apiError.status) == '409':
+                return old_sale_offer
+            raise apiError
+        return result
+
+    return old_sale_offer
 
 
 def __clone_sale_offer(old_sale_offer, new_sale_offer):
@@ -165,7 +210,6 @@ def delete_deprecated_sale_offers(owner_id):
 
 
 def change_sale_offer_status(sale_offer_status_excel, sale_offer_reference):
-
     if sale_offer_status_excel is not None:
         status = sale_offer_status_excel.upper()
         logging.info(f'Change sale offer {sale_offer_reference} status to {status}')
@@ -177,7 +221,7 @@ def __update_sale_offer_status(sale_offer_reference, status):
         api = get_manage_sale_offer_api()
         status = SaleOfferStatus(status)
         api.update_sale_offer(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-                                sale_offer_reference=sale_offer_reference,
-                                sale_offer_update_parameters=SaleOfferUpdateParameters(status=status))
+                              sale_offer_reference=sale_offer_reference,
+                              sale_offer_update_parameters=SaleOfferUpdateParameters(status=status))
     except Exception:
         raise CannotUpdateSaleOfferStatus()
