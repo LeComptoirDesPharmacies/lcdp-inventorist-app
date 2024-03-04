@@ -23,6 +23,8 @@ class CreateSaleOfferError(Enum):
     INVALID_SOLD_BY = 'Le colisage est invalide'
     INVALID_MAXIMAL_QUANTITY = 'La quantité maximale est invalide'
     INVALID_CIP = 'CIP invalide'
+    MISSING_DISCOUNTED_PRICE = 'Prix remisé manquant'
+    MISSING_SOLD_BY = 'Colisage manquant'
 
 
 class ProcessingError(Enum):
