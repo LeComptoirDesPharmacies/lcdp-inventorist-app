@@ -74,14 +74,24 @@ def update_or_create_product(product, can_create_product_from_scratch):
 
 def __get_product_by_barcode(barcode):
     api = get_search_product_api()
+
     products = api.get_products(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
         q=barcode,
         st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
-        p=0, pp=2
+        p=0, pp=2,
+        order_by='STATUS:asc'
     )
+
     if products and len(products.records) > 1:
-        raise TooManyProduct()
+        # Many products have been found, check if there is STRICTLY ONE validated
+        validated_products = list(filter(lambda p: p.status == 'VALIDATED', products.records))
+
+        if len(validated_products) != 1:
+            raise TooManyProduct()
+
+        return next(iter(validated_products), None)
+
     return next(iter(products.records), None)
 
 
