@@ -163,6 +163,10 @@ class Distribution(SupervisedEntity):
                 errors.append(CreateSaleOfferError.INVALID_SOLD_BY)
             if not self.is_valid_maximal_quantity():
                 errors.append(CreateSaleOfferError.INVALID_MAXIMAL_QUANTITY)
+        if (self.discounted_price or self.maximal_quantity) and not self.sold_by:
+            errors.append(CreateSaleOfferError.MISSING_SOLD_BY)
+        if (self.sold_by or self.maximal_quantity) and not self.discounted_price:
+            errors.append(CreateSaleOfferError.MISSING_DISCOUNTED_PRICE)
         return errors
 
     def is_empty(self):

@@ -1,23 +1,20 @@
 # This Python file uses the following encoding: utf-8
-import json
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
 
+import requests
 import sentry_sdk
 from PySide6.QtCore import QUrl
-
-from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME
-
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 
-from settings import get_settings
-
 from backend.app import App
-from business.services.authentication import delete_api_key
 from backend.login import Login
+from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE
+from business.services.authentication import delete_api_key
+from settings import get_settings
 
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
 
@@ -29,8 +26,7 @@ def on_exit():
         logging.exception("Unabled to delete api key")
 
 
-def configure_sentry():
-    settings = get_settings()
+def configure_sentry(settings):
     sentry_dsn = settings.value("SENTRY_DSN")
     lcdp_environment = settings.value("LCDP_ENVIRONMENT")
     version = settings.value("VERSION")
@@ -46,12 +42,14 @@ if __name__ == "__main__":
 
     logging.info("Starting app")
 
+    settings = get_settings()
+    configure_sentry(settings)
+
     logging.info("Configure app")
     QGuiApplication.setOrganizationName(ORGANIZATION_NAME)
     QGuiApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QGuiApplication.setApplicationName(APPLICATION_NAME)
-
-    configure_sentry()
+    QGuiApplication.setApplicationVersion(settings.value("VERSION"))
 
     logging.info("Start app engine")
     app = QGuiApplication(sys.argv)
@@ -59,8 +57,21 @@ if __name__ == "__main__":
     app.setWindowIcon(QIcon(os.path.join(CURRENT_DIRECTORY, "images", "icon.ico")))
     engine = QQmlApplicationEngine()
 
+    engine.rootContext().setContextProperty("newVersionAvailable", "")
+    engine.rootContext().setContextProperty("newVersionUrl", "")
+    try:
+        latestRelease = requests.get(GITHUB_REPOSITORY_LATEST_RELEASE).json()
+        latestAppTag = latestRelease.get("name")
+        if latestAppTag != settings.value("VERSION"):
+            logging.info("New version available")
+            engine.rootContext().setContextProperty("newVersionAvailable", "Nouvelle version disponible : " + latestAppTag)
+            engine.rootContext().setContextProperty("newVersionUrl", latestRelease.get("html_url"))
+    except Exception as e:
+        logging.info("Error while getting latest tag from github")
+
     login_backend = Login()
     app_backend = App()
+    engine.rootContext().setContextProperty("version", settings.value("VERSION"))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
     filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
@@ -68,5 +79,5 @@ if __name__ == "__main__":
     engine.load(url)
 
     if not engine.rootObjects():
-         sys.exit(-1)
+        sys.exit(-1)
     sys.exit(app.exec())

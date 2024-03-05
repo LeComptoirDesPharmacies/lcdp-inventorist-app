@@ -12,7 +12,24 @@ from business.services.providers import get_search_product_api, get_search_produ
     get_manage_product_api
 from business.services.security import get_api_key
 from business.services.vat import get_vat_by_value
-from business.utils import clean_none_from_dict
+
+
+def product_excel_is_different_from_product(product, result_product):
+    return ((product.unit_price is not None
+             and product.unit_price != result_product.unit_price)
+            or (product.name is not None
+                and product.name != result_product.name)
+            or (product.dci is not None
+                and product.dci != result_product.dci)
+            or (product.laboratory.name is not None
+                and product.laboratory.name != result_product.laboratory.get('name', None))
+            or (product.weight is not None
+                and product.weight != result_product.unit_weight)
+            or (product.product_type.name is not None
+                and product.product_type.name != result_product.type.get('name', None))
+            or (product.vat.value is not None
+                # TVA from file is in percentage, TVA from insight is in value
+                and (product.vat.value / 100) != result_product.vat.get('value', None)))
 
 
 def update_or_create_product(product, can_create_product_from_scratch):
@@ -21,30 +38,25 @@ def update_or_create_product(product, can_create_product_from_scratch):
         vat = get_vat_by_value(product.vat.value)
         laboratory = find_or_create_laboratory(product.laboratory.name)
 
-        logging.info(f'Barcode {product.principal_barcode} : Try to find product with barcode')
-        result_product = __get_product_by_barcode(product.principal_barcode)
-        if result_product:
-            update_or_create_product_insight(
-                product=result_product,
-                excel_product=product,
-                product_type=product_type,
-                vat=vat,
-                laboratory=laboratory
-            )
-            return __sync_product(result_product.id)
+        logging.info(f'Barcode {product.principal_barcode} : Try to find or create product with barcode')
+        result_product = __get_product_by_barcode(product.principal_barcode) or __create_product_with_barcode(
+            product.principal_barcode)
 
-        logging.info(f'Barcode {product.principal_barcode} : '
-                     f'Product not found in database, try to create product from providers.')
-        result_product = __create_product_with_barcode(product.principal_barcode)
         if result_product:
-            update_or_create_product_insight(
-                product=result_product,
-                excel_product=product,
-                product_type=product_type,
-                vat=vat,
-                laboratory=laboratory
-            )
-            return __sync_product(result_product.id)
+            # check if product excel are equals to the product
+            if product_excel_is_different_from_product(product, result_product):
+                logging.info(f'Barcode {product.principal_barcode} : Update product insight with excel data')
+                update_or_create_product_insight(
+                    product=result_product,
+                    excel_product=product,
+                    product_type=product_type,
+                    vat=vat,
+                    laboratory=laboratory
+                )
+                return __sync_product(result_product.id)
+            else:
+                logging.info(f'Barcode {product.principal_barcode} : Product is up to date')
+                return result_product
 
         # Create product from scratch
         if can_create_product_from_scratch:
