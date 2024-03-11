@@ -23,25 +23,9 @@ ApplicationWindow {
     StackView {
         anchors.fill: parent
         initialItem: Page {
-            header: Label {
-                id: header
-                text: qsTr("Connexion")
-                bottomPadding: 10
-                topPadding: 10
-                color: '#3AB872'
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 40
-                    color: '#1E276D'
-                }
-                font.pixelSize: 22
-                horizontalAlignment: Text.AlignHCenter
-            }
-            footer: Pane {
-                id: footer
+            header:
                 ColumnLayout {
-                    id: footerColumn
-                    anchors.fill: parent
+                    id: headerColumn
                     Label {
                         id: newVersion
                         Layout.fillWidth: true
@@ -50,6 +34,8 @@ ApplicationWindow {
                         font.pointSize: 18
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
+                        topPadding: 200
+                        visible: !isEmpty(newVersionAvailable)
                     }
                     Text {
                         id: link
@@ -66,17 +52,33 @@ ApplicationWindow {
                         visible: !isEmpty(newVersionAvailable)
                     }
                     Label {
-                        id: currentVersion
-                        Layout.fillWidth: true
-                        text: qsTr(version)
+                        id: header
+                        anchors.fill: parent
+                        text: qsTr("Connexion")
+                        bottomPadding: 10
+                        topPadding: 10
+                        color: '#3AB872'
+                        background: Rectangle {
+                            implicitWidth: 100
+                            implicitHeight: 40
+                            color: '#1E276D'
+                        }
+                        font.pixelSize: 22
                         horizontalAlignment: Text.AlignHCenter
+                        visible: isEmpty(newVersionAvailable)
                     }
                 }
+            footer: Label {
+                id: footer
+                text: qsTr(version)
+                leftPadding: 10
+                horizontalAlignment: Text.AlignHCenter
             }
             RowLayout {
                 id: rowLayout
                 anchors.fill: parent
                 focus: true
+                visible: isEmpty(newVersionAvailable)
                 Keys.onPressed: (event) => {
                     if (event.key === Qt.Key_Return) {
                         loginButton.clicked()
