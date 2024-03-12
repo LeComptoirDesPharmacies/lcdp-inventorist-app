@@ -6,11 +6,6 @@ class ProcessingException(Exception):
         super().__init__(error.value)
 
 
-class TooManyProduct(ProcessingException):
-    def __init__(self):
-        super().__init__(ProcessingError.TOO_MANY_PRODUCT)
-
-
 class VatNotFound(ProcessingException):
     def __init__(self):
         super().__init__(ProcessingError.VAT_NOT_FOUND)

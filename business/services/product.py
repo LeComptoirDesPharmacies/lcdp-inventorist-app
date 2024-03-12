@@ -5,7 +5,7 @@ from api.consume.gen.product import ApiException
 from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
 from api.consume.gen.product.model.product_status import ProductStatus
-from business.exceptions import TooManyProduct, CannotCreateProduct
+from business.exceptions import CannotCreateProduct
 from business.services.catalog import update_or_create_product_insight
 from business.services.laboratory import find_or_create_laboratory
 from business.services.providers import get_search_product_api, get_search_product_metadata_api, \

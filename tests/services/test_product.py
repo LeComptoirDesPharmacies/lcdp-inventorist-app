@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock, Mock
 
 from api.consume.gen.product import ApiException
-from business.exceptions import CannotCreateProduct, TooManyProduct
+from business.exceptions import CannotCreateProduct
 from business.models.product import Product
 from business.services.product import update_or_create_product
 
@@ -79,17 +79,6 @@ class TestProduct(unittest.TestCase):
 
         self.manage_product_api.create_product.assert_not_called()
         self.assertEqual(expected, result)
-
-    def test_update_or_create_product_with_two_product_found_by_barcode(self):
-        expected = MagicMock(id=2, name="new product name")
-        self.search_product_api.get_products.return_value = MagicMock(
-            records=[MagicMock(id=2, name=self.mocked_product.name), MagicMock(id=1, name=self.mocked_product.name)]
-        )
-
-        self.manage_product_api.update_product.return_value = expected
-        with self.assertRaises(TooManyProduct):
-            update_or_create_product(self.mocked_product, True)
-            self.manage_product_api.create_product.assert_not_called()
 
     def test_update_or_create_product_with_product_creation_by_barcode(self):
         expected = MagicMock(id=2, name="new product name")
