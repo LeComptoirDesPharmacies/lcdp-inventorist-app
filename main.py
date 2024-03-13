@@ -59,15 +59,20 @@ if __name__ == "__main__":
 
     engine.rootContext().setContextProperty("newVersionAvailable", "")
     engine.rootContext().setContextProperty("newVersionUrl", "")
-    try:
-        latestRelease = requests.get(GITHUB_REPOSITORY_LATEST_RELEASE).json()
-        latestAppTag = latestRelease.get("name")
-        if latestAppTag != settings.value("VERSION"):
-            logging.info("New version available")
-            engine.rootContext().setContextProperty("newVersionAvailable", "Nouvelle version disponible : " + latestAppTag)
-            engine.rootContext().setContextProperty("newVersionUrl", latestRelease.get("html_url"))
-    except Exception as e:
-        logging.info("Error while getting latest tag from github")
+
+    type_env = os.environ.get("LCDP_ENVIRONMENT")
+    if type_env == "dev":
+        print("Dev mode. No check for new version. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
+    else:
+        try:
+            latestRelease = requests.get(GITHUB_REPOSITORY_LATEST_RELEASE).json()
+            latestAppTag = latestRelease.get("name")
+            if latestAppTag != settings.value("VERSION"):
+                logging.info("New version available")
+                engine.rootContext().setContextProperty("newVersionAvailable", "Nouvelle version disponible : " + latestAppTag)
+                engine.rootContext().setContextProperty("newVersionUrl", latestRelease.get("html_url"))
+        except Exception as e:
+            logging.info("Error while getting latest tag from github")
 
     login_backend = Login()
     app_backend = App()
