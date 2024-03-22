@@ -1,6 +1,10 @@
 import logging
 from functools import lru_cache
 
+import backoff
+import requests
+
+import api.consume.gen.product.exceptions
 from api.consume.gen.product import ApiException
 from api.consume.gen.product.model.barcodes import Barcodes
 from api.consume.gen.product.model.product_creation_or_update_parameters import ProductCreationOrUpdateParameters
@@ -32,6 +36,16 @@ def product_excel_is_different_from_product(product, result_product):
                 and (product.vat.value / 100) != result_product.vat.get('value', None)))
 
 
+def service_unavailable_status_code(e):
+    # do not retry if status code is different to 503
+    return e.status != 503
+
+
+@backoff.on_exception(backoff.expo,
+                      api.consume.gen.product.exceptions.ServiceException,
+                      max_tries=3,
+                      max_time=20,
+                      giveup=service_unavailable_status_code)
 def update_or_create_product(product, can_create_product_from_scratch):
     if product and not product.is_empty():
         product_type = __find_product_type_by_name(product.product_type.name)
