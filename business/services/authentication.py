@@ -1,3 +1,5 @@
+import logging
+
 from api.consume.gen.auth.model.login_credential import LoginCredential
 from business.services.providers import get_auth_api, get_search_user_api, get_manage_api_key_api
 from business.services.security import API_KEY_NAME, persist_api_key, get_api_key
@@ -34,10 +36,22 @@ def authenticate(email, password):
 def delete_api_key():
     api_key = get_api_key()
     api_key_id = get_setting(API_KEY_ID_NAME)
-    if api_key and api_key_id:
+
+    # special case. app has crashed, user open and close app, without login
+    # => api_key_id stored in keyring is now a string...
+    if isinstance(api_key_id, str):
+        remove_setting(API_KEY_ID_NAME)
+    elif api_key and api_key_id:
+        # if app has crashed, api_key_id stored in keyring is now a string...
+        if isinstance(api_key_id, str):
+            try:
+                api_key_id = int(api_key_id)
+            except ValueError:
+                logging.exception("api_key_id is not a number!", api_key_id)
+
         manage_api_key_api = get_manage_api_key_api()
         manage_api_key_api.delete_api_key(
-            _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-            api_key_id=get_setting(API_KEY_ID_NAME)
+            _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", api_key)],
+            api_key_id=api_key_id
         )
         remove_setting(API_KEY_ID_NAME)
