@@ -37,8 +37,8 @@ def delete_api_key():
     api_key = get_api_key()
     api_key_id = get_setting(API_KEY_ID_NAME)
 
-    # special case. app has crashed, user open and close app, without login
-    # => api_key_id stored in keyring is now a string...
+    # if app crashes, apiKeyId is not deleted from keyring and always exists but as string
+    # if user open and close app, without login, avoid to delete api_key_id as string, but delete it from keyring
     if isinstance(api_key_id, str):
         remove_setting(API_KEY_ID_NAME)
     elif api_key and api_key_id:
