@@ -39,17 +39,15 @@ def delete_api_key():
     api_key_id = get_setting(API_KEY_ID_NAME)
 
     if api_key and api_key_id:
-        # if user open and close app, without login, try to delete old api_key
-        if isinstance(api_key_id, str):
-            try:
+        try:
+            # if user open and close app, without login, try to delete old api_key
+            if isinstance(api_key_id, str):
                 api_key_id = int(api_key_id)
-            except ValueError:
-                remove_setting(API_KEY_ID_NAME)
-                return
 
-        manage_api_key_api = get_manage_api_key_api()
-        manage_api_key_api.delete_api_key(
-            _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", api_key)],
-            api_key_id=api_key_id
-        )
-        remove_setting(API_KEY_ID_NAME)
+            manage_api_key_api = get_manage_api_key_api()
+            manage_api_key_api.delete_api_key(
+                _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", api_key)],
+                api_key_id=api_key_id
+            )
+        finally:
+            remove_setting(API_KEY_ID_NAME)
