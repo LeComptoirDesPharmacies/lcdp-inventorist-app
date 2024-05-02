@@ -25,6 +25,9 @@ def __create_api_key(email, password):
 
 
 def authenticate(email, password):
+    # if app crashes, apiKeyId is not deleted from keyring and always exists
+    delete_api_key()
+
     token, user = __create_api_key(email, password)
     persist_api_key(token.value)
     set_setting(API_KEY_ID_NAME, token.id)
@@ -34,10 +37,17 @@ def authenticate(email, password):
 def delete_api_key():
     api_key = get_api_key()
     api_key_id = get_setting(API_KEY_ID_NAME)
+
     if api_key and api_key_id:
-        manage_api_key_api = get_manage_api_key_api()
-        manage_api_key_api.delete_api_key(
-            _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-            api_key_id=get_setting(API_KEY_ID_NAME)
-        )
-        remove_setting(API_KEY_ID_NAME)
+        try:
+            # if user open and close app, without login, try to delete old api_key
+            if isinstance(api_key_id, str):
+                api_key_id = int(api_key_id)
+
+            manage_api_key_api = get_manage_api_key_api()
+            manage_api_key_api.delete_api_key(
+                _request_auths=[manage_api_key_api.api_client.create_auth_settings("apiKeyAuth", api_key)],
+                api_key_id=api_key_id
+            )
+        finally:
+            remove_setting(API_KEY_ID_NAME)
