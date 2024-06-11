@@ -1,4 +1,5 @@
 import functools
+import time
 
 
 def cast_yes_to_bool(value):
@@ -37,6 +38,7 @@ def rsetattr(obj, attr, val):
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
+
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 
@@ -68,3 +70,15 @@ class ConditionalDict(dict):
         if key in self and self.merge_func:
             value = self.merge_func(key, self[key], value)
         return value
+
+
+def execution_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # Démarre le chronomètre
+        result = func(*args, **kwargs)
+        end_time = time.time()  # Arrête le chronomètre
+        elapsed_time = end_time - start_time
+        print(f"Execution time of {func.__name__}: {elapsed_time:.4f} seconds")
+        return result
+
+    return wrapper

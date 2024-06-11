@@ -19,18 +19,20 @@ def __create_sale_offer_from_scratch(sale_offer, product):
     return __create_sale_offer(sale_offer, product.id)
 
 
-def __find_existing_sale_offer(sale_offer, product):
+def __find_existing_sale_offer(map_sale_offers, sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
+        logging.info(f'search sale offer with UpdatePolicy.PRODUCT_BARCODE.value')
         existing_sale_offer = __find_sale_offer_for_version(
             sale_offer,
             product.id
         )
     elif sale_offer.update_policy == UpdatePolicy.SALE_OFFER_REFERENCE.value and sale_offer.reference:
-        existing_sale_offer = __get_sale_offer(
-            sale_offer.reference
-        )
+        # existing_sale_offer = __get_sale_offer(
+        #     sale_offer.reference
+        # )
+        existing_sale_offer = map_sale_offers[sale_offer.reference]
     return existing_sale_offer
 
 
@@ -46,11 +48,11 @@ def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
     return __clone_sale_offer(existing_sale_offer, sale_offer)
 
 
-def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
+def create_or_edit_sale_offer(map_sale_offers, sale_offer, product, can_create_sale_offer):
     new_sale_offer = None
 
     if sale_offer:
-        existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
+        existing_sale_offer = __find_existing_sale_offer(map_sale_offers, sale_offer, product)
 
         if existing_sale_offer:
             if not existing_sale_offer.status.value == 'DISABLED':
@@ -86,6 +88,17 @@ def __find_sale_offer_for_status(product_id, owner_id, status):
         pp=1,
     )
     return next(iter(sale_offers.records), None)
+
+
+def __get_sale_offers(references):
+    api = get_search_sale_offer_api()
+    sale_offers = api.get_sale_offers(
+        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+        ref_eq=references,
+        p=0,
+        pp=len(references)
+    )
+    return sale_offers.records
 
 
 def __get_sale_offer(reference):

@@ -1,28 +1,88 @@
 import logging
+import os
 import tempfile
 import time
-import os
+from concurrent.futures import as_completed, ThreadPoolExecutor
 
 from openpyxl import load_workbook, Workbook
 
-from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
-from api.consume.gen.product import ApiException as ProductApiException
-from api.consume.gen.laboratory import ApiException as LaboratoryApiException
-from api.consume.gen.configuration import ApiException as ConfigurationApiException
 from api.consume.gen.catalog import ApiException as ProductInsightApiException
+from api.consume.gen.configuration import ApiException as ConfigurationApiException
+from api.consume.gen.laboratory import ApiException as LaboratoryApiException
+from api.consume.gen.product import ApiException as ProductApiException
+from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
 from business.exceptions import CannotUpdateSaleOfferStatus
-from business.mappers.excel_mapper import error_mapper
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle, product_insight_api_exception_to_muggle
-from business.services.product import update_or_create_product, change_product_status
-from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, \
-    change_sale_offer_status
-from business.utils import rgetattr
+from business.mappers.excel_mapper import error_mapper
+from business.services.product import update_or_create_product, change_product_status, __get_products_by_barcodes
+from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, __get_sale_offers
+from business.utils import rgetattr, execution_time
 
 
+@execution_time
 def create_sale_offer_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
-    results = list(map(__create_sale_offer_from_excel_line, lines))
+
+    # excel_line.sale_offer.product
+    arrayOfBarcode = [x.sale_offer.product.principal_barcode for x in lines if
+                      x.sale_offer.product.principal_barcode is not None]
+    # logging.info(f"List of barcode: {arrayOfBarcode}")
+
+    chunk_size = 50
+    packets = [arrayOfBarcode[i:i + chunk_size] for i in range(0, len(arrayOfBarcode), chunk_size)]
+    # logging.info(f"List of packets: {packets}")
+
+    array_of_existing_products = list(map(__get_products_by_barcodes, packets))
+    # existing_products = __create_or_update_product_from_excel_line(packets[0])
+    # records = __create_or_update_product_from_excel_line(packets[0])
+
+    existing_products = []
+    for sub_list in array_of_existing_products:
+        existing_products.extend(sub_list)
+
+    map_products = {}
+    for product in existing_products:
+        principal_barcode = product.barcodes.principal
+        map_products[principal_barcode] = product
+
+    # excel_line.sale_offer.reference
+    # list of sale_offer.reference
+    arrayOfReference = [x.sale_offer.reference for x in lines if x.sale_offer.reference is not None]
+    # logging.info(f"List of reference: {arrayOfReference}")
+    # chunk_size = 50
+    packets = [arrayOfReference[i:i + chunk_size] for i in range(0, len(arrayOfReference), chunk_size)]
+    # logging.info(f"List of packets: {packets}")
+
+    array_of_existing_sale_offers = list(map(__get_sale_offers, packets))
+    # existing_sale_offers = __find_existing_sale_offers(packets)
+    # records = __find_existing_sale_offers(packets[0])
+
+    existing_sale_offers = []
+    for sub_list in array_of_existing_sale_offers:
+        existing_sale_offers.extend(sub_list)
+
+    map_sale_offers = {}
+    for sale_offer in existing_sale_offers:
+        reference = sale_offer.reference
+        map_sale_offers[reference] = sale_offer
+
+    # records = __find_existing_sale_offers(arrayOfReference)
+    # logging.info(f"map: {map_sale_offers}")
+
+    # results = list(map(lambda line: __create_sale_offer_from_excel_line(map_sale_offers, map_products, line), lines))
+
+    results = []
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(__create_sale_offer_from_excel_line, map_sale_offers, map_products, line): line for
+                   line in lines}
+        for future in as_completed(futures):
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as e:
+                logging.error(f"Error processing line {futures[future]}: {e}")
+
     return results
 
 
@@ -108,14 +168,15 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def __create_sale_offer_from_excel_line(excel_line):
+def __create_sale_offer_from_excel_line(map_sale_offers, map_products, excel_line):
     sale_offer = None
     error = None
     try:
-        product = update_or_create_product(excel_line.sale_offer.product,
+        product = update_or_create_product(map_products, excel_line.sale_offer.product,
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
-        sale_offer = create_or_edit_sale_offer(excel_line.sale_offer, product, excel_line.can_create_sale_offer())
+        sale_offer = create_or_edit_sale_offer(map_sale_offers, excel_line.sale_offer, product,
+                                               excel_line.can_create_sale_offer())
     except SaleOfferApiException as sale_offer_api_err:
         logging.error('An API error occur in sale offer api', sale_offer_api_err)
         error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
