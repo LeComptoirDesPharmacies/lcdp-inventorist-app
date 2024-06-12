@@ -93,15 +93,19 @@ def __get_products_by_barcodes(barcodes):
 
     api = get_search_product_api()
 
-    products = api.get_products(
-        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-        barcodes_anyeq=barcodes,
-        st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
-        p=0,
-        pp=len(barcodes)
-    )
+    try:
+        products = api.get_products(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            barcodes_anyeq=barcodes,
+            st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
+            p=0,
+            pp=len(barcodes)
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching products by barcodes {barcodes}', exc)
+        return []
 
-    return products.records if products else None
+    return products.records if products else []
 
 
 def __get_product_by_barcode(map_products, barcode):
@@ -111,7 +115,7 @@ def __get_product_by_barcode(map_products, barcode):
     if barcode in map_products:
         return map_products[barcode]
 
-    logging.info(f'Barcode {barcode} :not find in map')
+    logging.info(f'Product {barcode} not found in map, search in API')
 
     api = get_search_product_api()
 
@@ -121,8 +125,6 @@ def __get_product_by_barcode(map_products, barcode):
         st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
         p=0, pp=1
     )
-
-    logging.info(f'Barcode {barcode} :find in api')
 
     return next(iter(products.records), None)
 

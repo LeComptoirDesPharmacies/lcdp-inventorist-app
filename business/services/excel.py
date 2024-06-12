@@ -20,61 +20,43 @@ from business.services.sale_offer import create_or_edit_sale_offer, delete_depre
 from business.utils import rgetattr, execution_time
 
 
+def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
+    array_from_lines = [get_key_from_line(x.sale_offer) for x in lines if
+                        get_key_from_line(x.sale_offer) is not None]
+
+    chunk_size = 50
+    packets = [array_from_lines[i:i + chunk_size] for i in range(0, len(array_from_lines), chunk_size)]
+
+    array_from_api = list(map(get_from_api, packets))
+
+    flatten_array = []
+    for sub_list in array_from_api:
+        flatten_array.extend(sub_list)
+
+    map_of_object = {}
+    for obj in flatten_array:
+        key = get_key_from_api_object(obj)
+        map_of_object[key] = obj
+
+    logging.info(f"Map of object has {len(map_of_object)} element(s)")
+
+    return map_of_object
+
+
 @execution_time
 def create_sale_offer_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    # excel_line.sale_offer.product
-    arrayOfBarcode = [x.sale_offer.product.principal_barcode for x in lines if
-                      x.sale_offer.product.principal_barcode is not None]
-    # logging.info(f"List of barcode: {arrayOfBarcode}")
+    map_products = __get_map(lines, lambda x: x.product.principal_barcode, __get_products_by_barcodes,
+                             lambda x: x.barcodes.principal)
 
-    chunk_size = 50
-    packets = [arrayOfBarcode[i:i + chunk_size] for i in range(0, len(arrayOfBarcode), chunk_size)]
-    # logging.info(f"List of packets: {packets}")
-
-    array_of_existing_products = list(map(__get_products_by_barcodes, packets))
-    # existing_products = __create_or_update_product_from_excel_line(packets[0])
-    # records = __create_or_update_product_from_excel_line(packets[0])
-
-    existing_products = []
-    for sub_list in array_of_existing_products:
-        existing_products.extend(sub_list)
-
-    map_products = {}
-    for product in existing_products:
-        principal_barcode = product.barcodes.principal
-        map_products[principal_barcode] = product
-
-    # excel_line.sale_offer.reference
-    # list of sale_offer.reference
-    arrayOfReference = [x.sale_offer.reference for x in lines if x.sale_offer.reference is not None]
-    # logging.info(f"List of reference: {arrayOfReference}")
-    # chunk_size = 50
-    packets = [arrayOfReference[i:i + chunk_size] for i in range(0, len(arrayOfReference), chunk_size)]
-    # logging.info(f"List of packets: {packets}")
-
-    array_of_existing_sale_offers = list(map(__get_sale_offers, packets))
-    # existing_sale_offers = __find_existing_sale_offers(packets)
-    # records = __find_existing_sale_offers(packets[0])
-
-    existing_sale_offers = []
-    for sub_list in array_of_existing_sale_offers:
-        existing_sale_offers.extend(sub_list)
-
-    map_sale_offers = {}
-    for sale_offer in existing_sale_offers:
-        reference = sale_offer.reference
-        map_sale_offers[reference] = sale_offer
-
-    # records = __find_existing_sale_offers(arrayOfReference)
-    # logging.info(f"map: {map_sale_offers}")
-
-    # results = list(map(lambda line: __create_sale_offer_from_excel_line(map_sale_offers, map_products, line), lines))
+    map_sale_offers = __get_map(lines, lambda x: x.reference,
+                                __get_sale_offers, lambda x: x.reference)
 
     results = []
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(__create_sale_offer_from_excel_line, map_sale_offers, map_products, line): line for
+        futures = {executor.submit(__create_sale_offer_from_excel_line, map_sale_offers, map_products, line): line
+                   for
                    line in lines}
         for future in as_completed(futures):
             try:
@@ -88,7 +70,21 @@ def create_sale_offer_from_excel_lines(lines):
 
 def create_or_update_product_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
-    results = list(map(__create_or_update_product_from_excel_line, lines))
+
+    map_products = __get_map(lines, lambda x: x.product.principal_barcode, __get_products_by_barcodes,
+                             lambda x: x.barcodes.principal)
+
+    results = []
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(__create_or_update_product_from_excel_line, map_products, line): line for
+                   line in lines}
+        for future in as_completed(futures):
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as e:
+                logging.error(f"Error processing line {futures[future]}: {e}")
+
     return results
 
 
@@ -203,11 +199,12 @@ def __create_sale_offer_from_excel_line(map_sale_offers, map_products, excel_lin
     }
 
 
-def __create_or_update_product_from_excel_line(excel_line):
+def __create_or_update_product_from_excel_line(map_products, excel_line):
     product = None
     error = None
     try:
-        product = update_or_create_product(excel_line.sale_offer.product, excel_line.can_create_product_from_scratch())
+        product = update_or_create_product(map_products, excel_line.sale_offer.product,
+                                           excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
     except ProductApiException as product_api_err:
         logging.error('An API error occur in product api', product_api_err)

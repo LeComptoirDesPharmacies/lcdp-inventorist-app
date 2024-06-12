@@ -29,10 +29,10 @@ def __find_existing_sale_offer(map_sale_offers, sale_offer, product):
             product.id
         )
     elif sale_offer.update_policy == UpdatePolicy.SALE_OFFER_REFERENCE.value and sale_offer.reference:
-        # existing_sale_offer = __get_sale_offer(
-        #     sale_offer.reference
-        # )
-        existing_sale_offer = map_sale_offers[sale_offer.reference]
+        existing_sale_offer = __get_sale_offer(
+            map_sale_offers,
+            sale_offer.reference
+        )
     return existing_sale_offer
 
 
@@ -92,16 +92,27 @@ def __find_sale_offer_for_status(product_id, owner_id, status):
 
 def __get_sale_offers(references):
     api = get_search_sale_offer_api()
-    sale_offers = api.get_sale_offers(
-        _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
-        ref_eq=references,
-        p=0,
-        pp=len(references)
-    )
-    return sale_offers.records
+
+    try:
+        sale_offers = api.get_sale_offers(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            ref_eq=references,
+            p=0,
+            pp=len(references)
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching sale offers by references {references}', exc)
+        return []
+
+    return sale_offers.records if sale_offers else []
 
 
-def __get_sale_offer(reference):
+def __get_sale_offer(map_sale_offers, reference):
+    if reference in map_sale_offers:
+        return map_sale_offers[reference]
+
+    logging.info(f'Sale offer {reference} not found in map, search in API')
+
     api = get_search_sale_offer_api()
     sale_offer = api.get_sale_offer(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
