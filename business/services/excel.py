@@ -27,13 +27,13 @@ def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
 
     packets = [array_from_lines[i:i + CHUNK_SIZE] for i in range(0, len(array_from_lines), CHUNK_SIZE)]
 
-    flatten_array = [item for sublist in map(get_from_api, packets) for item in sublist]
+    array_of_objects = [item for sublist in map(get_from_api, packets) for item in sublist]
 
-    map_of_object = {get_key_from_api_object(obj): obj for obj in flatten_array}
+    map_of_objects = {get_key_from_api_object(obj): obj for obj in array_of_objects}
 
-    logging.info(f"Map of object has {len(map_of_object)} element(s)")
+    logging.info(f"Map of object has {len(map_of_objects)} element(s)")
 
-    return map_of_object
+    return map_of_objects
 
 
 @execution_time
