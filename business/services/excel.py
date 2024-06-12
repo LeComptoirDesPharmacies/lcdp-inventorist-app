@@ -11,6 +11,7 @@ from api.consume.gen.configuration import ApiException as ConfigurationApiExcept
 from api.consume.gen.laboratory import ApiException as LaboratoryApiException
 from api.consume.gen.product import ApiException as ProductApiException
 from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
+from business.constant import CHUNK_SIZE
 from business.exceptions import CannotUpdateSaleOfferStatus
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle, product_insight_api_exception_to_muggle
@@ -24,19 +25,11 @@ def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
     array_from_lines = [get_key_from_line(x.sale_offer) for x in lines if
                         get_key_from_line(x.sale_offer) is not None]
 
-    chunk_size = 50
-    packets = [array_from_lines[i:i + chunk_size] for i in range(0, len(array_from_lines), chunk_size)]
+    packets = [array_from_lines[i:i + CHUNK_SIZE] for i in range(0, len(array_from_lines), CHUNK_SIZE)]
 
-    array_from_api = list(map(get_from_api, packets))
+    flatten_array = [item for sublist in map(get_from_api, packets) for item in sublist]
 
-    flatten_array = []
-    for sub_list in array_from_api:
-        flatten_array.extend(sub_list)
-
-    map_of_object = {}
-    for obj in flatten_array:
-        key = get_key_from_api_object(obj)
-        map_of_object[key] = obj
+    map_of_object = {get_key_from_api_object(obj): obj for obj in flatten_array}
 
     logging.info(f"Map of object has {len(map_of_object)} element(s)")
 
@@ -47,17 +40,20 @@ def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
 def create_sale_offer_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    map_products = __get_map(lines, lambda x: x.product.principal_barcode, __get_products_by_barcodes,
+    map_products = __get_map(lines,
+                             lambda x: x.product.principal_barcode,
+                             __get_products_by_barcodes,
                              lambda x: x.barcodes.principal)
 
-    map_sale_offers = __get_map(lines, lambda x: x.reference,
-                                __get_sale_offers, lambda x: x.reference)
+    map_sale_offers = __get_map(lines,
+                                lambda x: x.reference,
+                                __get_sale_offers,
+                                lambda x: x.reference)
 
     results = []
     with ThreadPoolExecutor() as executor:
         futures = {executor.submit(__create_sale_offer_from_excel_line, map_sale_offers, map_products, line): line
-                   for
-                   line in lines}
+                   for line in lines}
         for future in as_completed(futures):
             try:
                 result = future.result()
