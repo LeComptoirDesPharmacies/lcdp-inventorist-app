@@ -23,9 +23,9 @@ def __find_existing_sale_offer(map_sale_offers, sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
-        logging.info(f'search sale offer with UpdatePolicy.PRODUCT_BARCODE.value')
         existing_sale_offer = __find_sale_offer_for_version(
-            sale_offer,
+            map_sale_offers,
+            sale_offer.owner_id,
             product.id
         )
     elif sale_offer.update_policy == UpdatePolicy.SALE_OFFER_REFERENCE.value and sale_offer.reference:
@@ -70,10 +70,15 @@ def create_or_edit_sale_offer(map_sale_offers, sale_offer, product, can_create_s
     raise CannotCreateSaleOffer()
 
 
-def __find_sale_offer_for_version(sale_offer, product_id):
-    return __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['ENABLED']) or \
-        __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['WAITING_FOR_PRODUCT',
-                                                                       'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'])
+def __find_sale_offer_for_version(map_sale_offers, owner_id, product_id):
+    if product_id in map_sale_offers:
+        return map_sale_offers[product_id]
+
+    logging.info(f'Sale offer by product_id {product_id} not found in map, search in API')
+
+    return __find_sale_offer_for_status(product_id, owner_id, ['ENABLED']) or \
+        __find_sale_offer_for_status(product_id, owner_id, ['WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE',
+                                                            'HOLIDAY', 'DISABLED'])
 
 
 def __find_sale_offer_for_status(product_id, owner_id, status):
@@ -88,6 +93,27 @@ def __find_sale_offer_for_status(product_id, owner_id, status):
         pp=1,
     )
     return next(iter(sale_offers.records), None)
+
+
+def __get_latest_sale_offers(product_ids, owner_id, status):
+    api = get_search_sale_offer_api()
+
+    try:
+        sale_offers = api.get_sale_offers(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            p_eq=product_ids,
+            o_eq=[owner_id],
+            st_eq=status,
+            order_by=['CREATED_AT:desc'],
+            distinct_by='PRODUCT:LATEST_CREATED',
+            p=0,
+            pp=len(product_ids),
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching sale offers by product ids {product_ids}', exc)
+        return []
+
+    return sale_offers.records if sale_offers else []
 
 
 def __get_sale_offers(references):

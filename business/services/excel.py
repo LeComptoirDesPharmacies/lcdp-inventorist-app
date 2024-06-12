@@ -16,20 +16,27 @@ from business.exceptions import CannotUpdateSaleOfferStatus
 from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
     api_exception_to_muggle, product_insight_api_exception_to_muggle
 from business.mappers.excel_mapper import error_mapper
+from business.models.update_policy import UpdatePolicy
 from business.services.product import update_or_create_product, change_product_status, __get_products_by_barcodes
-from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, __get_sale_offers
+from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, __get_sale_offers, \
+    __get_latest_sale_offers
 from business.utils import rgetattr, execution_time
 
 
-def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
-    array_from_lines = [get_key_from_line(x.sale_offer) for x in lines if
-                        get_key_from_line(x.sale_offer) is not None]
+def __get_map(keys_from_file, get_from_api, get_keys_from_api_object):
+    packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
 
-    packets = [array_from_lines[i:i + CHUNK_SIZE] for i in range(0, len(array_from_lines), CHUNK_SIZE)]
+    array_from_api = list(map(get_from_api, packets))
 
-    array_of_objects = [item for sublist in map(get_from_api, packets) for item in sublist]
+    flatten_array = []
+    for sub_list in array_from_api:
+        flatten_array.extend(sub_list)
 
-    map_of_objects = {get_key_from_api_object(obj): obj for obj in array_of_objects}
+    map_of_objects = {}
+    for obj in flatten_array:
+        keys = get_keys_from_api_object(obj)
+        for key in keys:
+            map_of_objects[key] = obj
 
     logging.info(f"Map of object has {len(map_of_objects)} element(s)")
 
@@ -40,15 +47,41 @@ def __get_map(lines, get_key_from_line, get_from_api, get_key_from_api_object):
 def create_sale_offer_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    map_products = __get_map(lines,
-                             lambda x: x.product.principal_barcode,
-                             __get_products_by_barcodes,
-                             lambda x: x.barcodes.principal)
+    products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
+                         x.sale_offer.product.principal_barcode is not None}
 
-    map_sale_offers = __get_map(lines,
-                                lambda x: x.reference,
-                                __get_sale_offers,
-                                lambda x: x.reference)
+    map_products = __get_map(products_barcodes,
+                             __get_products_by_barcodes,
+                             lambda x: [x.barcodes.principal, x.barcodes.cip, x.barcodes.cip13] + x.barcodes.eans)
+
+    # assume that all lines have the same owner_id and update_policy
+    owner_id = lines[0].sale_offer.owner_id
+    update_policy = lines[0].sale_offer.update_policy
+
+    if update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
+        logging.info("Update policy is PRODUCT_BARCODE, we will get the latest sale offers by product_id")
+        product_ids = {product.id for product in map_products.values()}
+        map_sale_offers = __get_map(product_ids,
+                                    lambda x: __get_latest_sale_offers(x, owner_id, ['ENABLED']),
+                                    lambda x: [x.product.id])
+
+        product_ids_not_found = {key for key in product_ids if key not in map_sale_offers.keys()}
+
+        if len(product_ids_not_found):
+            map_sale_offers_rest = __get_map(product_ids_not_found,
+                                             lambda x: __get_latest_sale_offers(x, owner_id, ['WAITING_FOR_PRODUCT',
+                                                                                              'ASKING_FOR_INVOICE',
+                                                                                              'HOLIDAY', 'DISABLED']),
+                                             lambda x: [x.product.id])
+            map_sale_offers.update(map_sale_offers_rest)
+    else:
+        logging.info("Update policy is PRODUCT_REFERENCE, we will get the sale offers by reference")
+        sale_offers_reference = {x.sale_offer.reference for x in lines if
+                                 x.sale_offer.reference is not None}
+
+        map_sale_offers = __get_map(sale_offers_reference,
+                                    __get_sale_offers,
+                                    lambda x: [x.reference])
 
     results = []
     with ThreadPoolExecutor() as executor:
@@ -67,7 +100,11 @@ def create_sale_offer_from_excel_lines(lines):
 def create_or_update_product_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
 
-    map_products = __get_map(lines, lambda x: x.product.principal_barcode, __get_products_by_barcodes,
+    products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
+                         x.sale_offer.product.principal_barcode is not None}
+
+    map_products = __get_map(products_barcodes,
+                             __get_products_by_barcodes,
                              lambda x: x.barcodes.principal)
 
     results = []
