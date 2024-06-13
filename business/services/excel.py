@@ -23,7 +23,7 @@ from business.services.sale_offer import create_or_edit_sale_offer, delete_depre
 from business.utils import rgetattr, execution_time
 
 
-def __get_map(keys_from_file, get_from_api, get_keys_from_api_object):
+def __prefetch(type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
 
     array_from_api = list(map(get_from_api, packets))
@@ -38,7 +38,7 @@ def __get_map(keys_from_file, get_from_api, get_keys_from_api_object):
         for key in keys:
             map_of_objects[key] = obj
 
-    logging.info(f"Map of object has {len(map_of_objects)} element(s)")
+    logging.info(f"Map of {type} has {len(map_of_objects)} element(s)")
 
     return map_of_objects
 
@@ -50,43 +50,64 @@ def create_sale_offer_from_excel_lines(lines):
     products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
                          x.sale_offer.product.principal_barcode is not None}
 
-    map_products = __get_map(products_barcodes,
-                             __get_products_by_barcodes,
-                             lambda x: [x.barcodes.principal, x.barcodes.cip, x.barcodes.cip13] + x.barcodes.eans)
+    # [barcode, product]
+    prefetched_products = __prefetch('products',
+                                     products_barcodes,
+                                     __get_products_by_barcodes,
+                                     lambda x: list(
+                                         filter(None, [x.barcodes.principal, x.barcodes.cip,
+                                                       x.barcodes.cip13] + x.barcodes.eans)))
 
-    # assume that all lines have the same owner_id and update_policy
-    owner_id = lines[0].sale_offer.owner_id
+    # assume that all lines have the same update_policy
     update_policy = lines[0].sale_offer.update_policy
 
     if update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
         logging.info("Update policy is PRODUCT_BARCODE, we will get the latest sale offers by product_id")
-        product_ids = {product.id for product in map_products.values()}
-        map_sale_offers = __get_map(product_ids,
-                                    lambda x: __get_latest_sale_offers(x, owner_id, ['ENABLED']),
-                                    lambda x: [x.product.id])
 
-        product_ids_not_found = {key for key in product_ids if key not in map_sale_offers.keys()}
+        # [owner_id, [product_id]]
+        owner_id_barcodes = {}
+        for line in lines:
+            if line.sale_offer.product.principal_barcode:
+                owner_id_barcodes.setdefault(line.sale_offer.owner_id, []).append(
+                    prefetched_products[line.sale_offer.product.principal_barcode].id)
+
+        # [(owner_id, product_id), sale_offer]
+        prefetched_sale_offers = {}
+        for (owner_id, product_ids) in owner_id_barcodes.items():
+            prefetched_sale_offers = __prefetch('sale_offers enabled by (owner_id, product_id)',
+                                                product_ids,
+                                                lambda x: __get_latest_sale_offers(x, owner_id, ['ENABLED']),
+                                                lambda x: [(owner_id, x.product.id)])
+
+        product_ids_not_found = [product_id for (owner_id, product_ids) in owner_id_barcodes.items() for product_id in
+                                 product_ids if (owner_id, product_id) not in prefetched_sale_offers]
 
         if len(product_ids_not_found):
-            map_sale_offers_rest = __get_map(product_ids_not_found,
-                                             lambda x: __get_latest_sale_offers(x, owner_id, ['WAITING_FOR_PRODUCT',
-                                                                                              'ASKING_FOR_INVOICE',
-                                                                                              'HOLIDAY', 'DISABLED']),
-                                             lambda x: [x.product.id])
-            map_sale_offers.update(map_sale_offers_rest)
+            map_sale_offers_rest = __prefetch('sale_offers others status by (owner_id, product_id)',
+                                              product_ids_not_found,
+                                              lambda x: __get_latest_sale_offers(x, owner_id, ['WAITING_FOR_PRODUCT',
+                                                                                               'ASKING_FOR_INVOICE',
+                                                                                               'HOLIDAY', 'DISABLED']),
+                                              lambda x: [(owner_id, x.product.id)])
+            prefetched_sale_offers.update(map_sale_offers_rest)
     else:
         logging.info("Update policy is PRODUCT_REFERENCE, we will get the sale offers by reference")
+
+        # [reference, sale_offer]
         sale_offers_reference = {x.sale_offer.reference for x in lines if
                                  x.sale_offer.reference is not None}
 
-        map_sale_offers = __get_map(sale_offers_reference,
-                                    __get_sale_offers,
-                                    lambda x: [x.reference])
+        prefetched_sale_offers = __prefetch('sale_offers by reference',
+                                            sale_offers_reference,
+                                            __get_sale_offers,
+                                            lambda x: [x.reference])
 
     results = []
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(__create_sale_offer_from_excel_line, map_sale_offers, map_products, line): line
-                   for line in lines}
+        futures = {executor.submit(__create_sale_offer_from_excel_line,
+                                   prefetched_sale_offers,
+                                   prefetched_products,
+                                   line): line for line in lines}
         for future in as_completed(futures):
             try:
                 result = future.result()
@@ -97,19 +118,24 @@ def create_sale_offer_from_excel_lines(lines):
     return results
 
 
+@execution_time
 def create_or_update_product_from_excel_lines(lines):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
 
     products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
                          x.sale_offer.product.principal_barcode is not None}
 
-    map_products = __get_map(products_barcodes,
-                             __get_products_by_barcodes,
-                             lambda x: x.barcodes.principal)
+    # [barcode, product]
+    prefetched_products = __prefetch('products',
+                                     products_barcodes,
+                                     __get_products_by_barcodes,
+                                     lambda x: list(
+                                         filter(None, [x.barcodes.principal, x.barcodes.cip,
+                                                       x.barcodes.cip13] + x.barcodes.eans)))
 
     results = []
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(__create_or_update_product_from_excel_line, map_products, line): line for
+        futures = {executor.submit(__create_or_update_product_from_excel_line, prefetched_products, line): line for
                    line in lines}
         for future in as_completed(futures):
             try:
@@ -197,11 +223,11 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def __create_sale_offer_from_excel_line(map_sale_offers, map_products, excel_line):
+def __create_sale_offer_from_excel_line(map_sale_offers, prefetched_products, excel_line):
     sale_offer = None
     error = None
     try:
-        product = update_or_create_product(map_products, excel_line.sale_offer.product,
+        product = update_or_create_product(prefetched_products, excel_line.sale_offer.product,
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
         sale_offer = create_or_edit_sale_offer(map_sale_offers, excel_line.sale_offer, product,
@@ -232,11 +258,11 @@ def __create_sale_offer_from_excel_line(map_sale_offers, map_products, excel_lin
     }
 
 
-def __create_or_update_product_from_excel_line(map_products, excel_line):
+def __create_or_update_product_from_excel_line(prefetched_products, excel_line):
     product = None
     error = None
     try:
-        product = update_or_create_product(map_products, excel_line.sale_offer.product,
+        product = update_or_create_product(prefetched_products, excel_line.sale_offer.product,
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
     except ProductApiException as product_api_err:

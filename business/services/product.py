@@ -46,14 +46,14 @@ def service_unavailable_status_code(e):
                       max_tries=3,
                       max_time=20,
                       giveup=service_unavailable_status_code)
-def update_or_create_product(map_products, product, can_create_product_from_scratch):
+def update_or_create_product(prefetched_products, product, can_create_product_from_scratch):
     if product and not product.is_empty():
         product_type = __find_product_type_by_name(product.product_type.name)
         vat = get_vat_by_value(product.vat.value)
         laboratory = find_or_create_laboratory(product.laboratory.name)
 
         logging.info(f'Barcode {product.principal_barcode} : Try to find or create product with barcode')
-        result_product = __get_product_by_barcode(map_products,
+        result_product = __get_product_by_barcode(prefetched_products,
                                                   product.principal_barcode) or __create_product_with_barcode(
             product.principal_barcode)
 
@@ -108,12 +108,12 @@ def __get_products_by_barcodes(barcodes):
     return products.records if products else []
 
 
-def __get_product_by_barcode(map_products, barcode):
+def __get_product_by_barcode(prefetched_products, barcode):
     if not barcode:
         return None
 
-    if barcode in map_products:
-        return map_products[barcode]
+    if barcode in prefetched_products:
+        return prefetched_products[barcode]
 
     logging.info(f'Product {barcode} not found in map, search in API')
 

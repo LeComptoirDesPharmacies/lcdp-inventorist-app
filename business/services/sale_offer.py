@@ -71,10 +71,10 @@ def create_or_edit_sale_offer(map_sale_offers, sale_offer, product, can_create_s
 
 
 def __find_sale_offer_for_version(map_sale_offers, owner_id, product_id):
-    if product_id in map_sale_offers:
-        return map_sale_offers[product_id]
+    if (owner_id, product_id) in map_sale_offers:
+        return map_sale_offers[(owner_id, product_id)]
 
-    logging.info(f'Sale offer by product_id {product_id} not found in map, search in API')
+    logging.info(f'Sale offer by (owner_id, product_id) {(owner_id, product_id)} not found in map, search in API')
 
     return __find_sale_offer_for_status(product_id, owner_id, ['ENABLED']) or \
         __find_sale_offer_for_status(product_id, owner_id, ['WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE',
