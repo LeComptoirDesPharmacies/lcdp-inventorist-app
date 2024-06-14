@@ -115,7 +115,7 @@ def __get_product_by_barcode(prefetched_products, barcode):
     if barcode in prefetched_products:
         return prefetched_products[barcode]
 
-    logging.info(f'Product {barcode} not found in map, search in API')
+    logging.info(f'Product {barcode} not found in cache, search in API')
 
     api = get_search_product_api()
 

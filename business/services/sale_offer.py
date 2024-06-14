@@ -19,18 +19,18 @@ def __create_sale_offer_from_scratch(sale_offer, product):
     return __create_sale_offer(sale_offer, product.id)
 
 
-def __find_existing_sale_offer(map_sale_offers, sale_offer, product):
+def __find_existing_sale_offer(prefetched_sale_offers, sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
         existing_sale_offer = __find_sale_offer_for_version(
-            map_sale_offers,
+            prefetched_sale_offers,
             sale_offer.owner_id,
             product.id
         )
     elif sale_offer.update_policy == UpdatePolicy.SALE_OFFER_REFERENCE.value and sale_offer.reference:
         existing_sale_offer = __get_sale_offer(
-            map_sale_offers,
+            prefetched_sale_offers,
             sale_offer.reference
         )
     return existing_sale_offer
@@ -48,11 +48,11 @@ def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
     return __clone_sale_offer(existing_sale_offer, sale_offer)
 
 
-def create_or_edit_sale_offer(map_sale_offers, sale_offer, product, can_create_sale_offer):
+def create_or_edit_sale_offer(prefetched_sale_offers, sale_offer, product, can_create_sale_offer):
     new_sale_offer = None
 
     if sale_offer:
-        existing_sale_offer = __find_existing_sale_offer(map_sale_offers, sale_offer, product)
+        existing_sale_offer = __find_existing_sale_offer(prefetched_sale_offers, sale_offer, product)
 
         if existing_sale_offer:
             if not existing_sale_offer.status.value == 'DISABLED':
@@ -70,11 +70,11 @@ def create_or_edit_sale_offer(map_sale_offers, sale_offer, product, can_create_s
     raise CannotCreateSaleOffer()
 
 
-def __find_sale_offer_for_version(map_sale_offers, owner_id, product_id):
-    if (owner_id, product_id) in map_sale_offers:
-        return map_sale_offers[(owner_id, product_id)]
+def __find_sale_offer_for_version(prefetched_sale_offers, owner_id, product_id):
+    if (owner_id, product_id) in prefetched_sale_offers:
+        return prefetched_sale_offers[(owner_id, product_id)]
 
-    logging.info(f'Sale offer by (owner_id, product_id) {(owner_id, product_id)} not found in map, search in API')
+    logging.info(f'Sale offer by (owner_id, product_id) {(owner_id, product_id)} not found in cache, search in API')
 
     return __find_sale_offer_for_status(product_id, owner_id, ['ENABLED']) or \
         __find_sale_offer_for_status(product_id, owner_id, ['WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE',
@@ -133,11 +133,11 @@ def __get_sale_offers(references):
     return sale_offers.records if sale_offers else []
 
 
-def __get_sale_offer(map_sale_offers, reference):
-    if reference in map_sale_offers:
-        return map_sale_offers[reference]
+def __get_sale_offer(prefetched_sale_offers, reference):
+    if reference in prefetched_sale_offers:
+        return prefetched_sale_offers[reference]
 
-    logging.info(f'Sale offer {reference} not found in map, search in API')
+    logging.info(f'Sale offer {reference} not found in cache, search in API')
 
     api = get_search_sale_offer_api()
     sale_offer = api.get_sale_offer(

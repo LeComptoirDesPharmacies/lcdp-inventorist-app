@@ -23,7 +23,7 @@ from business.services.sale_offer import create_or_edit_sale_offer, delete_depre
 from business.utils import rgetattr, execution_time
 
 
-def __prefetch(type, keys_from_file, get_from_api, get_keys_from_api_object):
+def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
 
     array_from_api = list(map(get_from_api, packets))
@@ -38,7 +38,7 @@ def __prefetch(type, keys_from_file, get_from_api, get_keys_from_api_object):
         for key in keys:
             map_of_objects[key] = obj
 
-    logging.info(f"Map of {type} has {len(map_of_objects)} element(s)")
+    logging.info(f"Map of {prefetch_type} has {len(map_of_objects)} element(s)")
 
     return map_of_objects
 
@@ -67,7 +67,8 @@ def create_sale_offer_from_excel_lines(lines):
         # [owner_id, [product_id]]
         owner_id_barcodes = {}
         for line in lines:
-            if line.sale_offer.product.principal_barcode:
+            if (line.sale_offer.product.principal_barcode and
+                    line.sale_offer.product.principal_barcode in prefetched_products):
                 owner_id_barcodes.setdefault(line.sale_offer.owner_id, []).append(
                     prefetched_products[line.sale_offer.product.principal_barcode].id)
 
@@ -83,13 +84,15 @@ def create_sale_offer_from_excel_lines(lines):
                                  product_ids if (owner_id, product_id) not in prefetched_sale_offers]
 
         if len(product_ids_not_found):
-            map_sale_offers_rest = __prefetch('sale_offers others status by (owner_id, product_id)',
-                                              product_ids_not_found,
-                                              lambda x: __get_latest_sale_offers(x, owner_id, ['WAITING_FOR_PRODUCT',
-                                                                                               'ASKING_FOR_INVOICE',
-                                                                                               'HOLIDAY', 'DISABLED']),
-                                              lambda x: [(owner_id, x.product.id)])
-            prefetched_sale_offers.update(map_sale_offers_rest)
+            prefetched_sale_offers_others_status = __prefetch('sale_offers others status by (owner_id, product_id)',
+                                                              product_ids_not_found,
+                                                              lambda x: __get_latest_sale_offers(x, owner_id,
+                                                                                                 ['WAITING_FOR_PRODUCT',
+                                                                                                  'ASKING_FOR_INVOICE',
+                                                                                                  'HOLIDAY',
+                                                                                                  'DISABLED']),
+                                                              lambda x: [(owner_id, x.product.id)])
+            prefetched_sale_offers.update(prefetched_sale_offers_others_status)
     else:
         logging.info("Update policy is PRODUCT_REFERENCE, we will get the sale offers by reference")
 
@@ -223,14 +226,14 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def __create_sale_offer_from_excel_line(map_sale_offers, prefetched_products, excel_line):
+def __create_sale_offer_from_excel_line(prefetched_sale_offers, prefetched_products, excel_line):
     sale_offer = None
     error = None
     try:
         product = update_or_create_product(prefetched_products, excel_line.sale_offer.product,
                                            excel_line.can_create_product_from_scratch())
         change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
-        sale_offer = create_or_edit_sale_offer(map_sale_offers, excel_line.sale_offer, product,
+        sale_offer = create_or_edit_sale_offer(prefetched_sale_offers, excel_line.sale_offer, product,
                                                excel_line.can_create_sale_offer())
     except SaleOfferApiException as sale_offer_api_err:
         logging.error('An API error occur in sale offer api', sale_offer_api_err)
