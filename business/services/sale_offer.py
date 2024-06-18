@@ -19,16 +19,18 @@ def __create_sale_offer_from_scratch(sale_offer, product):
     return __create_sale_offer(sale_offer, product.id)
 
 
-def __find_existing_sale_offer(sale_offer, product):
+def __find_existing_sale_offer(prefetched_sale_offers, sale_offer, product):
     logging.info(f'product {sale_offer.product.principal_barcode} : Try to find existing sale offer')
     existing_sale_offer = None
     if sale_offer.update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
         existing_sale_offer = __find_sale_offer_for_version(
-            sale_offer,
+            prefetched_sale_offers,
+            sale_offer.owner_id,
             product.id
         )
     elif sale_offer.update_policy == UpdatePolicy.SALE_OFFER_REFERENCE.value and sale_offer.reference:
         existing_sale_offer = __get_sale_offer(
+            prefetched_sale_offers,
             sale_offer.reference
         )
     return existing_sale_offer
@@ -46,11 +48,11 @@ def __clone_existing_sale_offer(existing_sale_offer, sale_offer):
     return __clone_sale_offer(existing_sale_offer, sale_offer)
 
 
-def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
+def create_or_edit_sale_offer(prefetched_sale_offers, sale_offer, product, can_create_sale_offer):
     new_sale_offer = None
 
     if sale_offer:
-        existing_sale_offer = __find_existing_sale_offer(sale_offer, product)
+        existing_sale_offer = __find_existing_sale_offer(prefetched_sale_offers, sale_offer, product)
 
         if existing_sale_offer:
             if not existing_sale_offer.status.value == 'DISABLED':
@@ -68,10 +70,15 @@ def create_or_edit_sale_offer(sale_offer, product, can_create_sale_offer):
     raise CannotCreateSaleOffer()
 
 
-def __find_sale_offer_for_version(sale_offer, product_id):
-    return __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['ENABLED']) or \
-        __find_sale_offer_for_status(product_id, sale_offer.owner_id, ['WAITING_FOR_PRODUCT',
-                                                                       'ASKING_FOR_INVOICE', 'HOLIDAY', 'DISABLED'])
+def __find_sale_offer_for_version(prefetched_sale_offers, owner_id, product_id):
+    if (owner_id, product_id) in prefetched_sale_offers:
+        return prefetched_sale_offers[(owner_id, product_id)]
+
+    logging.info(f'Sale offer by (owner_id, product_id) {(owner_id, product_id)} not found in cache, search in API')
+
+    return __find_sale_offer_for_status(product_id, owner_id, ['ENABLED']) or \
+        __find_sale_offer_for_status(product_id, owner_id, ['WAITING_FOR_PRODUCT', 'ASKING_FOR_INVOICE',
+                                                            'HOLIDAY', 'DISABLED'])
 
 
 def __find_sale_offer_for_status(product_id, owner_id, status):
@@ -88,7 +95,50 @@ def __find_sale_offer_for_status(product_id, owner_id, status):
     return next(iter(sale_offers.records), None)
 
 
-def __get_sale_offer(reference):
+def __get_latest_sale_offers(product_ids, owner_id, status):
+    api = get_search_sale_offer_api()
+
+    try:
+        sale_offers = api.get_sale_offers(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            p_eq=product_ids,
+            o_eq=[owner_id],
+            st_eq=status,
+            order_by=['CREATED_AT:desc'],
+            distinct_by='PRODUCT:LATEST_CREATED',
+            p=0,
+            pp=len(product_ids),
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching sale offers by product ids {product_ids}', exc)
+        return []
+
+    return sale_offers.records if sale_offers else []
+
+
+def __get_sale_offers(references):
+    api = get_search_sale_offer_api()
+
+    try:
+        sale_offers = api.get_sale_offers(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            ref_eq=references,
+            p=0,
+            pp=len(references)
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching sale offers by references {references}', exc)
+        return []
+
+    return sale_offers.records if sale_offers else []
+
+
+def __get_sale_offer(prefetched_sale_offers, reference):
+    if reference in prefetched_sale_offers:
+        return prefetched_sale_offers[reference]
+
+    logging.info(f'Sale offer {reference} not found in cache, search in API')
+
     api = get_search_sale_offer_api()
     sale_offer = api.get_sale_offer(
         _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
