@@ -65,7 +65,7 @@ class TestProduct(unittest.TestCase):
         self.search_manage_product_insight_patch.stop()
 
     def test_update_or_create_product_with_none_product(self):
-        result = update_or_create_product(None, True)
+        result = update_or_create_product({}, None, True)
         self.assertIsNone(result, "Product from udpate on None should be None")
 
     def test_update_or_create_product_with_product_found_by_barcode(self):
@@ -75,7 +75,7 @@ class TestProduct(unittest.TestCase):
         )
 
         self.manage_product_api.update_product.return_value = expected
-        result = update_or_create_product(self.mocked_product, True)
+        result = update_or_create_product({}, self.mocked_product, True)
 
         self.manage_product_api.create_product.assert_not_called()
         self.assertEqual(expected, result)
@@ -89,7 +89,7 @@ class TestProduct(unittest.TestCase):
         self.manage_product_api.create_product.return_value = MagicMock(id=2, name=self.mocked_product.name)
         self.manage_product_api.update_product.return_value = expected
 
-        result = update_or_create_product(self.mocked_product, True)
+        result = update_or_create_product({}, self.mocked_product, True)
 
         self.search_product_api.get_products.assert_called_once()
         self.assertEqual(expected, result)
@@ -102,7 +102,7 @@ class TestProduct(unittest.TestCase):
         self.manage_product_api.create_product.side_effect = ApiException(status=400)
 
         with self.assertRaises(CannotCreateProduct):
-            update_or_create_product(self.mocked_product, False)
+            update_or_create_product({}, self.mocked_product, False)
 
     def test_update_or_create_product_with_product_creation_by_barcode_api_exception_409(self):
         expected = MagicMock(id=2, name="new product name")
@@ -115,7 +115,7 @@ class TestProduct(unittest.TestCase):
         self.manage_product_api.create_product.side_effect = ApiException(
             http_resp=Mock(status=409, data='2', getheaders=lambda: None, reason="Product already exist")
         )
-        result = update_or_create_product(self.mocked_product, False)
+        result = update_or_create_product({}, self.mocked_product, False)
         self.search_product_api.get_product.assert_called_once()
         self.assertEqual(expected, result)
 
@@ -127,7 +127,7 @@ class TestProduct(unittest.TestCase):
         self.manage_product_api.create_product.side_effect = ApiException(status=500)
 
         with self.assertRaises(ApiException):
-            update_or_create_product(self.mocked_product, False)
+            update_or_create_product({}, self.mocked_product, False)
 
     @patch('business.services.product.__create_product_with_barcode')
     def test_update_or_create_product_with_product_creation_from_scratch(self, create_product_with_barcode_mock):
@@ -140,7 +140,7 @@ class TestProduct(unittest.TestCase):
 
         self.manage_product_api.create_product.return_value = expected
 
-        result = update_or_create_product(self.mocked_product, True)
+        result = update_or_create_product({}, self.mocked_product, True)
 
         self.search_product_api.get_products.assert_called_once()
         self.search_product_api.update_product.assert_not_called()
@@ -154,6 +154,6 @@ class TestProduct(unittest.TestCase):
         self.manage_product_api.create_product.return_value = None
 
         with self.assertRaises(CannotCreateProduct):
-            update_or_create_product(self.mocked_product, False)
+            update_or_create_product({}, self.mocked_product, False)
             self.search_product_api.get_products.assert_called_once()
             self.search_product_api.update_product.assert_not_called()

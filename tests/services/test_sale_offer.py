@@ -59,7 +59,7 @@ class TestSaleOffer(unittest.TestCase):
     )
     def test_create_or_edit_sale_offer_with_none_product_or_sale_offer(self, sale_offer, product):
         with self.assertRaises(CannotCreateSaleOffer):
-            create_or_edit_sale_offer(sale_offer, product, True)
+            create_or_edit_sale_offer({}, sale_offer, product, True)
 
     def test_create_or_edit_sale_offer_with_barcode_existing_sale_offer_found(self):
         expected = MagicMock(description="edit my sale offer")
@@ -68,7 +68,7 @@ class TestSaleOffer(unittest.TestCase):
         self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[MagicMock(description="My sale offer")])
         self.manage_sale_offer_api.create_sale_offer_version.return_value = expected
 
-        result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+        result = create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer.assert_not_called()
         self.assertEqual(expected, result)
@@ -80,7 +80,7 @@ class TestSaleOffer(unittest.TestCase):
         self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[])
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
 
-        result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+        result = create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer_version.assert_not_called()
         self.assertEqual(expected, result)
@@ -95,7 +95,7 @@ class TestSaleOffer(unittest.TestCase):
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
 
         with self.assertRaises(CannotCreateSaleOffer):
-            create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, False)
+            create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, False)
             self.manage_sale_offer_api.create_sale_offer_version.assert_not_called()
 
     def test_create_or_edit_sale_offer_with_reference_existing_sale_offer_found(self):
@@ -105,7 +105,7 @@ class TestSaleOffer(unittest.TestCase):
         self.search_sale_offer_api.get_sale_offer.return_value = MagicMock(description="My sale offer")
         self.manage_sale_offer_api.create_sale_offer_version.return_value = expected
 
-        result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+        result = create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)
 
         self.manage_sale_offer_api.create_sale_offer.assert_not_called()
         self.assertEqual(expected, result)
@@ -115,14 +115,14 @@ class TestSaleOffer(unittest.TestCase):
         self.search_sale_offer_api.get_sale_offer.return_value = None
 
         with self.assertRaises(SaleOfferNotFoundByReference):
-            create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+            create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)
 
     @patch("business.services.sale_offer.__find_existing_sale_offer")
     def test_create_or_edit_sale_offer_with_no_existing_sale_offer(self, find_existing_mock):
         expected = MagicMock(description="create my sale offer")
         find_existing_mock.return_value = None
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
-        result = create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+        result = create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)
         self.assertEqual(expected, result)
 
     @patch("business.services.sale_offer.__find_existing_sale_offer")
@@ -132,7 +132,7 @@ class TestSaleOffer(unittest.TestCase):
     ):
         find_existing_mock.return_value = None
         with self.assertRaises(CannotCreateSaleOffer):
-            create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, False)
+            create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, False)
 
     def test_create_or_edit_sale_offer_with_invalid_status(self):
         expected = MagicMock(description="My sale offer")
@@ -142,4 +142,4 @@ class TestSaleOffer(unittest.TestCase):
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
 
         with self.assertRaises(CannotUpdateSaleOfferStatus):
-            create_or_edit_sale_offer(self.mocked_sale_offer, self.mocked_product, True)
+            create_or_edit_sale_offer({}, self.mocked_sale_offer, self.mocked_product, True)

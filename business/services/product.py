@@ -46,14 +46,15 @@ def service_unavailable_status_code(e):
                       max_tries=3,
                       max_time=20,
                       giveup=service_unavailable_status_code)
-def update_or_create_product(product, can_create_product_from_scratch):
+def update_or_create_product(prefetched_products, product, can_create_product_from_scratch):
     if product and not product.is_empty():
         product_type = __find_product_type_by_name(product.product_type.name)
         vat = get_vat_by_value(product.vat.value)
         laboratory = find_or_create_laboratory(product.laboratory.name)
 
         logging.info(f'Barcode {product.principal_barcode} : Try to find or create product with barcode')
-        result_product = __get_product_by_barcode(product.principal_barcode) or __create_product_with_barcode(
+        result_product = __get_product_by_barcode(prefetched_products,
+                                                  product.principal_barcode) or __create_product_with_barcode(
             product.principal_barcode)
 
         if result_product:
@@ -86,9 +87,35 @@ def update_or_create_product(product, can_create_product_from_scratch):
         raise CannotCreateProduct()
 
 
-def __get_product_by_barcode(barcode):
+def __get_products_by_barcodes(barcodes):
+    if not len(barcodes):
+        return None
+
+    api = get_search_product_api()
+
+    try:
+        products = api.get_products(
+            _request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],
+            barcodes_anyeq=barcodes,
+            st_eq=['VALIDATED', 'WAITING_FOR_VALIDATION'],
+            p=0,
+            pp=len(barcodes)
+        )
+    except Exception as exc:
+        logging.error(f'Error while searching products by barcodes {barcodes}', exc)
+        return []
+
+    return products.records if products else []
+
+
+def __get_product_by_barcode(prefetched_products, barcode):
     if not barcode:
         return None
+
+    if barcode in prefetched_products:
+        return prefetched_products[barcode]
+
+    logging.info(f'Product {barcode} not found in cache, search in API')
 
     api = get_search_product_api()
 
