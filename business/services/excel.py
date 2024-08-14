@@ -212,7 +212,13 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
         column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
         for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, values_only=True)):
             obj = obj_class()
-            cells = {column_indices[col]: value for col, value in enumerate(row)}
+
+            cells = {
+                column_indices[col]: int(value) if isinstance(value, float) and value.is_integer() else value
+                for col, value in enumerate(row)
+                if value is not None
+            }
+
             for col in excel_mapper:
                 col.set_from_excel(obj, cells.get(col.excel_column_name, None))
             if obj_unique_key:

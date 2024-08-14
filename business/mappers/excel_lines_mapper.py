@@ -37,8 +37,8 @@ class ExcelLinesMapper:
             excel_path=self.excel_path,
             excel_mapper=self.excel_mapper,
             sheet_name=parameters.sheet_name,
-            header_row=parameters.header_line,
-            min_row=parameters.content_start_line,
+            header_row=int(parameters.header_line),
+            min_row=int(parameters.content_start_line),
             obj_unique_key=self.unique_key,
             custom_dict=ConditionalDict(
                 condition_func=self.condition,
