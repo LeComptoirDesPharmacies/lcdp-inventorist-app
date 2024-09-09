@@ -2,7 +2,7 @@ import os
 import json
 
 from envsubst import envsubst
-from python_openapi_generator_cli.codegen import generate_consumer
+from python_rest_client_codegen.codegen import generate_consumer
 
 # Get current script dir
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -16,6 +16,7 @@ def run_codegen():
     generate_consumer("sale-offer.yaml", CURRENT_DIR)
     generate_consumer("configuration.yaml", CURRENT_DIR)
     generate_consumer("catalog.yaml", CURRENT_DIR)
+    generate_consumer("factory.yaml", CURRENT_DIR)
 
 
 def write_config():
