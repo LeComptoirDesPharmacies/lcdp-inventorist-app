@@ -172,6 +172,17 @@ ApplicationWindow {
                     Layout.alignment: "Qt::AlignHCenter"
                 }
             }
+            ColumnLayout {
+                id: resultsLayout
+                anchors.top: actionLayout.bottom
+                anchors.topMargin: 15
+                width: parent.width
+                spacing: 5
+               TableView {
+                    id: results
+                    anchors.fill: parent
+               }
+            }
         }
     }
 

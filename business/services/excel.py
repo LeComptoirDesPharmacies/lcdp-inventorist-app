@@ -18,6 +18,7 @@ from business.services.providers import get_manage_assembly_api, get_search_user
 
 from business.services.vat import get_vat_by_value
 from business.services.product import get_product_type_by_name
+from business.services.user import get_current_user_id
 
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
 
@@ -163,15 +164,9 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
 
     manage_assembly_api = get_manage_assembly_api()
 
-    search_user_api = get_search_user_api()
-
-    user = search_user_api.get_current_user(
-        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-    )
-
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= user.id,
+            owner_id= get_current_user_id(),
             factory = AnyFactory({
                 'type': 'SALE_OFFER_UPSERT',
                 'clean': clean,
@@ -223,24 +218,9 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
 
     manage_assembly_api = get_manage_assembly_api()
 
-    search_user_api = get_search_user_api()
-
-    user = search_user_api.get_current_user(
-        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-    )
-
-    print({
-            'owner_id': user.id,
-            'factory': {
-                'type': 'OFFER_PLANIFICATION',
-                'clean': clean,
-                'records': items
-            }
-        })
-
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= user.id,
+            owner_id= get_current_user_id(),
             factory= AnyFactory({
                 'type': 'OFFER_PLANIFICATION',
                 'clean': clean,
@@ -269,15 +249,10 @@ def product_upsert_from_excel_lines(lines, **kwargs):
 
     manage_assembly_api = get_manage_assembly_api()
 
-    search_user_api = get_search_user_api()
-
-    user = search_user_api.get_current_user(
-        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-    )
 
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= user.id,
+            owner_id= get_current_user_id(),
             factory= AnyFactory({
                 'type': 'PRODUCT_UPSERT',
                 'records': items,
