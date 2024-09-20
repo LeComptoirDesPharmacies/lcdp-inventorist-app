@@ -5,11 +5,12 @@ import sys
 from pathlib import Path
 
 import requests
-import sentry_sdk
+# import sentry_sdk
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 
+from business.my_python_class import MyPythonObject
 from backend.app import App
 from backend.login import Login
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE
@@ -30,11 +31,11 @@ def configure_sentry(settings):
     sentry_dsn = settings.value("SENTRY_DSN")
     lcdp_environment = settings.value("LCDP_ENVIRONMENT")
     version = settings.value("VERSION")
-    sentry_sdk.init(
-        dsn=sentry_dsn,
-        environment=lcdp_environment,
-        release=version,
-    )
+    # sentry_sdk.init(
+    #     dsn=sentry_dsn,
+    #     environment=lcdp_environment,
+    #     release=version,
+    # )
 
 
 if __name__ == "__main__":
@@ -79,6 +80,10 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("version", settings.value("VERSION"))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
+
+    myPythonObject = MyPythonObject()
+    engine.rootContext().setContextProperty('myPythonObject', myPythonObject)
+
     filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
     url = QUrl.fromLocalFile(filename)
     engine.load(url)

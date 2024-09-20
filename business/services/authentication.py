@@ -6,12 +6,26 @@ from business.constant import API_KEY_ID_NAME
 
 
 def __create_api_key(email, password):
+    print("--------------------------")
+    print("--------------------------")
+    print("--------------------------")
+    print("--------------------------")
+    print("CREATE API KEY -----------")
+    print("--------------------------")
+    print("--------------------------")
+    print("--------------------------")
+    print("--------------------------")
     auth_api = get_auth_api()
     response = auth_api.login(any_authentication_credential=AnyAuthenticationCredential({
         'grant_type': 'password',
         'login' : email,
-        'password': password,
+        'password': password
     }))
+
+
+
+    print("response: {}".format(response))
+
     search_user_api = get_search_user_api()
     user = search_user_api.get_current_user(
         _request_auth=search_user_api.api_client.create_auth_settings('bearerAuth', response.access_token)

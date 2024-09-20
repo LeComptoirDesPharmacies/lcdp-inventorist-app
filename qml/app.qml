@@ -4,11 +4,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 import QtQuick.Dialogs
+import Qt.labs.qmlmodels
 
 ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
-    width: 600
-    height: 480
+    width: 1200
+    height: 900
     visible: true
     minimumWidth: 600
     minimumHeight: 480
@@ -23,7 +24,19 @@ ApplicationWindow {
     property bool canClean: false
 
     function isEmpty(str){
-        return str == ""
+        return str === ""
+    }
+
+    function extractLink(html) {
+        var regex = /<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/;
+        var match = regex.exec(html);
+        if (match) {
+            return {
+                href: match[1],
+                text: match[2]
+            };
+        }
+        return null;
     }
 
     StackView {
@@ -50,6 +63,7 @@ ApplicationWindow {
                 leftPadding: 10
                 horizontalAlignment: Text.AlignHCenter
             }
+
             Pane {
                 id: card
                 width: parent.width*0.8
@@ -103,9 +117,96 @@ ApplicationWindow {
                                 cursorShape: Qt.PointingHandCursor
                             }
                         }
+                        Text {
+                            text: 'HELLO'
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+
+                    RowLayout{
+                        Row {
+                            width: 800
+                            Repeater {
+                                model: ["Date création", "Type d'import", "État", "Progression", "Action"]
+                                delegate: Rectangle {
+                                    width: 800 / 5
+                                    height: 40
+                                    color: "transparent"
+                                    border.width: 1
+                                    border.color: "gray"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData
+                                        font.bold: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    TableView {
+                        id: tableView
+                        height: 300
+                        width: 800
+                        Layout.fillHeight: true
+                        columnWidthProvider: function (column) {
+                            if(column === 0)
+                                return 0
+                            return width / 5
+                        }
+                        model: TableModel {
+                            id: tableModel
+                            TableModelColumn {
+                                display: "id"
+                            }
+                            TableModelColumn {
+                                display: "created_at"
+                            }
+                            TableModelColumn {
+                                display: "type"
+                            }
+                            TableModelColumn {
+                                display: "status"
+                            }
+                            TableModelColumn {
+                                display: "percent"
+                            }
+                            TableModelColumn {
+                                display: "action"
+                            }
+                        }
+
+                        delegate: DelegateChooser {
+                            DelegateChoice {
+                                column: 5
+                                delegate: Button {
+                                    text: 'Télécharger'
+                                    visible: tableModel.rows[row].status === "Terminé" ? true : false
+                                    onClicked: {
+                                        myPythonObject.downloadFile(tableModel.rows[row].id)
+                                    }
+                                }
+                            }
+                            DelegateChoice {
+                                delegate: Text {
+                                    text: model.display
+                                }
+                            }
+                        }
                     }
                 }
             }
+
+            Timer {
+                interval: 2500 // 5 secondes
+                running: true
+                repeat: true
+                onTriggered: {
+                    appBackend.refresh_data()
+                }
+            }
+
             ColumnLayout {
                 id: actionLayout
                 anchors.top: card.bottom
@@ -172,17 +273,6 @@ ApplicationWindow {
                     Layout.alignment: "Qt::AlignHCenter"
                 }
             }
-            ColumnLayout {
-                id: resultsLayout
-                anchors.top: actionLayout.bottom
-                anchors.topMargin: 15
-                width: parent.width
-                spacing: 5
-               TableView {
-                    id: results
-                    anchors.fill: parent
-               }
-            }
         }
     }
 
@@ -211,9 +301,9 @@ ApplicationWindow {
 
         function onSignalState(state, type){
             var color = Material.color(Material.Indigo)
-            if(type == "ERROR"){
+            if(type === "ERROR"){
                 color = Material.color(Material.Red)
-            } else if (type == "SUCCESS"){
+            } else if (type === "SUCCESS"){
                 color = Material.color(Material.Green)
             }
             statusText.text = state
@@ -222,6 +312,13 @@ ApplicationWindow {
 
         function onSignalTemplateUrl(url){
             templateUrl = url
+        }
+
+        function onSignalReports(newData){
+            tableModel.clear()
+            for (var i = 0; i < newData.length; i++) {
+                tableModel.appendRow(newData[i])
+            }
         }
 
         function onSignalReportPath(path){

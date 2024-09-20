@@ -8,6 +8,8 @@ from settings import get_settings
 _auth_api = None
 _search_user_api = None
 _manage_api_key_api = None
+_search_product_metadata_api = None
+_search_vat_api = None
 _search_assembly_api = None
 _manage_assembly_api = None
 

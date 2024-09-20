@@ -2,6 +2,8 @@ import logging
 import os
 import tempfile
 import time
+import json
+import tablib
 
 from api.consume.gen.factory.models.assembly_creation_parameters import  AssemblyCreationParameters
 from api.consume.gen.factory.models.any_factory import AnyFactory
@@ -14,7 +16,7 @@ from business.mappers.excel_mapper import error_mapper
 from business.utils import rgetattr, execution_time
 
 from business.services.security import get_api_key
-from business.services.providers import get_manage_assembly_api, get_search_user_api
+from business.services.providers import get_manage_assembly_api
 
 from business.services.vat import get_vat_by_value
 from business.services.product import get_product_type_by_name
@@ -229,6 +231,10 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
         _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
     )
 
+    print("-----------------------------------")
+    print("CREATE ASSEMBLY")
+    print(assembly)
+
 
     results = []
 
@@ -347,5 +353,24 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
 
     return results
 
+def dict_to_excel(excel_path, json_string):
+    print("1")
+    data = json.loads(json_string)
+    print("2")
+    # Créer un dataset tablib
+    dataset = tablib.Dataset()
+    print("3")
+    # Ajouter les données
+    for item in data['data']:
+        dataset.append([item['name'], item['age']])
+    print("4")
+    # Enregistrer en XLSX
+    with open(excel_path, 'wb') as f:
+        f.write(dataset.xlsx)
+    print("5")
+    return excel_path
 
-
+def clean_sale_offers(lines):
+    print("----------------------")
+    print("TODO clean_sale_offers")
+    print("----------------------")

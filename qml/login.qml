@@ -101,7 +101,7 @@ ApplicationWindow {
                     TextField {
                         id: loginField
                         width: 300
-                        text: qsTr("")
+                        text: qsTr("seller_buyer@mail.test")
                         selectByMouse: true
                         placeholderText: qsTr("Email")
                         verticalAlignment: Text.AlignVCenter
@@ -114,6 +114,7 @@ ApplicationWindow {
                     TextField {
                         id: passwordField
                         width: 300
+                        text: qsTr("test")
                         selectByMouse: true
                         placeholderText: qsTr("Mot de passe")
                         echoMode: TextInput.Password
@@ -167,6 +168,14 @@ ApplicationWindow {
         function onSignalConnected(isConnected) {
             if (isConnected) {
                 var component = Qt.createComponent("app.qml")
+                if( component.status != Component.Ready )
+                {
+                    if( component.status == Component.Error )
+                        console.debug("-----------------------------------------------");
+                        console.error("Error:"+ component.errorString() );
+                        console.debug("-----------------------------------------------")
+                    return; // or maybe throw
+                }
                 var window = component.createObject()
                 window.show()
                 visible = false
