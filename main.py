@@ -10,7 +10,7 @@ from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 
-from business.my_python_class import MyPythonObject
+from qml.models.assembly_table_model import AssemblyTableModel
 from backend.app import App
 from backend.login import Login
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE
@@ -18,7 +18,8 @@ from business.services.authentication import delete_api_key
 from settings import get_settings
 
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
-
+import faulthandler
+faulthandler.enable()
 
 def on_exit():
     try:
@@ -81,8 +82,6 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
 
-    myPythonObject = MyPythonObject()
-    engine.rootContext().setContextProperty('myPythonObject', myPythonObject)
 
     filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
     url = QUrl.fromLocalFile(filename)

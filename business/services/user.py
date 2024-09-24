@@ -2,6 +2,7 @@ from business.services.providers import get_search_user_api
 from business.services.security import get_api_key
 
 def get_current_user_id() -> int:
+    print("get_current_user_id")
     api_key = get_api_key()
 
     print("##########|")

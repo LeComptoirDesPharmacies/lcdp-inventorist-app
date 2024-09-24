@@ -354,20 +354,13 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 def dict_to_excel(excel_path, json_string):
-    print("1")
-    data = json.loads(json_string)
-    print("2")
-    # Créer un dataset tablib
+
     dataset = tablib.Dataset()
-    print("3")
-    # Ajouter les données
-    for item in data['data']:
-        dataset.append([item['name'], item['age']])
-    print("4")
-    # Enregistrer en XLSX
+    data = json.loads(json_string)
+    dataset.json = json.dumps(data)
+
     with open(excel_path, 'wb') as f:
         f.write(dataset.xlsx)
-    print("5")
     return excel_path
 
 def clean_sale_offers(lines):

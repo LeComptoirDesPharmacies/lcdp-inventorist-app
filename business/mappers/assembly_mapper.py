@@ -5,7 +5,7 @@ from api.consume.gen.factory.models.assembly import Assembly
 
 def fromAssembliesToTable(assemblies: array):
     result = []
-    for assembly in assemblies.records:
+    for assembly in assemblies.records if assemblies else []:
         result.append(fromAssemblyToTable(assembly))
 
     return result
@@ -46,17 +46,19 @@ def fromAssemblyStatusToString(status: str) -> str:
 
 def get_action(assembly: Assembly) -> str:
     if assembly.status == AssemblyStatus.DONE:
-        # return '<html><style type="text/css"></style><a href="{}">{}</a></html>'.format(assembly.output.href, 'Télécharger')
         return assembly.output.href
     return ' '
 
 def fromAssemblyToTable(assembly: Assembly) -> dict:
-    # print("ASSEMBLY factory_type: {}".format(assembly))
-    return dict({
+    res = dict({
         'id' : assembly.id,
         'created_at': assembly.created_at.strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type.type),
         'status': fromAssemblyStatusToString(assembly.status),
         'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
-        'action': get_action(assembly)
+        'action': get_action(assembly),
+        'assembly': assembly,
+        'statusType': assembly.status
     })
+
+    return res

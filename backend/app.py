@@ -13,13 +13,15 @@ from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Proper
 from business.mappers.assembly_mapper import fromAssemblyToTable, fromAssembliesToTable, fromAssemblyTypeToString, fromAssemblyStatusToString, get_action, computePercent
 
 from api.consume.gen.user.exceptions import ForbiddenException
-from api.consume.gen.factory.models.assembly_status import AssemblyStatus
-from api.consume.gen.factory.models.assembly import Assembly
 
 from business.actions import detailed_actions, simple_actions
-from business.services.excel import create_excel_summary
 from business.services.assembly import get_user_assemblies
-from business.services.user import get_current_user_id
+from PySide6.QtCore import QObject, Signal, Slot
+from business.services.assembly import get_assembly_output
+import os
+from business.services.excel import dict_to_excel
+import json
+
 
 class Worker(QRunnable):
     def __init__(self, action, excel_path, loading_signal, state_signal, results_signal, reset, should_clean):
@@ -34,7 +36,6 @@ class Worker(QRunnable):
 
     def run(self):
         try:
-            print("----- Worker(QRunnable): RUN")
             self.loading_signal.emit(True)
             self.state_signal.emit("Récupération du fichier excel...", "INFO")
             self.execute(self.excel_path)
@@ -46,7 +47,6 @@ class Worker(QRunnable):
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        print("----- Worker(QRunnable): execute")
         self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
@@ -54,22 +54,11 @@ class Worker(QRunnable):
 
         self.state_signal.emit("Création/Modification des ressources...", "INFO")
 
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("EXECUTE: {}".format(self.action['executor']))
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-
         executor = self.action['executor']
-        results = executor(lines, clean=self.should_clean)
+        executor(lines, clean=self.should_clean)
 
 
-def open_file(file_path):
-    print("hey")
+def open_file_operating_system(file_path):
     if sys.platform == "win32":
         os.startfile(file_path)
     else:
@@ -95,6 +84,10 @@ class App(QObject):
         self.signalActions.emit(simple_actions)
         self.excel_path = None
         self._should_clean = False
+        self.__results_timer = QTimer(self)
+        self.__results_timer.timeout.connect(self.refresh_data)
+        self.__results_timer.start(5000)
+        #self.__results_timer.timeout.emit()  # force an immediate update
 
     @Slot(str)
     def select_action(self, action_type):
@@ -128,21 +121,24 @@ class App(QObject):
     @Slot()
     def refresh_data(self):
         try:
-            user_id = get_current_user_id()
+            user_id = 14
+            # get_current_user_id()
             if user_id:
-                print("----------------------------- POLL RESULT -----------------------------")
+                print("--- POLL")
+                # print("----------------------------- POLL RESULT -----------------------------")
                 assemblies = get_user_assemblies(user_id)
-                # for assembly in assemblies:
-                #     print(assembly)
-
-                print("----------------------------- Emit Signal -----------------------------")
+                #
+                # print("----------------------------- Emit Signal -----------------------------")
                 self.signalReports.emit(fromAssembliesToTable(assemblies))
+                print("signal emit")
             else:
                 print("not logged yet")
         except ForbiddenException:
             # User is forbidden so maybe api key is not working
+            print("-------------------------------> ForbiddenException")
             pass
         except Exception as err:
+            print("-------------------------------> EXCeption")
             logging.exception('Error while retrieving results', err)
 
     @Property(type=list, constant=True)
@@ -159,8 +155,7 @@ class App(QObject):
 
     @Slot(str)
     def open_file(self, file_path):
-        print("uuuuuu")
-        open_file(file_path)
+        open_file_operating_system(file_path)
 
     @Slot(QUrl)
     def set_excel_path(self, url):
@@ -168,3 +163,18 @@ class App(QObject):
             self.excel_path = os.path.abspath(url.toLocalFile())
         else:
             self.excel_path = None
+
+    @Slot(str)
+    def downloadFile(self, id: str):
+        try:
+            output = get_assembly_output(id)
+
+            download_path = os.path.join(os.path.expanduser("~"), "Downloads")
+            download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(id))
+            output = json.loads(output)
+
+            dict_to_excel(download_file, output)
+            open_file_operating_system(download_file)
+
+        except Exception as e:
+            print(f"Erreur lors du téléchargement : {e}")

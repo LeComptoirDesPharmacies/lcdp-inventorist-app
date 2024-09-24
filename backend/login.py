@@ -19,10 +19,6 @@ class Worker(QRunnable):
         try:
             self.loading_signal.emit(True)
             self.state_signal.emit("Connexion en cours...", "INFO")
-            print("---------------------------------------------------")
-            print("|{}|".format(self.email))
-            print("|{}|".format(self.password))
-            print("---------------------------------------------------")
             user = authenticate(self.email, self.password)
             if user:
                 set_user({"id": user.id, "email": user.email})
@@ -39,25 +35,6 @@ class Worker(QRunnable):
         finally:
             self.loading_signal.emit(False)
 
-
-# def fromAssembliesToTable(assemblies):
-#     result = []
-#     for assembly in assemblies.records:
-#         result.append(fromAssemblyToTable(assembly))
-#
-#     return result
-#
-#
-# def fromAssemblyToTable(assembly):
-#     print("ASSEMBLY factory_type: {}".format(assembly.factory_type))
-#     return dict({
-#         'name': assembly.status,
-#         'value': assembly.factory_type.type,
-#         'percent': (assembly.cursor / assembly.total_steps) * 100
-#     })
-
-
-
 class Login(QObject):
     def __init__(self):
         QObject.__init__(self)
@@ -70,9 +47,6 @@ class Login(QObject):
 
     @Slot(str, str)
     def login(self, email, password):
-        print("-----------------------------")
-        print("LOGIN !")
-        print("-----------------------------")
         worker = Worker(
             email,
             password,
@@ -81,30 +55,3 @@ class Login(QObject):
             state_signal=self.signalState
         )
         self.thread_pool.start(worker)
-
-    # @Slot()
-    # def refresh_data(self):
-    #     import random
-    #
-    #     user_id = get_current_user_id()
-    #     if user_id:
-    #         print("-----------------------------")
-    #         print("POLL RESULT")
-    #         print("-----------------------------")
-    #         assemblies = get_user_assemblies(user_id)
-    #
-    #         print("-----------------------------")
-    #         print("Emit Signal")
-    #         print("-----------------------------")
-    #         self.signalReports.emit(fromAssembliesToTable(assemblies))
-
-
-        # # Ici, vous généreriez ou récupéreriez vos vraies données
-        # # Pour cet exemple, nous créons des données aléatoires
-        # new_data = [
-        #     {"name": f"Item {i}", "value": random.randint(1, 100)}
-        #     for i in range(10)  # Générons 10 items pour l'exemple
-        # ]
-        # print("refresh_data")
-        # print(new_data)
-        # self.signalReports.emit(new_data)

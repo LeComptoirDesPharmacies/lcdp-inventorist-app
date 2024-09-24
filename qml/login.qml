@@ -171,9 +171,8 @@ ApplicationWindow {
                 if( component.status != Component.Ready )
                 {
                     if( component.status == Component.Error )
-                        console.debug("-----------------------------------------------");
-                        console.error("Error:"+ component.errorString() );
-                        console.debug("-----------------------------------------------")
+                        console.error("-----------------------------------------------");
+                        console.error("Error: "+ component.errorString() );
                     return; // or maybe throw
                 }
                 var window = component.createObject()
