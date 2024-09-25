@@ -23,7 +23,7 @@ ApplicationWindow {
     property bool canClean: false
 
     function isEmpty(str){
-        return str == ""
+        return str === ""
     }
 
     StackView {

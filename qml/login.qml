@@ -17,14 +17,18 @@ ApplicationWindow {
 
 
     function isEmpty(str) {
-        return str == ""
+        return str === ""
     }
 
     StackView {
+        id: stackView
         anchors.fill: parent
-        initialItem: Page {
-            header:
-                ColumnLayout {
+        initialItem: loginPage
+    }
+
+    Page {
+        id: loginPage
+        header: ColumnLayout {
                     id: headerColumn
                     Label {
                         id: newVersion
@@ -114,6 +118,7 @@ ApplicationWindow {
                     TextField {
                         id: passwordField
                         width: 300
+                    text: qsTr("")
                         selectByMouse: true
                         placeholderText: qsTr("Mot de passe")
                         echoMode: TextInput.Password
@@ -150,11 +155,10 @@ ApplicationWindow {
                         anchors.top: loader.bottom
                         anchors.topMargin: 15
                     }
-
                 }
             }
         }
-    }
+
 
     Connections {
         target: loginBackend
@@ -166,9 +170,7 @@ ApplicationWindow {
 
         function onSignalConnected(isConnected) {
             if (isConnected) {
-                var component = Qt.createComponent("app.qml")
-                var window = component.createObject()
-                window.show()
+                stackView.push("app.qml")
                 visible = false
             }
         }
