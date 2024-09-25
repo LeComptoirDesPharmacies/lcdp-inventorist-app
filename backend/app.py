@@ -1,26 +1,21 @@
 import logging
-import os
 import subprocess
 import sys
+import json
+import os
+
 from sentry_sdk import capture_exception
-import traceback
 
-from threading import Thread
-from time import sleep
-
-from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property, QUrl, QTimer
-
-from business.mappers.assembly_mapper import fromAssemblyToTable, fromAssembliesToTable, fromAssemblyTypeToString, fromAssemblyStatusToString, get_action, computePercent
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QObject, Signal, Slot
 
 from api.consume.gen.user.exceptions import ForbiddenException
-
+from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
 from business.services.assembly import get_user_assemblies
-from PySide6.QtCore import QObject, Signal, Slot
 from business.services.assembly import get_assembly_output
-import os
+from business.services.user import get_current_user_id
 from business.services.excel import dict_to_excel
-import json
 
 
 class Worker(QRunnable):
@@ -71,10 +66,11 @@ class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
     signalState = Signal(str, str)
-    signalReports = Signal(list)
+    signalRefreshData = Signal(list)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
+    current_user_id = None
 
     def __init__(self):
         QObject.__init__(self)
@@ -84,10 +80,6 @@ class App(QObject):
         self.signalActions.emit(simple_actions)
         self.excel_path = None
         self._should_clean = False
-        self.__results_timer = QTimer(self)
-        self.__results_timer.timeout.connect(self.refresh_data)
-        self.__results_timer.start(5000)
-        #self.__results_timer.timeout.emit()  # force an immediate update
 
     @Slot(str)
     def select_action(self, action_type):
@@ -111,7 +103,7 @@ class App(QObject):
             self.selected_action,
             self.excel_path,
             loading_signal=self.signalLoading,
-            results_signal=self.signalReports,
+            refresh_data_signal=self.signalRefreshData,
             state_signal=self.signalState,
             reset=self.do_reset,
             should_clean=self._should_clean
@@ -121,24 +113,17 @@ class App(QObject):
     @Slot()
     def refresh_data(self):
         try:
-            user_id = 14
-            # get_current_user_id()
-            if user_id:
-                print("--- POLL")
-                # print("----------------------------- POLL RESULT -----------------------------")
-                assemblies = get_user_assemblies(user_id)
-                #
-                # print("----------------------------- Emit Signal -----------------------------")
-                self.signalReports.emit(fromAssembliesToTable(assemblies))
-                print("signal emit")
-            else:
-                print("not logged yet")
+            if self.current_user_id is None:
+                self.current_user_id = get_current_user_id()
+
+            if self.current_user_id:
+                assemblies = get_user_assemblies(self.current_user_id)
+                self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
+
         except ForbiddenException:
             # User is forbidden so maybe api key is not working
-            print("-------------------------------> ForbiddenException")
             pass
         except Exception as err:
-            print("-------------------------------> EXCeption")
             logging.exception('Error while retrieving results', err)
 
     @Property(type=list, constant=True)
@@ -165,7 +150,7 @@ class App(QObject):
             self.excel_path = None
 
     @Slot(str)
-    def downloadFile(self, id: str):
+    def downloadAndOpenFile(self, id: str):
         try:
             output = get_assembly_output(id)
 

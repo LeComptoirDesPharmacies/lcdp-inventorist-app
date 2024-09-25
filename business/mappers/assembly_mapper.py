@@ -50,8 +50,8 @@ def get_action(assembly: Assembly) -> str:
     return ' '
 
 def fromAssemblyToTable(assembly: Assembly) -> dict:
-    res = dict({
-        'id' : assembly.id,
+    data = dict({
+        'id': assembly.id,
         'created_at': assembly.created_at.strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type.type),
         'status': fromAssemblyStatusToString(assembly.status),
@@ -61,4 +61,4 @@ def fromAssemblyToTable(assembly: Assembly) -> dict:
         'statusType': assembly.status
     })
 
-    return res
+    return data

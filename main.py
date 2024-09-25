@@ -5,12 +5,10 @@ import sys
 from pathlib import Path
 
 import requests
-# import sentry_sdk
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 
-from qml.models.assembly_table_model import AssemblyTableModel
 from backend.app import App
 from backend.login import Login
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE

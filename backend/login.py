@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtCore import QObject, Slot, Signal, QRunnable, QThreadPool, QAbstractTableModel, Qt
+from PySide6.QtCore import QObject, Slot, Signal, QRunnable, QThreadPool
 from sentry_sdk import capture_exception
 from api.consume.gen.auth import ApiException as AuthApiException
 
@@ -43,7 +43,6 @@ class Login(QObject):
     signalState = Signal(str, str)
     signalConnected = Signal(bool)
     signalLoading = Signal(bool)
-    signalReports = Signal(list)
 
     @Slot(str, str)
     def login(self, email, password):

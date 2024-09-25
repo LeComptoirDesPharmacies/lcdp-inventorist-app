@@ -8,11 +8,9 @@ import Qt.labs.qmlmodels
 
 ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
-    width: 1200
-    height: 900
     visible: true
-    minimumWidth: 600
-    minimumHeight: 480
+    minimumWidth: 850
+    minimumHeight: 700
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -54,7 +52,8 @@ ApplicationWindow {
 
             Pane {
                 id: card
-                width: parent.width*0.8
+                width: parent.width * 0.9
+                height: parent.height * 0.9
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.topMargin: 20
@@ -65,7 +64,7 @@ ApplicationWindow {
                     anchors.fill: parent
                     Text {
                         id: chooseText
-                        text: qsTr("Quel type d'import souhaites-tu faire ?")
+                        text: qsTr("Choir le type d'import ?")
                         font.pointSize: 16
                         Layout.fillWidth: true
                         color: '#1E276D'
@@ -84,7 +83,8 @@ ApplicationWindow {
                         Component.onCompleted: currentIndex = indexOfValue("")
                     }
                     RowLayout {
-                        id: rowLayout
+                        id: templateLayout
+                        width: card.width * 0.9
                         visible: !isEmpty(templateUrl)
                         Layout.topMargin: 20
                         spacing: 2
@@ -110,9 +110,8 @@ ApplicationWindow {
 
                     ColumnLayout {
                         id: actionLayout
-                        anchors.top: rowLayout.bottom
-                        anchors.topMargin: 15
-                        Layout.fillWidth: true
+
+                        Layout.alignment: "Qt::AlignHCenter"
                         spacing: 5
                         CheckBox{
                             id: shouldClean
@@ -133,7 +132,7 @@ ApplicationWindow {
                         }
                         Text {
                             id: excelPathText
-                            Layout.preferredWidth: parent.width
+                            width: parent.width
                             color: '#1E276D'
                             horizontalAlignment: Text.AlignHCenter
                             text: excelPath
@@ -174,23 +173,20 @@ ApplicationWindow {
 
                         ColumnLayout {
                             id: columnLayout
-                            anchors.top: card.bottom
                             anchors.bottomMargin: 0
                             height: 300
-                            Layout.fillWidth: true
-                            spacing: 5
 
                             RowLayout{
-                                Row {
-                                    Layout.fillWidth: true
+                                Row{
+                                    width: card.width * 0.9
                                     Repeater {
                                         model: ["Date création", "Type d'import", "État", "Progression", "Action"]
                                         delegate: Rectangle {
-                                            width: 800 / 5
+                                            width: (card.width * 0.9) / 5
                                             height: 40
                                             color: "transparent"
                                             border.width: 1
-                                            border.color: "gray"
+                                            border.color: "lightgray"
 
                                             Text {
                                                 anchors.centerIn: parent
@@ -203,10 +199,12 @@ ApplicationWindow {
                             }
 
                             RowLayout{
+                                Row{
+                                width: card.width * 0.9
                                 TableView {
                                     id: tableView
                                     height: 300
-                                    Layout.fillWidth: true
+                                    width: card.width * 0.9
                                     columnWidthProvider: function (column) {
                                         if(column === 0)
                                             return 0
@@ -238,25 +236,26 @@ ApplicationWindow {
                                         DelegateChoice {
                                             column: 5
                                             delegate: Rectangle {
-                                                implicitWidth: 120
-                                                implicitHeight: 40
+                                                implicitHeight: 30
                                                 border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 == 0 ? "gainsboro" : "white"
                                                 Button {
                                                     text: "💾 Télécharger"
                                                     anchors.centerIn: parent
                                                     visible: tableModel.rows.length ? (tableModel.rows[row].status === "Terminé" ? true : false) : false
                                                     onClicked: {
-                                                        appBackend.downloadFile(tableModel.rows[row].id)
+                                                        appBackend.downloadAndOpenFile(tableModel.rows[row].id)
                                                     }
                                                 }
                                             }
                                         }
                                         DelegateChoice {
                                             delegate: Rectangle {
-                                                implicitWidth: 120
-                                                implicitHeight: 40
+                                                implicitHeight: 30
                                                 border.width: 1
-                                                color: row % 2 == 0 ? "lightgray" : "white"
+                                                border.color: "lightgray"
+                                                color: row % 2 == 0 ? "gainsboro" : "white"
                                                 Text {
                                                     text: model.display
                                                     anchors.centerIn: parent
@@ -264,15 +263,23 @@ ApplicationWindow {
                                             }
                                         }
                                     }
-                                }
+                                }}
                             }
                         }
                     }
                 }
             }
+        }
+    }
 
-
-
+    Timer {
+        interval: 5000 // 5 secondes
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            console.error('||||refresh_data')
+            appBackend.refresh_data()
         }
     }
 
@@ -307,25 +314,18 @@ ApplicationWindow {
                 color = Material.color(Material.Green)
             }
             statusText.text = state
-            statusText.color = color
+            statusText.color = ""
         }
 
         function onSignalTemplateUrl(url){
             templateUrl = url
         }
 
-        function onSignalReports(newData){
-            tableModel.modelAboutToBeReset()
+        function onSignalRefreshData(newData){
             tableModel.clear()
             for (var i = 0; i < newData.length; i++) {
-                console.log('add new element: ', newData[i])
                 tableModel.appendRow(newData[i])
             }
-            tableModel.modelReset()
-        }
-
-        function onSignalReportPath(path){
-            reportPath = path
         }
 
         function onSignalCanClean(signalCanClean){
