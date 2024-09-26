@@ -53,7 +53,7 @@ def fromAssemblyToTable(assembly: Assembly) -> dict:
     data = dict({
         'id': assembly.id,
         'created_at': assembly.created_at.strftime("%m/%d/%Y, %H:%M:%S"),
-        'type': fromAssemblyTypeToString(assembly.factory_type.type),
+        'type': fromAssemblyTypeToString(assembly.factory_type),
         'status': fromAssemblyStatusToString(assembly.status),
         'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
         'action': get_action(assembly),
