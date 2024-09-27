@@ -231,11 +231,6 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
         _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
     )
 
-    print("-----------------------------------")
-    print("CREATE ASSEMBLY")
-    print(assembly)
-
-
     results = []
 
     return results

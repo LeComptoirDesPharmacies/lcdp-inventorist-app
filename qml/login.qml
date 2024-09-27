@@ -105,7 +105,7 @@ ApplicationWindow {
                 TextField {
                     id: loginField
                     width: 300
-                    text: qsTr("")
+                    text: qsTr("seller_buyer@mail.test")
                     selectByMouse: true
                     placeholderText: qsTr("Email")
                     verticalAlignment: Text.AlignVCenter

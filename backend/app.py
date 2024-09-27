@@ -19,13 +19,13 @@ from business.services.excel import dict_to_excel
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, results_signal, reset, should_clean):
+    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
-        self.results_signal = results_signal
+        self.result_signal = result_signal
         self.reset = reset
         self.should_clean = should_clean
 
@@ -67,6 +67,7 @@ class App(QObject):
     signalCanClean = Signal(bool)
     signalState = Signal(str, str)
     signalRefreshData = Signal(list)
+    signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
@@ -103,10 +104,10 @@ class App(QObject):
             self.selected_action,
             self.excel_path,
             loading_signal=self.signalLoading,
-            refresh_data_signal=self.signalRefreshData,
+            result_signal=self.signalReportPath,
             state_signal=self.signalState,
             reset=self.do_reset,
-            should_clean=self._should_clean
+            should_clean=self._should_clean,
         )
         self.thread_pool.start(worker)
 

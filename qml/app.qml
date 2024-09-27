@@ -10,7 +10,7 @@ ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
     visible: true
     minimumWidth: 850
-    minimumHeight: 700
+    minimumHeight: 650
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -110,7 +110,7 @@ ApplicationWindow {
 
                     ColumnLayout {
                         id: actionLayout
-
+                        height: 800
                         Layout.alignment: "Qt::AlignHCenter"
                         spacing: 5
                         CheckBox{
@@ -278,7 +278,6 @@ ApplicationWindow {
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            console.error('||||refresh_data')
             appBackend.refresh_data()
         }
     }

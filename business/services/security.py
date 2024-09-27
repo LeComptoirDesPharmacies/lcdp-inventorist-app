@@ -14,7 +14,5 @@ def delete_api_key():
 
 
 def get_api_key():
-    print("get_api_key")
     api_key = keyring.get_password(APPLICATION_NAME, API_KEY_NAME)
-    print("API Key: {}".format(api_key))
     return api_key
