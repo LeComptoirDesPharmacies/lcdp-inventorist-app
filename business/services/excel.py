@@ -5,7 +5,7 @@ import time
 import json
 import tablib
 
-from api.consume.gen.factory.models.assembly_creation_parameters import  AssemblyCreationParameters
+from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
 from api.consume.gen.factory.models.any_factory import AnyFactory
 from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
 
@@ -23,6 +23,7 @@ from business.services.product import get_product_type_by_name
 from business.services.user import get_current_user_id
 
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
+
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
@@ -77,6 +78,7 @@ def __build_product_upsert(product_line):
     if vat:
         product_upsert['vat_id'] = vat.id
 
+
 def __build_distribution_mode(sale_offer_line):
     if sale_offer_line.sale_offer.distribution_type == RANGE_DISTRIBUTION:
         ranges = []
@@ -113,6 +115,7 @@ def __build_distribution_mode(sale_offer_line):
 
     return distribution_mode
 
+
 def __build_stock(stock_line):
     stock = dict()
 
@@ -127,10 +130,10 @@ def __build_stock(stock_line):
 
     return stock
 
+
 @execution_time
 def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
-
 
     items = []
 
@@ -168,8 +171,8 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
 
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= get_current_user_id(),
-            factory = AnyFactory({
+            owner_id=get_current_user_id(),
+            factory=AnyFactory({
                 'type': 'SALE_OFFER_UPSERT',
                 'clean': clean,
                 'records': items,
@@ -181,6 +184,7 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
     results = []
 
     return results
+
 
 @execution_time
 def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
@@ -222,8 +226,8 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
 
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= get_current_user_id(),
-            factory= AnyFactory({
+            owner_id=get_current_user_id(),
+            factory=AnyFactory({
                 'type': 'OFFER_PLANIFICATION',
                 'clean': clean,
                 'records': items
@@ -240,7 +244,6 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
 def product_upsert_from_excel_lines(lines, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
 
-
     items = []
 
     for line in lines:
@@ -250,11 +253,10 @@ def product_upsert_from_excel_lines(lines, **kwargs):
 
     manage_assembly_api = get_manage_assembly_api()
 
-
     assembly = manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
-            owner_id= get_current_user_id(),
-            factory= AnyFactory({
+            owner_id=get_current_user_id(),
+            factory=AnyFactory({
                 'type': 'PRODUCT_UPSERT',
                 'records': items,
             })
@@ -348,15 +350,23 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
 
     return results
 
-def dict_to_excel(excel_path, json_string):
 
-    dataset = tablib.Dataset()
-    data = json.loads(json_string)
-    dataset.json = json.dumps(data)
+def dict_to_excel(excel_path, succeeded, failed):
+    workbook = tablib.Databook()
+    # Créer un Dataset pour les données "succeeded"
+    dataset_succeeded = tablib.Dataset(title="Succès")
+    dataset_succeeded.json = json.dumps(succeeded)
+    workbook.add_sheet(dataset_succeeded)
+
+    # Créer un Dataset pour les données "failed"
+    dataset_failed = tablib.Dataset(title="Erreurs")
+    dataset_failed.json = json.dumps(failed)
+    workbook.add_sheet(dataset_failed)
 
     with open(excel_path, 'wb') as f:
-        f.write(dataset.xlsx)
+        f.write(workbook.xlsx)
     return excel_path
+
 
 def clean_sale_offers(lines):
     print("----------------------")
