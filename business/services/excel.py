@@ -1,28 +1,24 @@
+import json
 import logging
 import os
 import tempfile
 import time
-import json
+
 import tablib
-
-from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
-from api.consume.gen.factory.models.any_factory import AnyFactory
-from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
-
 from openpyxl import load_workbook, Workbook
 
+from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
+from api.consume.gen.factory.models.any_factory import AnyFactory
+from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
 from business.constant import CHUNK_SIZE
 from business.mappers.excel_mapper import error_mapper
-from business.utils import rgetattr, execution_time
-
-from business.services.security import get_api_key
-from business.services.providers import get_manage_assembly_api
-
-from business.services.vat import get_vat_by_value
-from business.services.product import get_product_type_by_name
-from business.services.user import get_current_user_id
-
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
+from business.services.product import get_product_type_by_name
+from business.services.providers import get_manage_assembly_api
+from business.services.security import get_api_key
+from business.services.user import get_current_user_id
+from business.services.vat import get_vat_by_value
+from business.utils import rgetattr, execution_time
 
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
@@ -78,6 +74,8 @@ def __build_product_upsert(product_line):
     if vat:
         product_upsert['vat_id'] = vat.id
 
+    return product_upsert
+
 
 def __build_distribution_mode(sale_offer_line):
     if sale_offer_line.sale_offer.distribution_type == RANGE_DISTRIBUTION:
@@ -85,30 +83,30 @@ def __build_distribution_mode(sale_offer_line):
         for range in sale_offer_line.sale_offer.distribution.ranges:
             new_range = {
                 'quantity': range.sold_by,
-                'unit_price': range.discounted_price,
-                'free_units': range.free_unit
+                'unitPrice': range.discounted_price,
+                'freeUnits': range.free_unit or 0
             }
             ranges.append(new_range)
         distribution_mode = {
             'type': 'RANGE',
             'ranges': ranges,
-            'minimal_quantity': 1,
-            'maximal_quantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
         }
     elif sale_offer_line.sale_offer.distribution_type == UNITARY_DISTRIBUTION:
         distribution_mode = {
             'type': 'UNITARY',
-            'unit_price': sale_offer_line.sale_offer.distribution.discounted_price,
-            'sold_by': sale_offer_line.sale_offer.distribution.sold_by,
-            'minimal_quantity': 1,
-            'maximal_quantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'unitPrice': sale_offer_line.sale_offer.distribution.discounted_price,
+            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
         }
     elif sale_offer_line.sale_offer.distribution_type == QUOTATION_DISTRIBUTION:
         distribution_mode = {
             'type': 'QUOTATION',
-            'sold_by': sale_offer_line.sale_offer.distribution.sold_by,
-            'minimal_quantity': 1,
-            'maximal_quantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
         }
     else:
         distribution_mode = dict()
@@ -143,6 +141,8 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
         stock = __build_stock(line.sale_offer.stock)
 
         new_item = dict()
+
+        new_item['reference'] = line.sale_offer.reference
 
         if product_upsert:
             new_item['product'] = product_upsert
@@ -203,7 +203,7 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
             new_item['product'] = product_upsert
 
         if distribution_mode:
-            new_item['distributionMode'] = AnyDistributionMode(distribution_mode)
+            new_item['distributionMode'] = AnyDistributionMode().from_dict(distribution_mode)
 
         if stock:
             new_item['stock'] = stock
@@ -235,6 +235,10 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
         _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
     )
 
+    print("-----------------------------------")
+    print("CREATE ASSEMBLY")
+    print(assembly)
+
     results = []
 
     return results
@@ -249,7 +253,12 @@ def product_upsert_from_excel_lines(lines, **kwargs):
     for line in lines:
         product_upsert = __build_product_upsert(line.sale_offer.product)
 
-        items.append(product_upsert)
+        new_item = dict()
+
+        if product_upsert:
+            new_item['product'] = product_upsert
+
+        items.append(new_item)
 
     manage_assembly_api = get_manage_assembly_api()
 
@@ -366,6 +375,7 @@ def dict_to_excel(excel_path, succeeded, failed):
     with open(excel_path, 'wb') as f:
         f.write(workbook.xlsx)
     return excel_path
+
 
 
 def clean_sale_offers(lines):
