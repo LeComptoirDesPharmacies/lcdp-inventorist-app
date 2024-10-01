@@ -360,14 +360,22 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def dict_to_excel(excel_path, json_string):
-    dataset = tablib.Dataset()
-    data = json.loads(json_string)
-    dataset.json = json.dumps(data)
+def dict_to_excel(excel_path, succeeded, failed):
+    workbook = tablib.Databook()
+    # Créer un Dataset pour les données "succeeded"
+    dataset_succeeded = tablib.Dataset(title="Succès")
+    dataset_succeeded.json = json.dumps(succeeded)
+    workbook.add_sheet(dataset_succeeded)
+
+    # Créer un Dataset pour les données "failed"
+    dataset_failed = tablib.Dataset(title="Erreurs")
+    dataset_failed.json = json.dumps(failed)
+    workbook.add_sheet(dataset_failed)
 
     with open(excel_path, 'wb') as f:
-        f.write(dataset.xlsx)
+        f.write(workbook.xlsx)
     return excel_path
+
 
 
 def clean_sale_offers(lines):

@@ -1,8 +1,8 @@
 import logging
 import subprocess
 import sys
-import json
 import os
+from typing import Tuple, List, Dict
 
 from sentry_sdk import capture_exception
 
@@ -16,6 +16,7 @@ from business.services.assembly import get_user_assemblies
 from business.services.assembly import get_assembly_output
 from business.services.user import get_current_user_id
 from business.services.excel import dict_to_excel
+from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
 
 
 class Worker(QRunnable):
@@ -60,6 +61,23 @@ def open_file_operating_system(file_path):
         opener = "open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, file_path])
 
+
+def separate_by_status_with_unit_details(
+        assembly_output_list: List[AssemblyOutputInner]
+) -> Tuple[List[Dict], List[Dict]]:
+    succeeded_list = []
+    failed_list = []
+
+    for assembly_output in assembly_output_list:
+        unit_data = {
+            **assembly_output.unit,
+            'status': assembly_output.status,
+            'status_comment': assembly_output.status_comment
+        }
+
+        (succeeded_list if assembly_output.status == "SUCCEEDED" else failed_list).append(unit_data)
+
+    return succeeded_list, failed_list
 
 
 class App(QObject):
@@ -155,11 +173,12 @@ class App(QObject):
         try:
             output = get_assembly_output(id)
 
+            # Create file in Download folder
             download_path = os.path.join(os.path.expanduser("~"), "Downloads")
             download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(id))
-            output = json.loads(output)
 
-            dict_to_excel(download_file, output)
+            succeeded, failed = separate_by_status_with_unit_details(output)
+            dict_to_excel(download_file, succeeded, failed)
             open_file_operating_system(download_file)
 
         except Exception as e:

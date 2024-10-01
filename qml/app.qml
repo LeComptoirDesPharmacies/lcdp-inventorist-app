@@ -236,11 +236,12 @@ ApplicationWindow {
                                         DelegateChoice {
                                             column: 5
                                             delegate: Rectangle {
-                                                implicitHeight: 30
+                                                implicitHeight: 50
                                                 border.width: 1
                                                 border.color: "lightgray"
                                                 color: row % 2 == 0 ? "gainsboro" : "white"
                                                 Button {
+                                                    flat: true
                                                     text: "💾 Télécharger"
                                                     anchors.centerIn: parent
                                                     visible: tableModel.rows.length ? (tableModel.rows[row].status === "Terminé" ? true : false) : false
@@ -252,7 +253,7 @@ ApplicationWindow {
                                         }
                                         DelegateChoice {
                                             delegate: Rectangle {
-                                                implicitHeight: 30
+                                                implicitHeight: 50
                                                 border.width: 1
                                                 border.color: "lightgray"
                                                 color: row % 2 == 0 ? "gainsboro" : "white"
