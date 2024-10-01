@@ -185,7 +185,6 @@ class SaleOffer(SupervisedEntity):
         self._owner_id = None
         self._description = None
         self._status = None
-        self._update_policy = None
 
     @property
     def reference(self):
@@ -254,14 +253,6 @@ class SaleOffer(SupervisedEntity):
     @status.setter
     def status(self, status):
         self._status = status
-
-    @property
-    def update_policy(self):
-        return self._update_policy
-
-    @update_policy.setter
-    def update_policy(self, update_policy):
-        self._update_policy = update_policy
 
     def should_merge(self, next_sale_offer):
         return self.distribution and \

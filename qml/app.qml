@@ -4,14 +4,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 import QtQuick.Dialogs
+import Qt.labs.qmlmodels
 
 ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
-    width: 600
-    height: 480
     visible: true
-    minimumWidth: 600
-    minimumHeight: 480
+    minimumWidth: 850
+    minimumHeight: 650
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -50,9 +49,11 @@ ApplicationWindow {
                 leftPadding: 10
                 horizontalAlignment: Text.AlignHCenter
             }
+
             Pane {
                 id: card
-                width: parent.width*0.8
+                width: parent.width * 0.9
+                height: parent.height * 0.9
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.topMargin: 20
@@ -63,7 +64,7 @@ ApplicationWindow {
                     anchors.fill: parent
                     Text {
                         id: chooseText
-                        text: qsTr("Quel type d'import souhaites-tu faire ?")
+                        text: qsTr("Choir le type d'import ?")
                         font.pointSize: 16
                         Layout.fillWidth: true
                         color: '#1E276D'
@@ -82,6 +83,8 @@ ApplicationWindow {
                         Component.onCompleted: currentIndex = indexOfValue("")
                     }
                     RowLayout {
+                        id: templateLayout
+                        width: card.width * 0.9
                         visible: !isEmpty(templateUrl)
                         Layout.topMargin: 20
                         spacing: 2
@@ -104,74 +107,179 @@ ApplicationWindow {
                             }
                         }
                     }
-                }
-            }
-            ColumnLayout {
-                id: actionLayout
-                anchors.top: card.bottom
-                anchors.topMargin: 15
-                width: parent.width
-                spacing: 5
-               CheckBox{
-                    id: shouldClean
-                    text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
-                    visible: canClean
-                    Layout.alignment: "Qt::AlignHCenter"
-                    onCheckedChanged : {
-                        appBackend.should_clean = checked
+
+                    ColumnLayout {
+                        id: actionLayout
+                        height: 800
+                        Layout.alignment: "Qt::AlignHCenter"
+                        spacing: 5
+                        CheckBox{
+                            id: shouldClean
+                            text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
+                            visible: canClean
+                            Layout.alignment: "Qt::AlignHCenter"
+                            onCheckedChanged : {
+                                appBackend.should_clean = checked
+                            }
+                        }
+                        Button {
+                            id: selectFileButton
+                            enabled: !isEmpty(templateUrl)
+                            text: qsTr("Sélectionner un fichier excel")
+                            onClicked: excelFileDialog.visible = true
+                            Layout.alignment: "Qt::AlignHCenter"
+                            visible: !loading
+                        }
+                        Text {
+                            id: excelPathText
+                            width: parent.width
+                            color: '#1E276D'
+                            horizontalAlignment: Text.AlignHCenter
+                            text: excelPath
+                            font.pointSize: 12
+                            wrapMode: Text.WordWrap
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+                        Button {
+                            id: startBtn
+                            Layout.topMargin: 15
+                            text: qsTr("Go !")
+                            onClicked: appBackend.start()
+                            visible: !isEmpty(excelPath)
+                            enabled: !loading
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+                        ProgressBar {
+                           id: loader
+                           indeterminate: true
+                           Layout.alignment: "Qt::AlignHCenter"
+                           visible: loading
+                        }
+                        Text {
+                            id: statusText
+                            text: qsTr("")
+                            font.pointSize: 12
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+                        Button {
+                            id: openReport
+                            Layout.topMargin: 15
+                            text: qsTr("Ouvrir le rapport")
+                            onClicked: appBackend.open_file(reportPath)
+                            visible: !isEmpty(reportPath) && isEmpty(excelPath)
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+
+
+                        ColumnLayout {
+                            id: columnLayout
+                            anchors.bottomMargin: 0
+                            height: 300
+
+                            RowLayout{
+                                Row{
+                                    width: card.width * 0.9
+                                    Repeater {
+                                        model: ["Date création", "Type d'import", "État", "Progression", "Action"]
+                                        delegate: Rectangle {
+                                            width: (card.width * 0.9) / 5
+                                            height: 40
+                                            color: "transparent"
+                                            border.width: 1
+                                            border.color: "lightgray"
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: modelData
+                                                font.bold: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            RowLayout{
+                                Row{
+                                width: card.width * 0.9
+                                TableView {
+                                    id: tableView
+                                    height: 300
+                                    width: card.width * 0.9
+                                    columnWidthProvider: function (column) {
+                                        if(column === 0)
+                                            return 0
+                                        return width / 5
+                                    }
+                                    model: TableModel {
+                                        id: tableModel
+                                        TableModelColumn {
+                                            display: "id"
+                                        }
+                                        TableModelColumn {
+                                            display: "created_at"
+                                        }
+                                        TableModelColumn {
+                                            display: "type"
+                                        }
+                                        TableModelColumn {
+                                            display: "status"
+                                        }
+                                        TableModelColumn {
+                                            display: "percent"
+                                        }
+                                        TableModelColumn {
+                                            display: "action"
+                                        }
+                                    }
+
+                                    delegate: DelegateChooser {
+                                        DelegateChoice {
+                                            column: 5
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 == 0 ? "gainsboro" : "white"
+                                                Button {
+                                                    flat: true
+                                                    text: "💾 Télécharger"
+                                                    anchors.centerIn: parent
+                                                    visible: tableModel.rows.length ? (tableModel.rows[row].status === "Terminé" ? true : false) : false
+                                                    onClicked: {
+                                                        appBackend.downloadAndOpenFile(tableModel.rows[row].id)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        DelegateChoice {
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 == 0 ? "gainsboro" : "white"
+                                                Text {
+                                                    text: model.display
+                                                    anchors.centerIn: parent
+                                                }
+                                            }
+                                        }
+                                    }
+                                }}
+                            }
+                        }
                     }
                 }
-                Button {
-                    id: selectFileButton
-                    enabled: !isEmpty(templateUrl)
-                    text: qsTr("Sélectionner un fichier excel")
-                    onClicked: excelFileDialog.visible = true
-                    Layout.alignment: "Qt::AlignHCenter"
-                    visible: !loading
-                }
-                Text {
-                    id: excelPathText
-                    Layout.preferredWidth: parent.width
-                    color: '#1E276D'
-                    horizontalAlignment: Text.AlignHCenter
-                    text: excelPath
-                    font.pointSize: 12
-                    wrapMode: Text.WordWrap
-                    Layout.alignment: "Qt::AlignHCenter"
-                }
-                Button {
-                    id: startBtn
-                    Layout.topMargin: 15
-                    text: qsTr("Go !")
-                    onClicked: appBackend.start()
-                    visible: !isEmpty(excelPath)
-                    enabled: !loading
-                    Material.background: Material.Teal
-                    Layout.alignment: "Qt::AlignHCenter"
-                }
-                ProgressBar {
-                   id: loader
-                   indeterminate: true
-                   Layout.alignment: "Qt::AlignHCenter"
-                   visible: loading
-                }
-                Text {
-                    id: statusText
-                    text: qsTr("")
-                    color: Material.color(Material.Indigo)
-                    font.pointSize: 12
-                    Layout.alignment: "Qt::AlignHCenter"
-                }
-                Button {
-                    id: openReport
-                    Layout.topMargin: 15
-                    text: qsTr("Ouvrir le rapport")
-                    onClicked: appBackend.open_file(reportPath)
-                    visible: !isEmpty(reportPath) && isEmpty(excelPath)
-                    Material.background: Material.Teal
-                    Layout.alignment: "Qt::AlignHCenter"
-                }
             }
+        }
+    }
+
+    Timer {
+        interval: 5000 // 5 secondes
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            appBackend.refresh_data()
         }
     }
 
@@ -200,21 +308,24 @@ ApplicationWindow {
 
         function onSignalState(state, type){
             var color = Material.color(Material.Indigo)
-            if(type == "ERROR"){
+            if(type === "ERROR"){
                 color = Material.color(Material.Red)
-            } else if (type == "SUCCESS"){
+            } else if (type === "SUCCESS"){
                 color = Material.color(Material.Green)
             }
             statusText.text = state
-            statusText.color = color
+            statusText.color = ""
         }
 
         function onSignalTemplateUrl(url){
             templateUrl = url
         }
 
-        function onSignalReportPath(path){
-            reportPath = path
+        function onSignalRefreshData(newData){
+            tableModel.clear()
+            for (var i = 0; i < newData.length; i++) {
+                tableModel.appendRow(newData[i])
+            }
         }
 
         function onSignalCanClean(signalCanClean){

@@ -47,8 +47,7 @@
             "_rank": null,
             "_owner_id": 999,
             "_description": null,
-            "_status": "holiday",
-            "_update_policy": "SALE_OFFER_REFERENCE"
+            "_status": "holiday"
         }
     }
 }

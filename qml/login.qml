@@ -29,135 +29,135 @@ ApplicationWindow {
     Page {
         id: loginPage
         header: ColumnLayout {
-                    id: headerColumn
-                    Label {
-                        id: newVersion
-                        Layout.fillWidth: true
-                        text: qsTr(newVersionAvailable)
-                        color: '#FF0000'
-                        font.pointSize: 18
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        topPadding: 200
-                        visible: !isEmpty(newVersionAvailable)
-                    }
-                    Text {
-                        id: link
-                        Layout.fillWidth: true
-                        text: '<html><style type="text/css"></style><a href="' + newVersionUrl + '">Cliquez ici pour télécharger la nouvelle version</a></html>'
-                        onLinkActivated: Qt.openUrlExternally(newVersionUrl)
-                        font.pointSize: 18
-                        horizontalAlignment: Text.AlignHCenter
-                        MouseArea {
-                            anchors.fill: parent
-                            acceptedButtons: Qt.NoButton
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        visible: !isEmpty(newVersionAvailable)
-                    }
-                    Label {
-                        id: header
-                        anchors.fill: parent
-                        text: qsTr("Connexion")
-                        bottomPadding: 10
-                        topPadding: 10
-                        color: '#3AB872'
-                        background: Rectangle {
-                            implicitWidth: 100
-                            implicitHeight: 40
-                            color: '#1E276D'
-                        }
-                        font.pixelSize: 22
-                        horizontalAlignment: Text.AlignHCenter
-                        visible: isEmpty(newVersionAvailable)
-                    }
-                }
-            footer: Label {
-                id: footer
-                text: qsTr(version)
-                leftPadding: 10
+            id: headerColumn
+            Label {
+                id: newVersion
+                Layout.fillWidth: true
+                text: qsTr(newVersionAvailable)
+                color: '#FF0000'
+                font.pointSize: 18
+                font.bold: true
                 horizontalAlignment: Text.AlignHCenter
+                topPadding: 200
+                visible: !isEmpty(newVersionAvailable)
             }
-            RowLayout {
-                id: rowLayout
-                anchors.fill: parent
-                focus: true
-                visible: isEmpty(newVersionAvailable)
-                Keys.onPressed: (event) => {
-                    if (event.key === Qt.Key_Return) {
-                        loginButton.clicked()
-                    }
+            Text {
+                id: link
+                Layout.fillWidth: true
+                text: '<html><style type="text/css"></style><a href="' + newVersionUrl + '">Cliquez ici pour télécharger la nouvelle version</a></html>'
+                onLinkActivated: Qt.openUrlExternally(newVersionUrl)
+                font.pointSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.NoButton
+                    cursorShape: Qt.PointingHandCursor
                 }
-                Pane {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Image {
-                        id: logo
-                        y: 50
-                        height: 100
-                        width: 100
-                        source: "../images/logo.png"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        verticalAlignment: Image.AlignVCenter
-                        horizontalAlignment: Image.AlignVCenter
-                    }
+                visible: !isEmpty(newVersionAvailable)
+            }
+            Label {
+                id: header
+                anchors.fill: parent
+                text: qsTr("Connexion")
+                bottomPadding: 10
+                topPadding: 10
+                color: '#3AB872'
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: '#1E276D'
+                }
+                font.pixelSize: 22
+                horizontalAlignment: Text.AlignHCenter
+                visible: isEmpty(newVersionAvailable)
+            }
+        }
+        footer: Label {
+            id: footer
+            text: qsTr(version)
+            leftPadding: 10
+            horizontalAlignment: Text.AlignHCenter
+        }
+        RowLayout {
+            id: rowLayout
+            anchors.fill: parent
+            focus: true
+            visible: isEmpty(newVersionAvailable)
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Return) {
+                    loginButton.clicked()
+                }
+            }
+            Pane {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Image {
+                    id: logo
+                    y: 50
+                    height: 100
+                    width: 100
+                    source: "../images/logo.png"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    verticalAlignment: Image.AlignVCenter
+                    horizontalAlignment: Image.AlignVCenter
+                }
 
-                    TextField {
-                        id: loginField
-                        width: 300
-                        text: qsTr("")
-                        selectByMouse: true
-                        placeholderText: qsTr("Email")
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: logo.bottom
-                        anchors.topMargin: 60
-                        focus: true
-                    }
+                TextField {
+                    id: loginField
+                    width: 300
+                    text: qsTr("seller_buyer@mail.test")
+                    selectByMouse: true
+                    placeholderText: qsTr("Email")
+                    verticalAlignment: Text.AlignVCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: logo.bottom
+                    anchors.topMargin: 60
+                    focus: true
+                }
 
-                    TextField {
-                        id: passwordField
-                        width: 300
+                TextField {
+                    id: passwordField
+                    width: 300
                     text: qsTr("")
-                        selectByMouse: true
-                        placeholderText: qsTr("Mot de passe")
-                        echoMode: TextInput.Password
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loginField.bottom
-                        anchors.topMargin: 10
-                    }
+                    selectByMouse: true
+                    placeholderText: qsTr("Mot de passe")
+                    echoMode: TextInput.Password
+                    verticalAlignment: Text.AlignVCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: loginField.bottom
+                    anchors.topMargin: 10
+                }
 
-                    Button {
-                        id: loginButton
-                        text: qsTr("Se connecter")
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: passwordField.bottom
-                        anchors.topMargin: 15
-                        enabled: !isEmpty(passwordField.text) && !isEmpty(loginField.text)
-                        onClicked: loginBackend.login(loginField.text, passwordField.text)
-                    }
+                Button {
+                    id: loginButton
+                    text: qsTr("Se connecter")
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: passwordField.bottom
+                    anchors.topMargin: 15
+                    enabled: !isEmpty(passwordField.text) && !isEmpty(loginField.text)
+                    onClicked: loginBackend.login(loginField.text, passwordField.text)
+                }
 
-                    ProgressBar {
-                        id: loader
-                        indeterminate: true
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loginButton.bottom
-                        anchors.topMargin: 15
-                        visible: false
-                    }
+                ProgressBar {
+                    id: loader
+                    indeterminate: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: loginButton.bottom
+                    anchors.topMargin: 15
+                    visible: false
+                }
 
-                    Label {
-                        id: loginState
-                        text: qsTr("")
-                        color: Material.color(Material.Indigo)
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loader.bottom
-                        anchors.topMargin: 15
-                    }
+                Label {
+                    id: loginState
+                    text: qsTr("")
+                    color: Material.color(Material.Indigo)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: loader.bottom
+                    anchors.topMargin: 15
                 }
             }
         }
+    }
 
 
     Connections {

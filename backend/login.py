@@ -6,7 +6,6 @@ from api.consume.gen.auth import ApiException as AuthApiException
 from business.services.authentication import authenticate
 from sentry_sdk import set_user
 
-
 class Worker(QRunnable):
     def __init__(self, email, password, loading_signal, state_signal, connected_signal):
         super().__init__()
@@ -35,7 +34,6 @@ class Worker(QRunnable):
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
-
 
 class Login(QObject):
     def __init__(self):

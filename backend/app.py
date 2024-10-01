@@ -1,13 +1,22 @@
 import logging
-import os
 import subprocess
 import sys
+import os
+from typing import Tuple, List, Dict
+
 from sentry_sdk import capture_exception
 
-from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QObject, Signal, Slot
 
+from api.consume.gen.user.exceptions import ForbiddenException
+from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
-from business.services.excel import create_excel_summary
+from business.services.assembly import get_user_assemblies
+from business.services.assembly import get_assembly_output
+from business.services.user import get_current_user_id
+from business.services.excel import dict_to_excel
+from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
 
 
 class Worker(QRunnable):
@@ -39,30 +48,48 @@ class Worker(QRunnable):
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        if self.should_clean and self.action['cleaner']:
-            self.state_signal.emit("Nettoyage en cours...", "INFO")
-            cleaner = self.action['cleaner']
-            cleaner(lines)
-
         self.state_signal.emit("Création/Modification des ressources...", "INFO")
-        executor = self.action['executor']
-        results = executor(lines)
 
-        self.state_signal.emit("Création du rapport...", "INFO")
-        report_path = create_excel_summary(results, mapper.excel_mapper)
-        self.result_signal.emit(report_path)
-        self.state_signal.emit("Le fichier a bien été traité", "SUCCESS")
-        self.reset()
+        executor = self.action['executor']
+        executor(lines, clean=self.should_clean)
+
+
+def open_file_operating_system(file_path):
+    if sys.platform == "win32":
+        os.startfile(file_path)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, file_path])
+
+
+def separate_by_status_with_unit_details(
+        assembly_output_list: List[AssemblyOutputInner]
+) -> Tuple[List[Dict], List[Dict]]:
+    succeeded_list = []
+    failed_list = []
+
+    for assembly_output in assembly_output_list:
+        unit_data = {
+            **assembly_output.unit,
+            'status': assembly_output.status,
+            'status_comment': assembly_output.status_comment
+        }
+
+        (succeeded_list if assembly_output.status == "SUCCEEDED" else failed_list).append(unit_data)
+
+    return succeeded_list, failed_list
 
 
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
     signalState = Signal(str, str)
+    signalRefreshData = Signal(list)
     signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
+    current_user_id = None
 
     def __init__(self):
         QObject.__init__(self)
@@ -102,6 +129,22 @@ class App(QObject):
         )
         self.thread_pool.start(worker)
 
+    @Slot()
+    def refresh_data(self):
+        try:
+            if self.current_user_id is None:
+                self.current_user_id = get_current_user_id()
+
+            if self.current_user_id:
+                assemblies = get_user_assemblies(self.current_user_id)
+                self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
+
+        except ForbiddenException:
+            # User is forbidden so maybe api key is not working
+            pass
+        except Exception as err:
+            logging.exception('Error while retrieving results', err)
+
     @Property(type=list, constant=True)
     def actions(self):
         return self._actions
@@ -116,11 +159,7 @@ class App(QObject):
 
     @Slot(str)
     def open_file(self, file_path):
-        if sys.platform == "win32":
-            os.startfile(file_path)
-        else:
-            opener = "open" if sys.platform == "darwin" else "xdg-open"
-            subprocess.call([opener, file_path])
+        open_file_operating_system(file_path)
 
     @Slot(QUrl)
     def set_excel_path(self, url):
@@ -128,3 +167,19 @@ class App(QObject):
             self.excel_path = os.path.abspath(url.toLocalFile())
         else:
             self.excel_path = None
+
+    @Slot(str)
+    def downloadAndOpenFile(self, id: str):
+        try:
+            output = get_assembly_output(id)
+
+            # Create file in Download folder
+            download_path = os.path.join(os.path.expanduser("~"), "Downloads")
+            download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(id))
+
+            succeeded, failed = separate_by_status_with_unit_details(output)
+            dict_to_excel(download_file, succeeded, failed)
+            open_file_operating_system(download_file)
+
+        except Exception as e:
+            print(f"Erreur lors du téléchargement : {e}")

@@ -8,7 +8,6 @@ from api.consume.gen.sale_offer.model.stock import Stock
 from business.exceptions import CannotCreateSaleOffer, SaleOfferNotFoundByReference, CannotUpdateSaleOfferStatus
 from business.models.product import Product
 from business.models.sale_offer import SaleOffer
-from business.models.update_policy import UpdatePolicy
 from business.services.sale_offer import create_or_edit_sale_offer
 
 
@@ -64,7 +63,6 @@ class TestSaleOffer(unittest.TestCase):
     def test_create_or_edit_sale_offer_with_barcode_existing_sale_offer_found(self):
         expected = MagicMock(description="edit my sale offer")
 
-        self.mocked_sale_offer.update_policy = UpdatePolicy.PRODUCT_BARCODE.value
         self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[MagicMock(description="My sale offer")])
         self.manage_sale_offer_api.create_sale_offer_version.return_value = expected
 
@@ -76,7 +74,6 @@ class TestSaleOffer(unittest.TestCase):
     def test_create_or_edit_sale_offer_with_barcode_existing_sale_offer_not_found(self):
         expected = MagicMock(description="create my sale offer")
 
-        self.mocked_sale_offer.update_policy = UpdatePolicy.PRODUCT_BARCODE.value
         self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[])
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
 
@@ -90,7 +87,6 @@ class TestSaleOffer(unittest.TestCase):
     ):
         expected = MagicMock(description="create my sale offer")
 
-        self.mocked_sale_offer.update_policy = UpdatePolicy.PRODUCT_BARCODE.value
         self.search_sale_offer_api.get_sale_offers.return_value = Mock(records=[])
         self.manage_sale_offer_api.create_sale_offer.return_value = expected
 
@@ -101,7 +97,6 @@ class TestSaleOffer(unittest.TestCase):
     def test_create_or_edit_sale_offer_with_reference_existing_sale_offer_found(self):
         expected = MagicMock(description="edit my sale offer")
 
-        self.mocked_sale_offer.update_policy = UpdatePolicy.SALE_OFFER_REFERENCE.value
         self.search_sale_offer_api.get_sale_offer.return_value = MagicMock(description="My sale offer")
         self.manage_sale_offer_api.create_sale_offer_version.return_value = expected
 
@@ -111,7 +106,6 @@ class TestSaleOffer(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_create_or_edit_sale_offer_with_reference_existing_sale_offer_not_found(self):
-        self.mocked_sale_offer.update_policy = UpdatePolicy.SALE_OFFER_REFERENCE.value
         self.search_sale_offer_api.get_sale_offer.return_value = None
 
         with self.assertRaises(SaleOfferNotFoundByReference):
