@@ -3,6 +3,7 @@ import logging
 import os
 import tempfile
 import time
+from collections import defaultdict
 
 import tablib
 from openpyxl import load_workbook, Workbook
@@ -133,7 +134,7 @@ def __build_stock(stock_line):
 def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    items = []
+    items_by_owner = defaultdict(list)
 
     for line in lines:
         product_upsert = __build_product_upsert(line.sale_offer.product)
@@ -162,35 +163,32 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
         if line.sale_offer.description:
             new_item['description'] = line.sale_offer.description
 
-        if line.sale_offer.owner_id:
-            new_item['owner_id'] = line.sale_offer.owner_id
+        owner_id = line.sale_offer.owner_id
 
-        items.append(new_item)
+        if owner_id:
+            items_by_owner[owner_id].append(new_item)
 
     manage_assembly_api = get_manage_assembly_api()
 
-    assembly = manage_assembly_api.create_assembly(
-        AssemblyCreationParameters(
-            owner_id=get_current_user_id(),
-            factory=AnyFactory({
-                'type': 'SALE_OFFER_UPSERT',
-                'clean': clean,
-                'records': items,
-            }),
-        ),
-        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-    )
-
-    results = []
-
-    return results
+    for owner_id, items in items_by_owner.items():
+        manage_assembly_api.create_assembly(
+            AssemblyCreationParameters(
+                owner_id=get_current_user_id(),
+                factory=AnyFactory({
+                    'type': 'SALE_OFFER_UPSERT',
+                    'clean': clean,
+                    'ownerId': owner_id,
+                    'records': items
+                })),
+            _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        )
 
 
 @execution_time
 def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    items = []
+    items_by_owner = defaultdict(list)
 
     for line in lines:
         product_upsert = __build_product_upsert(line.sale_offer.product)
@@ -217,32 +215,26 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
         if line.sale_offer.description:
             new_item['description'] = line.sale_offer.description
 
-        if line.sale_offer.owner_id:
-            new_item['owner_id'] = line.sale_offer.owner_id
+        owner_id = line.sale_offer.owner_id
 
-        items.append(new_item)
+        if owner_id:
+            items_by_owner[owner_id].append(new_item)
 
     manage_assembly_api = get_manage_assembly_api()
 
-    assembly = manage_assembly_api.create_assembly(
-        AssemblyCreationParameters(
-            owner_id=get_current_user_id(),
-            factory=AnyFactory({
-                'type': 'OFFER_PLANIFICATION',
-                'clean': clean,
-                'offerName': 'inventorist',
-                'records': items
-            })),
-        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
-    )
-
-    print("-----------------------------------")
-    print("CREATE ASSEMBLY")
-    print(assembly)
-
-    results = []
-
-    return results
+    for owner_id, items in items_by_owner.items():
+        manage_assembly_api.create_assembly(
+            AssemblyCreationParameters(
+                owner_id=get_current_user_id(),
+                factory=AnyFactory({
+                    'type': 'OFFER_PLANIFICATION',
+                    'clean': clean,
+                    'offerName': 'inventorist',
+                    'ownerId': owner_id,
+                    'records': items
+                })),
+            _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        )
 
 
 @execution_time
@@ -263,7 +255,7 @@ def product_upsert_from_excel_lines(lines, **kwargs):
 
     manage_assembly_api = get_manage_assembly_api()
 
-    assembly = manage_assembly_api.create_assembly(
+    manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
             owner_id=get_current_user_id(),
             factory=AnyFactory({
@@ -273,10 +265,6 @@ def product_upsert_from_excel_lines(lines, **kwargs):
         ),
         _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
     )
-
-    results = []
-
-    return results
 
 
 def create_excel_summary(results, excel_mapper):
@@ -376,7 +364,6 @@ def dict_to_excel(excel_path, succeeded, failed):
     with open(excel_path, 'wb') as f:
         f.write(workbook.xlsx)
     return excel_path
-
 
 
 def clean_sale_offers(lines):
