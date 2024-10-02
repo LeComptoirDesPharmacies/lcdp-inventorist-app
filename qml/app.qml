@@ -14,10 +14,8 @@ ApplicationWindow {
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
-
-    property string reportPath: ""
-    property string templateUrl: ""
     property string excelPath: ""
+    property string templateUrl: ""
     property bool loading: false
     property bool canClean: false
 
@@ -28,7 +26,8 @@ ApplicationWindow {
     StackView {
         anchors.fill: parent
 
-        initialItem: Page {            id: page
+        initialItem: Page {
+            id: page
 
             header: Label {
                 id: header
@@ -216,14 +215,6 @@ ApplicationWindow {
                                             selectByMouse: true
                                         }
                                     }
-                                }
-                                Button {
-                                    id: openReport
-                                    Layout.topMargin: 15
-                                    text: qsTr("Ouvrir le rapport")
-                                    onClicked: appBackend.open_file(reportPath)
-                                    visible: !isEmpty(reportPath) && isEmpty(excelPath)
-                                    Layout.alignment: "Qt::AlignHCenter"
                                 }
                             }
                         }
