@@ -33,22 +33,22 @@ class Worker(QRunnable):
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
             self.execute(self.excel_path)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO")
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
 
         executor = self.action['executor']
         executor(lines, clean=self.should_clean)
@@ -83,7 +83,7 @@ def separate_by_status_with_unit_details(
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str)
+    signalState = Signal(str, str, str)
     signalRefreshData = Signal(list)
     signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)

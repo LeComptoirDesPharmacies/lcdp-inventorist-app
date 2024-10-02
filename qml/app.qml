@@ -10,7 +10,7 @@ ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
     visible: true
     minimumWidth: 850
-    minimumHeight: 650
+    minimumHeight: 875
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -28,7 +28,8 @@ ApplicationWindow {
     StackView {
         anchors.fill: parent
 
-        initialItem: Page {
+        initialItem: Page {            id: page
+
             header: Label {
                 id: header
                 text: qsTr("Gestionnaire d'inventaire")
@@ -50,131 +51,193 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            Pane {
-                id: card
-                width: parent.width * 0.9
-                height: parent.height * 0.9
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.topMargin: 20
-                Material.elevation: 6
+
+            ScrollView {
+                id: pageView
+                anchors.fill: parent
+
+
+
                 ColumnLayout {
-                    id: colLayout
-                    spacing: 5
-                    anchors.fill: parent
-                    Text {
-                        id: chooseText
-                        text: qsTr("Choir le type d'import ?")
-                        font.pointSize: 16
-                        Layout.fillWidth: true
-                        color: '#1E276D'
+                    spacing: 6
+                    width: pageView.width
+
+                    Pane {
+                        id: card
+                        Layout.preferredWidth: parent.width * 0.9
+
+                        height: 400
                         Layout.alignment: "Qt::AlignHCenter"
-                    }
-                    ComboBox {
-                        id: receiptSelector
-                        Layout.fillWidth: true
-                        width: 80
-                        Layout.alignment: "Qt::AlignHCenter"
-                        textRole: "text"
-                        valueRole: "value"
-                        model: appBackend.actions
-                        enabled: !loading
-                        onActivated: appBackend.select_action(currentValue)
-                        Component.onCompleted: currentIndex = indexOfValue("")
-                    }
-                    RowLayout {
-                        id: templateLayout
-                        width: card.width * 0.9
-                        visible: !isEmpty(templateUrl)
-                        Layout.topMargin: 20
-                        spacing: 2
-                        Text {
-                            id: templateText
-                            color: '#1E276D'
-                            text: qsTr("Lien template :")
-                            font.pointSize: 12
-                        }
-                        Text {
-                            id: templateLink
-                            text: '<html><style type="text/css"></style><a href="'+templateUrl+'">Template '+receiptSelector.currentText+'</a></html>'
-                            onLinkActivated: Qt.openUrlExternally(templateUrl)
-                            font.pointSize: 12
-                            wrapMode: Text.WordWrap
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.NoButton
-                                cursorShape: Qt.PointingHandCursor
+
+                        anchors.topMargin: 20
+                        Material.elevation: 6
+                        ColumnLayout {
+                            id: colLayout
+                            spacing: 5
+                            anchors.fill: parent
+                            Text {
+                                id: chooseText
+                                text: qsTr("Choir le type d'import ?")
+                                font.pointSize: 16
+                                Layout.fillWidth: true
+                                color: '#1E276D'
+                                Layout.alignment: "Qt::AlignHCenter"
+                            }
+                            ComboBox {
+                                id: receiptSelector
+                                Layout.fillWidth: true
+                                width: 80
+                                Layout.alignment: "Qt::AlignHCenter"
+                                textRole: "text"
+                                valueRole: "value"
+                                model: appBackend.actions
+                                enabled: !loading
+                                onActivated: appBackend.select_action(currentValue)
+                                Component.onCompleted: currentIndex = indexOfValue("")
+                            }
+                            RowLayout {
+                                id: templateLayout
+                                width: card.width * 0.9
+                                visible: !isEmpty(templateUrl)
+                                Layout.topMargin: 20
+                                spacing: 2
+                                Text {
+                                    id: templateText
+                                    color: '#1E276D'
+                                    text: qsTr("Lien template :")
+                                    font.pointSize: 12
+                                }
+                                Text {
+                                    id: templateLink
+                                    text: '<html><style type="text/css"></style><a href="'+templateUrl+'">Template '+receiptSelector.currentText+'</a></html>'
+                                    onLinkActivated: Qt.openUrlExternally(templateUrl)
+                                    font.pointSize: 12
+                                    wrapMode: Text.WordWrap
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.NoButton
+                                        cursorShape: Qt.PointingHandCursor
+                                    }
+                                }
+                            }
+
+                            ColumnLayout {
+                                id: actionLayout
+                                height: 800
+                                Layout.alignment: "Qt::AlignHCenter"
+                                Layout.fillWidth: true
+
+                                spacing: 5
+                                CheckBox{
+                                    id: shouldClean
+                                    text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
+                                    visible: canClean
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                    onCheckedChanged : {
+                                        appBackend.should_clean = checked
+                                    }
+                                }
+                                Button {
+                                    id: selectFileButton
+                                    enabled: !isEmpty(templateUrl)
+                                    text: qsTr("Sélectionner un fichier excel")
+                                    onClicked: excelFileDialog.visible = true
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                    visible: !loading
+                                }
+                                Text {
+                                    id: excelPathText
+                                    width: parent.width
+                                    color: '#1E276D'
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: excelPath
+                                    font.pointSize: 12
+                                    wrapMode: Text.WordWrap
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                }
+                                Button {
+                                    id: startBtn
+                                    Layout.topMargin: 15
+                                    text: qsTr("Go !")
+                                    onClicked: appBackend.start()
+                                    visible: !isEmpty(excelPath)
+                                    enabled: !loading
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                }
+                                ProgressBar {
+                                   id: loader
+                                   indeterminate: true
+                                   Layout.alignment: "Qt::AlignHCenter"
+                                   visible: loading
+                                }
+                                Text {
+                                    id: statusText
+                                    text: qsTr("")
+                                    font.pointSize: 12
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                    MouseArea{
+                                        anchors.fill: parent
+                                        onClicked:  statusDetails.text ? statusPane.shown = !statusPane.shown : undefined
+                                        cursorShape: statusDetails.text ? Qt.PointingHandCursor : undefined
+                                    }
+                                }
+                                Pane {
+                                    id: statusPane
+                                    Layout.fillWidth: true
+
+                                    // ## relevant part ##
+                                    property bool shown: false
+                                    visible: height > 0
+                                    height: shown ? implicitHeight : 0
+                                    Behavior on height {
+                                        NumberAnimation {
+                                            easing.type: Easing.InOutQuad
+                                        }
+                                    }
+                                    clip: true
+                                    // ## relevant part ##
+
+                                    background: Rectangle {
+                                        color: "#d0d0d0"
+                                    }
+
+                                    Column {
+                                        anchors.right: parent.right
+                                        anchors.left: parent.left
+
+                                        TextEdit  {
+                                            id: statusDetails
+                                            width: parent.width
+                                            text: qsTr("")
+                                            font.pointSize: 12
+                                            Layout.alignment: "Qt::AlignHCenter"
+                                            wrapMode: Text.WordWrap
+                                            readOnly: true
+                                            selectByMouse: true
+                                        }
+                                    }
+                                }
+                                Button {
+                                    id: openReport
+                                    Layout.topMargin: 15
+                                    text: qsTr("Ouvrir le rapport")
+                                    onClicked: appBackend.open_file(reportPath)
+                                    visible: !isEmpty(reportPath) && isEmpty(excelPath)
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                }
                             }
                         }
                     }
-
-                    ColumnLayout {
-                        id: actionLayout
-                        height: 800
+                    Pane {
+                        Layout.preferredWidth: parent.width * 0.9
                         Layout.alignment: "Qt::AlignHCenter"
-                        spacing: 5
-                        CheckBox{
-                            id: shouldClean
-                            text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
-                            visible: canClean
-                            Layout.alignment: "Qt::AlignHCenter"
-                            onCheckedChanged : {
-                                appBackend.should_clean = checked
-                            }
-                        }
-                        Button {
-                            id: selectFileButton
-                            enabled: !isEmpty(templateUrl)
-                            text: qsTr("Sélectionner un fichier excel")
-                            onClicked: excelFileDialog.visible = true
-                            Layout.alignment: "Qt::AlignHCenter"
-                            visible: !loading
-                        }
-                        Text {
-                            id: excelPathText
-                            width: parent.width
-                            color: '#1E276D'
-                            horizontalAlignment: Text.AlignHCenter
-                            text: excelPath
-                            font.pointSize: 12
-                            wrapMode: Text.WordWrap
-                            Layout.alignment: "Qt::AlignHCenter"
-                        }
-                        Button {
-                            id: startBtn
-                            Layout.topMargin: 15
-                            text: qsTr("Go !")
-                            onClicked: appBackend.start()
-                            visible: !isEmpty(excelPath)
-                            enabled: !loading
-                            Layout.alignment: "Qt::AlignHCenter"
-                        }
-                        ProgressBar {
-                           id: loader
-                           indeterminate: true
-                           Layout.alignment: "Qt::AlignHCenter"
-                           visible: loading
-                        }
-                        Text {
-                            id: statusText
-                            text: qsTr("")
-                            font.pointSize: 12
-                            Layout.alignment: "Qt::AlignHCenter"
-                        }
-                        Button {
-                            id: openReport
-                            Layout.topMargin: 15
-                            text: qsTr("Ouvrir le rapport")
-                            onClicked: appBackend.open_file(reportPath)
-                            visible: !isEmpty(reportPath) && isEmpty(excelPath)
-                            Layout.alignment: "Qt::AlignHCenter"
-                        }
-
+                        Material.elevation: 6
 
                         ColumnLayout {
                             id: columnLayout
                             anchors.bottomMargin: 0
                             height: 300
+                            anchors.horizontalCenter: parent.horizontalCenter
 
                             RowLayout{
                                 Row{
@@ -269,7 +332,15 @@ ApplicationWindow {
                         }
                     }
                 }
+
+                Binding
+                {
+                    target: pageView.contentItem
+                    property: "boundsBehavior"
+                    value: Flickable.StopAtBounds
+                }
             }
+
         }
     }
 
@@ -306,15 +377,18 @@ ApplicationWindow {
             loading = isLoading
         }
 
-        function onSignalState(state, type){
+        function onSignalState(state, type, details){
             var color = Material.color(Material.Indigo)
-            if(type === "ERROR"){
+            if(type == "ERROR"){
                 color = Material.color(Material.Red)
-            } else if (type === "SUCCESS"){
+            } else if (type == "SUCCESS"){
                 color = Material.color(Material.Green)
             }
             statusText.text = state
-            statusText.color = ""
+            statusText.color = color
+            statusPane.shown = false
+            statusDetails.text = details
+            statusDetails.color = Material.color(Material.Red)
         }
 
         function onSignalTemplateUrl(url){
