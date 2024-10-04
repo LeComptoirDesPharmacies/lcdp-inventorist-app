@@ -180,3 +180,5 @@ class App(QObject):
 
         except Exception as e:
             print(f"Erreur lors du téléchargement : {e}")
+            import traceback
+            traceback.print_exc()

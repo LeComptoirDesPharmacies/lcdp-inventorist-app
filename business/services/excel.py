@@ -174,6 +174,7 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
             owner_id=get_current_user_id(),
             factory=AnyFactory({
                 'type': 'SALE_OFFER_UPSERT',
+                'offer_name': 'Inventorist',
                 'clean': clean,
                 'records': items,
             }),
@@ -229,6 +230,7 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
             owner_id=get_current_user_id(),
             factory=AnyFactory({
                 'type': 'OFFER_PLANIFICATION',
+                'offer_name': 'Inventorist',
                 'clean': clean,
                 'records': items
             })),
@@ -267,6 +269,7 @@ def product_upsert_from_excel_lines(lines, **kwargs):
             owner_id=get_current_user_id(),
             factory=AnyFactory({
                 'type': 'PRODUCT_UPSERT',
+                'offer_name': 'Inventorist',
                 'records': items,
             })
         ),
@@ -369,7 +372,7 @@ def dict_to_excel(excel_path, succeeded, failed):
 
     # Créer un Dataset pour les données "failed"
     dataset_failed = tablib.Dataset(title="Erreurs")
-    dataset_failed.json = json.dumps(failed)
+    dataset_failed.json = json.dumps(failed, indent=4, ensure_ascii=False)
     workbook.add_sheet(dataset_failed)
 
     with open(excel_path, 'wb') as f:
