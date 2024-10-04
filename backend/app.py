@@ -61,24 +61,6 @@ def open_file_operating_system(file_path):
         subprocess.call([opener, file_path])
 
 
-def separate_by_status_with_unit_details(
-        assembly_output_list: List[AssemblyOutputInner]
-) -> Tuple[List[Dict], List[Dict]]:
-    succeeded_list = []
-    failed_list = []
-
-    for assembly_output in assembly_output_list:
-        unit_data = {
-            **assembly_output.unit,
-            'status': assembly_output.status,
-            'status_comment': assembly_output.status_comment
-        }
-
-        (succeeded_list if assembly_output.status == "SUCCEEDED" else failed_list).append(unit_data)
-
-    return succeeded_list, failed_list
-
-
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
@@ -174,8 +156,7 @@ class App(QObject):
             download_path = os.path.join(os.path.expanduser("~"), "Downloads")
             download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(id))
 
-            succeeded, failed = separate_by_status_with_unit_details(output)
-            dict_to_excel(download_file, succeeded, failed)
+            dict_to_excel(output, download_file)
             open_file_operating_system(download_file)
 
         except Exception as e:
