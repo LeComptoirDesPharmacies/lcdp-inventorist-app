@@ -18,18 +18,18 @@ class Worker(QRunnable):
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Connexion en cours...", "INFO")
+            self.state_signal.emit("Connexion en cours...", "INFO", "")
             user = authenticate(self.email, self.password)
             if user:
                 set_user({"id": user.id, "email": user.email})
                 self.connected_signal.emit(True)
-                self.state_signal.emit("Connecté", "SUCCESS")
+                self.state_signal.emit("Connecté", "SUCCESS", "")
         except AuthApiException as auth_ex:
             self.connected_signal.emit(False)
-            self.state_signal.emit("Email ou mot de passe érroné", "ERROR")
+            self.state_signal.emit("Email ou mot de passe érroné", "ERROR", str(auth_ex))
             logging.exception("An AuthApiException occur during authentication", auth_ex)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
             logging.exception("An unknown exception occur during authentication", err)
             capture_exception(err)
         finally:
@@ -40,7 +40,7 @@ class Login(QObject):
         QObject.__init__(self)
         self.thread_pool = QThreadPool()
     
-    signalState = Signal(str, str)
+    signalState = Signal(str, str, str)
     signalConnected = Signal(bool)
     signalLoading = Signal(bool)
 

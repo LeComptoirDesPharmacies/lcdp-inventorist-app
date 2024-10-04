@@ -20,35 +20,34 @@ from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputI
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset, should_clean):
+    def __init__(self, action, excel_path, loading_signal, state_signal, reset, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
-        self.result_signal = result_signal
         self.reset = reset
         self.should_clean = should_clean
 
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
             self.execute(self.excel_path)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO")
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
 
         executor = self.action['executor']
         executor(lines, clean=self.should_clean)
@@ -83,9 +82,8 @@ def separate_by_status_with_unit_details(
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str)
+    signalState = Signal(str, str, str)
     signalRefreshData = Signal(list)
-    signalReportPath = Signal(str)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
@@ -122,7 +120,6 @@ class App(QObject):
             self.selected_action,
             self.excel_path,
             loading_signal=self.signalLoading,
-            result_signal=self.signalReportPath,
             state_signal=self.signalState,
             reset=self.do_reset,
             should_clean=self._should_clean,

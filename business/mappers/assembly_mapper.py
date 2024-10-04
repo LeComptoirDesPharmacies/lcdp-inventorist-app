@@ -2,6 +2,9 @@ import array
 
 from api.consume.gen.factory.models.assembly_status import AssemblyStatus
 from api.consume.gen.factory.models.assembly import Assembly
+from datetime import datetime, timezone
+
+LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
 def fromAssembliesToTable(assemblies: array):
     result = []
@@ -52,7 +55,7 @@ def get_action(assembly: Assembly) -> str:
 def fromAssemblyToTable(assembly: Assembly) -> dict:
     data = dict({
         'id': assembly.id,
-        'created_at': assembly.created_at.strftime("%m/%d/%Y, %H:%M:%S"),
+        'created_at': assembly.created_at.astimezone(tz=LOCAL_TIMEZONE).strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type),
         'status': fromAssemblyStatusToString(assembly.status),
         'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
