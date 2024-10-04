@@ -1,9 +1,9 @@
 import json
 import logging
-import os
-import tempfile
-import time
 from collections import defaultdict
+from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
+from typing import List
+
 
 import tablib
 from openpyxl import load_workbook, Workbook
@@ -21,6 +21,7 @@ from business.services.user import get_current_user_id
 from business.services.vat import get_vat_by_value
 from business.utils import rgetattr, execution_time
 
+from flatten_json import flatten
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
@@ -267,55 +268,6 @@ def product_upsert_from_excel_lines(lines, **kwargs):
     )
 
 
-def create_excel_summary(results, excel_mapper):
-    wb = Workbook()
-    wb.remove_sheet(wb.active)
-
-    dirpath = tempfile.mkdtemp()
-    current_time = int(time.time())
-
-    summary_path = os.path.join(dirpath, str(current_time) + "-summary.xlsx")
-
-    succeeded_lines = list(filter(lambda o: o['result'] is not None, results))
-    __create_success_sheet(wb, excel_mapper, succeeded_lines, wb.active)
-
-    errors_lines = list(filter(lambda o: o['error'] is not None, results))
-    __create_error_sheet(wb, excel_mapper, errors_lines)
-
-    logging.info(f"{len(succeeded_lines)} sale offer(s) has been created")
-    logging.info(f"{len(errors_lines)} line have an error")
-    wb.save(filename=summary_path)
-    return summary_path
-
-
-def __create_success_sheet(wb, excel_mapper, lines, sheet=None):
-    if not sheet:
-        sheet = wb.create_sheet(title="Succès")
-    else:
-        sheet.title = "Succès"
-    sheet.append(list(map(lambda x: x.excel_column_name, excel_mapper)))
-    for line in lines:
-        sheet.append(list(map(lambda x: x.get_from_obj(line['excel_line']), excel_mapper)))
-    return sheet
-
-
-def __create_error_sheet(wb, excel_mapper, lines, sheet=None):
-    if not sheet:
-        sheet = wb.create_sheet(title="Erreur")
-    else:
-        sheet.title = "Erreur"
-
-    summary_error_excel_mapper = excel_mapper + error_mapper
-    headers = list(map(lambda x: x.excel_column_name, summary_error_excel_mapper))
-    headers.append("Erreur application")
-    sheet.append(headers)
-
-    for line in lines:
-        sheet.append(list(map(
-            lambda x: x.get_from_obj(line['excel_line']), summary_error_excel_mapper
-        )) + [line["error"]])
-    return sheet
-
 
 def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
                   min_row, max_row=None, obj_unique_key=None, custom_dict=None):
@@ -349,16 +301,26 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def dict_to_excel(excel_path, succeeded, failed):
-    workbook = tablib.Databook()
-    # Créer un Dataset pour les données "succeeded"
-    dataset_succeeded = tablib.Dataset(title="Succès")
-    dataset_succeeded.json = json.dumps(succeeded)
-    workbook.add_sheet(dataset_succeeded)
+def dict_to_excel(assembly_output_list: List[AssemblyOutputInner], excel_path):
+    dataset = tablib.Dataset()
 
+    for assembly_output in assembly_output_list:
+        unit_data = {
+            **flatten(assembly_output.unit),
+            'status_comment': assembly_output.status_comment
+        }
+        dataset.headers = unit_data.keys()
+        dataset.rpush(unit_data.values(), tags=[assembly_output.status])
+
+    # Créer un Dataset pour les données "succeeded"
+    dataset_succeeded = dataset.filter('SUCCEEDED')
+    dataset_succeeded.title = "Succès"
     # Créer un Dataset pour les données "failed"
-    dataset_failed = tablib.Dataset(title="Erreurs")
-    dataset_failed.json = json.dumps(failed)
+    dataset_failed = dataset.filter('FAILED')
+    dataset_failed.title = "Erreurs"
+
+    workbook = tablib.Databook()
+    workbook.add_sheet(dataset_succeeded)
     workbook.add_sheet(dataset_failed)
 
     with open(excel_path, 'wb') as f:
