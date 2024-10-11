@@ -32,22 +32,22 @@ class Worker(QRunnable):
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "", None)
             self.execute(self.excel_path)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err), None)
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "", None)
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "", None)
 
         executor = self.action['executor']
         executor(lines, clean=self.should_clean)
@@ -64,7 +64,7 @@ def open_file_operating_system(file_path):
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str, str)
+    signalState = Signal(str, str, str, bool)
     signalRefreshData = Signal(list)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
@@ -118,11 +118,13 @@ class App(QObject):
                 assemblies = get_user_assemblies(self.current_user_id)
                 self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
 
+            self.signalState.emit(None, "SUCCESS", None, True)
         except ForbiddenException:
             # User is forbidden so maybe api key is not working
-            pass
+            return True
         except Exception as err:
             logging.exception('Error while retrieving results', err)
+            self.signalState.emit("Erreur de connexion au service Smuggler", "ERROR", str(err), True)
 
     @Property(type=list, constant=True)
     def actions(self):

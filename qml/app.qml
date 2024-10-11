@@ -76,7 +76,7 @@ ApplicationWindow {
                             anchors.fill: parent
                             Text {
                                 id: chooseText
-                                text: qsTr("Choir le type d'import ?")
+                                text: qsTr("Choisir le type d'import ?")
                                 font.pointSize: 16
                                 Layout.fillWidth: true
                                 color: '#1E276D'
@@ -368,11 +368,11 @@ ApplicationWindow {
             loading = isLoading
         }
 
-        function onSignalState(state, type, details){
-            var color = Material.color(Material.Indigo)
-            if(type == "ERROR"){
+        function onSignalState(state, type, details, canDisable) {
+            let color = Material.color(Material.Indigo);
+            if (type === "ERROR") {
                 color = Material.color(Material.Red)
-            } else if (type == "SUCCESS"){
+            } else if (type === "SUCCESS") {
                 color = Material.color(Material.Green)
             }
             statusText.text = state
@@ -380,6 +380,13 @@ ApplicationWindow {
             statusPane.shown = false
             statusDetails.text = details
             statusDetails.color = Material.color(Material.Red)
+
+            if (canDisable) {
+                const disable = type === "SUCCESS"
+                receiptSelector.enabled = disable
+                selectFileButton.enabled = disable
+                startBtn.enabled = disable
+            }
         }
 
         function onSignalTemplateUrl(url){
@@ -388,7 +395,7 @@ ApplicationWindow {
 
         function onSignalRefreshData(newData){
             tableModel.clear()
-            for (var i = 0; i < newData.length; i++) {
+            for (let i = 0; i < newData.length; i++) {
                 tableModel.appendRow(newData[i])
             }
         }
