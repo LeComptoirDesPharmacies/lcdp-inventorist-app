@@ -28,7 +28,7 @@ def fromAssemblyTypeToString(factory_type : str) -> str:
         return 'Import offre'
     return factory_type
 
-def fromAssemblyStatusToString(status: str) -> str:
+def fromAssemblyStatusToString(status: str, failed_steps: int) -> str:
     if status == AssemblyStatus.PENDING:
         return 'En attente'
     if status == AssemblyStatus.PREPROCESSING:
@@ -44,6 +44,8 @@ def fromAssemblyStatusToString(status: str) -> str:
     if status == AssemblyStatus.POSTPROCESSING_FAILED:
         return 'Erreur en post traitement'
     if status == AssemblyStatus.DONE:
+        if failed_steps > 0:
+            return 'Terminé avec erreurs'
         return 'Terminé'
     return status
 
@@ -57,7 +59,7 @@ def fromAssemblyToTable(assembly: Assembly) -> dict:
         'id': assembly.id,
         'created_at': assembly.created_at.astimezone(tz=LOCAL_TIMEZONE).strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type),
-        'status': fromAssemblyStatusToString(assembly.status),
+        'status': fromAssemblyStatusToString(assembly.status, assembly.failed_steps),
         'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
         'action': get_action(assembly),
         'assembly': assembly,

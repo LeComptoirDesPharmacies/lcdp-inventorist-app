@@ -288,17 +288,36 @@ ApplicationWindow {
 
                                     delegate: DelegateChooser {
                                         DelegateChoice {
+                                            column: 3 // Colonne "status"
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
+                                                Text {
+                                                    text: model.display
+                                                    anchors.centerIn: parent
+                                                    color: {
+                                                        const lowerStatus = model.display.toLowerCase();
+                                                        if (lowerStatus.includes("erreur")) return "red";
+                                                        else if (lowerStatus.includes("terminé")) return "green";
+                                                        else return "black";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        DelegateChoice {
                                             column: 5
                                             delegate: Rectangle {
                                                 implicitHeight: 50
                                                 border.width: 1
                                                 border.color: "lightgray"
-                                                color: row % 2 == 0 ? "gainsboro" : "white"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
                                                 Button {
                                                     flat: true
                                                     text: "💾 Télécharger"
                                                     anchors.centerIn: parent
-                                                    visible: tableModel.rows.length ? (tableModel.rows[row].status === "Terminé" ? true : false) : false
+                                                    visible: tableModel.rows.length ? (tableModel.rows[row].statusType === "DONE") : false
                                                     onClicked: {
                                                         appBackend.downloadAndOpenFile(tableModel.rows[row].id)
                                                     }
@@ -310,7 +329,7 @@ ApplicationWindow {
                                                 implicitHeight: 50
                                                 border.width: 1
                                                 border.color: "lightgray"
-                                                color: row % 2 == 0 ? "gainsboro" : "white"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
                                                 Text {
                                                     text: model.display
                                                     anchors.centerIn: parent
