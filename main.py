@@ -76,6 +76,7 @@ if __name__ == "__main__":
 
     login_backend = Login()
     app_backend = App()
+    app.aboutToQuit.connect(app_backend.on_exit)
     engine.rootContext().setContextProperty("version", settings.value("VERSION"))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
