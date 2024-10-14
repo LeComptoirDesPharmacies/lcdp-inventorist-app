@@ -420,6 +420,7 @@ ApplicationWindow {
         }
 
         function onSignalRefreshData(newData){
+            console.log("refreshdata", new Date())
             tableModel.clear()
             for (let i = 0; i < newData.length; i++) {
                 tableModel.appendRow(newData[i])

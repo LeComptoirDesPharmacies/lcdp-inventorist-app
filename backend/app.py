@@ -1,19 +1,21 @@
 import logging
-import os
 import subprocess
 import sys
+import os
+from typing import Tuple, List, Dict
 
-from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
 from sentry_sdk import capture_exception
 
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QObject, Signal, Slot
+
 from api.consume.gen.user.exceptions import ForbiddenException
-from business.actions import detailed_actions, simple_actions
 from business.mappers.assembly_mapper import fromAssembliesToTable
-from business.services.assembly import get_assembly_output
+from business.actions import detailed_actions, simple_actions
 from business.services.assembly import get_user_assemblies
-from business.services.excel import dict_to_excel
+from business.services.assembly import get_assembly_output
 from business.services.user import get_current_user_id
+from business.services.excel import dict_to_excel
 
 
 class Worker(QRunnable):
@@ -30,25 +32,51 @@ class Worker(QRunnable):
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO", "", None)
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
             self.execute(self.excel_path)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err), None)
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "", None)
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO", "", None)
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
 
         executor = self.action['executor']
         executor(lines, clean=self.should_clean)
+
+
+class FetchAssemblies(QRunnable):
+    current_user_id = None
+
+    def __init__(self, refresh_data_signal, connexion_status_signal):
+        super().__init__()
+        self.refresh_data_signal = refresh_data_signal
+        self.connexion_status_signal = connexion_status_signal
+
+    def run(self):
+        try:
+            if FetchAssemblies.current_user_id is None:
+                FetchAssemblies.current_user_id = get_current_user_id()
+
+            if FetchAssemblies.current_user_id:
+                assemblies = get_user_assemblies(FetchAssemblies.current_user_id)
+                self.refresh_data_signal.emit(fromAssembliesToTable(assemblies))
+            self.connexion_status_signal.emit(True)
+        except ForbiddenException:
+            # User is forbidden so maybe api key is not working
+            self.connexion_status_signal.emit(False)
+            pass
+        except Exception as err:
+            logging.exception('Error while retrieving results', err)
+            self.connexion_status_signal.emit(False)
 
 
 def open_file_operating_system(file_path):
@@ -62,7 +90,7 @@ def open_file_operating_system(file_path):
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str, str, bool)
+    signalState = Signal(str, str, str)
     signalRefreshData = Signal(list)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
@@ -78,6 +106,10 @@ class App(QObject):
         self.signalActions.emit(simple_actions)
         self.excel_path = None
         self._should_clean = False
+
+    def on_exit(self):
+        self.thread_pool.clear()
+        self.thread_pool.waitForDone()
 
     @Slot(str)
     def select_action(self, action_type):
@@ -108,23 +140,18 @@ class App(QObject):
         )
         self.thread_pool.start(worker)
 
+
     @Slot()
     def refresh_data(self):
-        try:
-            if self.current_user_id is None:
-                self.current_user_id = get_current_user_id()
+        if self.current_user_id is None:
+            self.current_user_id = get_current_user_id()
 
-            if self.current_user_id:
-                assemblies = get_user_assemblies(self.current_user_id)
-                self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
+        worker = FetchAssemblies(
+            refresh_data_signal = self.signalRefreshData,
+			connexion_status_signal=self.signalConnexionStatus
+        )
+        self.thread_pool.start(worker)
 
-            self.signalConnexionStatus.emit(True)
-        except ForbiddenException:
-            # User is forbidden so maybe api key is not working
-            self.signalConnexionStatus.emit(False)
-        except Exception as err:
-            logging.exception('Error while retrieving results', err)
-            self.signalConnexionStatus.emit(False)
 
     @Property(type=list, constant=True)
     def actions(self):
