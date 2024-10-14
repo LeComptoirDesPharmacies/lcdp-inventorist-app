@@ -43,6 +43,19 @@ ApplicationWindow {
                 font.pixelSize: 22
                 horizontalAlignment: Text.AlignHCenter
             }
+
+            Label {
+                id: connexionErrorText
+                visible: false
+                width: pageView.width
+                topPadding: 100
+                bottomPadding: 100
+                font.pixelSize: 22
+                text: qsTr("Erreur de connexion au service Smuggler")
+                color: Material.color(Material.Red)
+                horizontalAlignment: Text.AlignHCenter
+            }
+
             footer: Label {
                 id: footer
                 text: qsTr(version)
@@ -53,6 +66,7 @@ ApplicationWindow {
 
             ScrollView {
                 id: pageView
+                visible: false
                 anchors.fill: parent
 
 
@@ -380,13 +394,6 @@ ApplicationWindow {
             statusPane.shown = false
             statusDetails.text = details
             statusDetails.color = Material.color(Material.Red)
-
-            if (canDisable) {
-                const disable = type === "SUCCESS"
-                receiptSelector.enabled = disable
-                selectFileButton.enabled = disable
-                startBtn.enabled = disable
-            }
         }
 
         function onSignalTemplateUrl(url){
@@ -407,6 +414,11 @@ ApplicationWindow {
         function onSignalReset(){
             receiptSelector.currentIndex = -1
             excelPath = ""
+        }
+
+        function onSignalConnexionStatus(isSuccess) {
+            connexionErrorText.visible = !isSuccess
+            pageView.visible = isSuccess
         }
     }
 }

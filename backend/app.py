@@ -1,32 +1,30 @@
 import logging
+import os
 import subprocess
 import sys
-import os
-from typing import Tuple, List, Dict
 
+from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
 from sentry_sdk import capture_exception
 
-from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
-from PySide6.QtCore import QObject, Signal, Slot
-
 from api.consume.gen.user.exceptions import ForbiddenException
-from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
-from business.services.assembly import get_user_assemblies
+from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.services.assembly import get_assembly_output
-from business.services.user import get_current_user_id
+from business.services.assembly import get_user_assemblies
 from business.services.excel import dict_to_excel
-from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
+from business.services.user import get_current_user_id
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, reset, should_clean):
+    def __init__(self, action, excel_path, loading_signal, state_signal, reset, connexion_status_signal, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
         self.reset = reset
+        self.connexion_status_signal = connexion_status_signal
         self.should_clean = should_clean
 
     def run(self):
@@ -69,6 +67,7 @@ class App(QObject):
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
+    signalConnexionStatus = Signal(bool)
     current_user_id = None
 
     def __init__(self):
@@ -105,6 +104,7 @@ class App(QObject):
             state_signal=self.signalState,
             reset=self.do_reset,
             should_clean=self._should_clean,
+            connexion_status_signal=self.signalConnexionStatus
         )
         self.thread_pool.start(worker)
 
@@ -118,13 +118,13 @@ class App(QObject):
                 assemblies = get_user_assemblies(self.current_user_id)
                 self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
 
-            self.signalState.emit(None, "SUCCESS", None, True)
+            self.signalConnexionStatus.emit(True)
         except ForbiddenException:
             # User is forbidden so maybe api key is not working
-            return True
+            self.signalConnexionStatus.emit(False)
         except Exception as err:
             logging.exception('Error while retrieving results', err)
-            self.signalState.emit("Erreur de connexion au service Smuggler", "ERROR", str(err), True)
+            self.signalConnexionStatus.emit(False)
 
     @Property(type=list, constant=True)
     def actions(self):
