@@ -1,53 +1,51 @@
 import logging
+import os
 import subprocess
 import sys
-import os
-from typing import Tuple, List, Dict
 
+from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
 from sentry_sdk import capture_exception
 
-from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
-from PySide6.QtCore import QObject, Signal, Slot
-
 from api.consume.gen.user.exceptions import ForbiddenException
-from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
-from business.services.assembly import get_user_assemblies
+from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.services.assembly import get_assembly_output
-from business.services.user import get_current_user_id
+from business.services.assembly import get_user_assemblies
 from business.services.excel import dict_to_excel
-from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
+from business.services.user import get_current_user_id
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, reset, should_clean):
+    def __init__(self, action, excel_path, loading_signal, state_signal, reset, connexion_status_signal, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
         self.reset = reset
+        self.connexion_status_signal = connexion_status_signal
         self.should_clean = should_clean
 
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "", None)
             self.execute(self.excel_path)
         except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err), None)
             logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
             capture_exception(err)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "", None)
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "", None)
 
         executor = self.action['executor']
         executor(lines, clean=self.should_clean)
@@ -64,11 +62,12 @@ def open_file_operating_system(file_path):
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str, str)
+    signalState = Signal(str, str, str, bool)
     signalRefreshData = Signal(list)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
+    signalConnexionStatus = Signal(bool)
     current_user_id = None
 
     def __init__(self):
@@ -105,6 +104,7 @@ class App(QObject):
             state_signal=self.signalState,
             reset=self.do_reset,
             should_clean=self._should_clean,
+            connexion_status_signal=self.signalConnexionStatus
         )
         self.thread_pool.start(worker)
 
@@ -118,11 +118,13 @@ class App(QObject):
                 assemblies = get_user_assemblies(self.current_user_id)
                 self.signalRefreshData.emit(fromAssembliesToTable(assemblies))
 
+            self.signalConnexionStatus.emit(True)
         except ForbiddenException:
             # User is forbidden so maybe api key is not working
-            pass
+            self.signalConnexionStatus.emit(False)
         except Exception as err:
             logging.exception('Error while retrieving results', err)
+            self.signalConnexionStatus.emit(False)
 
     @Property(type=list, constant=True)
     def actions(self):

@@ -43,6 +43,19 @@ ApplicationWindow {
                 font.pixelSize: 22
                 horizontalAlignment: Text.AlignHCenter
             }
+
+            Label {
+                id: connexionErrorText
+                visible: false
+                width: pageView.width
+                topPadding: 100
+                bottomPadding: 100
+                font.pixelSize: 22
+                text: qsTr("Erreur de connexion au service Smuggler")
+                color: Material.color(Material.Red)
+                horizontalAlignment: Text.AlignHCenter
+            }
+
             footer: Label {
                 id: footer
                 text: qsTr(version)
@@ -53,6 +66,7 @@ ApplicationWindow {
 
             ScrollView {
                 id: pageView
+                visible: false
                 anchors.fill: parent
 
 
@@ -76,7 +90,7 @@ ApplicationWindow {
                             anchors.fill: parent
                             Text {
                                 id: chooseText
-                                text: qsTr("Choir le type d'import ?")
+                                text: qsTr("Choisir le type d'import ?")
                                 font.pointSize: 16
                                 Layout.fillWidth: true
                                 color: '#1E276D'
@@ -387,11 +401,11 @@ ApplicationWindow {
             loading = isLoading
         }
 
-        function onSignalState(state, type, details){
-            var color = Material.color(Material.Indigo)
-            if(type == "ERROR"){
+        function onSignalState(state, type, details, canDisable) {
+            let color = Material.color(Material.Indigo);
+            if (type === "ERROR") {
                 color = Material.color(Material.Red)
-            } else if (type == "SUCCESS"){
+            } else if (type === "SUCCESS") {
                 color = Material.color(Material.Green)
             }
             statusText.text = state
@@ -407,7 +421,7 @@ ApplicationWindow {
 
         function onSignalRefreshData(newData){
             tableModel.clear()
-            for (var i = 0; i < newData.length; i++) {
+            for (let i = 0; i < newData.length; i++) {
                 tableModel.appendRow(newData[i])
             }
         }
@@ -419,6 +433,11 @@ ApplicationWindow {
         function onSignalReset(){
             receiptSelector.currentIndex = -1
             excelPath = ""
+        }
+
+        function onSignalConnexionStatus(isSuccess) {
+            connexionErrorText.visible = !isSuccess
+            pageView.visible = isSuccess
         }
     }
 }
