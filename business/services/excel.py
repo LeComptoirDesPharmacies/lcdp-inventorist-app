@@ -4,15 +4,15 @@ from collections import defaultdict
 from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
 from typing import List
 
-
 import tablib
-from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
 
 from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
 from api.consume.gen.factory.models.any_factory import AnyFactory
 from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
 from business.constant import CHUNK_SIZE
-from business.mappers.excel_mapper import error_mapper
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
 from business.services.product import get_product_type_by_name
 from business.services.providers import get_manage_assembly_api
@@ -20,8 +20,6 @@ from business.services.security import get_api_key
 from business.services.user import get_current_user_id
 from business.services.vat import get_vat_by_value
 from business.utils import rgetattr, execution_time
-
-from flatten_json import flatten
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
@@ -307,20 +305,35 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
 def dict_to_excel(assembly_output_list: List[AssemblyOutputInner], excel_path):
     dataset = tablib.Dataset()
 
+    # sort headers by name
+    headers = list()
+    for header in sorted(assembly_output_list[0].unit.keys()):
+        headers.append(header)
+
+    dataset.headers = headers
+    dataset.headers.append('status_comment')
+
+    # build dataset
     for assembly_output in assembly_output_list:
-        unit_data = {
-            **flatten(assembly_output.unit),
-            'status_comment': assembly_output.status_comment
-        }
-        dataset.headers = unit_data.keys()
-        dataset.rpush(unit_data.values(), tags=[assembly_output.status])
+        unit_value = []
+        for header in headers:
+            header_value = assembly_output.unit.get(header, None)
+            if isinstance(header_value, dict):
+                header_value = json.dumps(header_value, indent=2)
+            unit_value.append(header_value)
+        unit_value.append(assembly_output.status_comment)
+
+        dataset.rpush(unit_value, tags=[assembly_output.status])
+
+    tabSuccess = "Succès"
+    tabErrors = "Erreurs"
 
     # Créer un Dataset pour les données "succeeded"
     dataset_succeeded = dataset.filter('SUCCEEDED')
-    dataset_succeeded.title = "Succès"
+    dataset_succeeded.title = tabSuccess
     # Créer un Dataset pour les données "failed"
     dataset_failed = dataset.filter('FAILED')
-    dataset_failed.title = "Erreurs"
+    dataset_failed.title = tabErrors
 
     workbook = tablib.Databook()
     workbook.add_sheet(dataset_succeeded)
@@ -328,7 +341,20 @@ def dict_to_excel(assembly_output_list: List[AssemblyOutputInner], excel_path):
 
     with open(excel_path, 'wb') as f:
         f.write(workbook.xlsx)
+
+    # Resize columns width for readability
+    wb = load_workbook(excel_path)
+    resize_column_width(wb.get_sheet_by_name(tabSuccess))
+    resize_column_width(wb.get_sheet_by_name(tabErrors))
+    wb.save(excel_path)
+
     return excel_path
+
+def resize_column_width(ws: Worksheet):
+    for column in ws.columns:
+        column_letter = get_column_letter(column[0].column)
+        # set arbitrary to 50
+        ws.column_dimensions[column_letter].width = 50
 
 
 def clean_sale_offers(lines):

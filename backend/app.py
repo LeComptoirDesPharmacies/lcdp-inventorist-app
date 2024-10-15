@@ -187,6 +187,5 @@ class App(QObject):
 
             dict_to_excel(output, download_file)
             open_file_operating_system(download_file)
-
         except Exception as e:
-            print(f"Erreur lors du téléchargement : {e}")
+            logging.exception(f"Erreur lors du téléchargement")
