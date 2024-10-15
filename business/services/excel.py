@@ -80,6 +80,9 @@ def __build_product_upsert(product_line):
 
 
 def __build_distribution_mode(sale_offer_line):
+    if sale_offer_line.sale_offer.distribution.is_empty:
+        return dict()
+
     if sale_offer_line.sale_offer.distribution_type == RANGE_DISTRIBUTION:
         ranges = []
         for range in sale_offer_line.sale_offer.distribution.ranges:
@@ -150,7 +153,7 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
             new_item['product'] = product_upsert
 
         if distribution_mode:
-            new_item['distributionMode'] = AnyDistributionMode(distribution_mode)
+            new_item['distributionMode'] = AnyDistributionMode.from_dict(distribution_mode)
 
         if stock:
             new_item['stock'] = stock
@@ -202,7 +205,7 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
             new_item['product'] = product_upsert
 
         if distribution_mode:
-            new_item['distributionMode'] = AnyDistributionMode().from_dict(distribution_mode)
+            new_item['distributionMode'] = AnyDistributionMode.from_dict(distribution_mode)
 
         if stock:
             new_item['stock'] = stock
