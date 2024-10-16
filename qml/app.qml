@@ -9,7 +9,7 @@ import Qt.labs.qmlmodels
 ApplicationWindow {
     title: qsTr("Le Comptoir Des Pharmacies - Gestionnaire d'inventaire")
     visible: true
-    minimumWidth: 850
+    minimumWidth: 1350
     minimumHeight: 875
 
     Material.theme: Material.Light
@@ -235,48 +235,61 @@ ApplicationWindow {
                     }
                     Pane {
                         Layout.preferredWidth: parent.width * 0.9
+                        Layout.preferredHeight: 400
                         Layout.alignment: "Qt::AlignHCenter"
                         Material.elevation: 6
 
                         ColumnLayout {
                             id: columnLayout
-                            anchors.bottomMargin: 0
-                            height: 300
+                            anchors.fill: parent
                             anchors.horizontalCenter: parent.horizontalCenter
 
-                            RowLayout{
-                                Row{
-                                    width: card.width * 0.9
-                                    Repeater {
-                                        model: ["Date création", "Type d'import", "État", "Progression", "Action"]
-                                        delegate: Rectangle {
-                                            width: (card.width * 0.9) / 5
-                                            height: 40
-                                            color: "transparent"
-                                            border.width: 1
-                                            border.color: "lightgray"
 
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: modelData
-                                                font.bold: true
-                                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                HorizontalHeaderView {
+                                    id: horizontalHeader
+                                    syncView: tableView
+                                    model: ["ID", "Date création", "Type d'import", "Tags", "État", "Progression", "Action"]
+                                    clip: true
+                                    boundsBehavior: Flickable.StopAtBounds
+
+                                    delegate: Rectangle {
+
+                                        implicitHeight: 40
+                                        color: "transparent"
+                                        border.width: 1
+                                        border.color: "lightgray"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData
+                                            font.bold: true
                                         }
                                     }
-                                }
-                            }
 
-                            RowLayout{
-                                Row{
-                                width: card.width * 0.9
+
+                                }
+
                                 TableView {
                                     id: tableView
-                                    height: 300
-                                    width: card.width * 0.9
+                                    anchors.left: parent.left
+                                    anchors.top: horizontalHeader.bottom
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    boundsBehavior: Flickable.StopAtBounds
+
                                     columnWidthProvider: function (column) {
-                                        if(column === 0)
-                                            return 0
-                                        return width / 5
+                                        switch(column) {
+                                            case 3: // tags
+                                                return (width / 7) + 80
+                                            case 5: // percent
+                                                return (width / 7) - 80;
+                                            default:
+                                                return width / 7
+                                        }
                                     }
                                     model: TableModel {
                                         id: tableModel
@@ -288,6 +301,9 @@ ApplicationWindow {
                                         }
                                         TableModelColumn {
                                             display: "type"
+                                        }
+                                        TableModelColumn {
+                                            display: "tags"
                                         }
                                         TableModelColumn {
                                             display: "status"
@@ -302,7 +318,7 @@ ApplicationWindow {
 
                                     delegate: DelegateChooser {
                                         DelegateChoice {
-                                            column: 3 // Colonne "status"
+                                            column: 4 // Colonne "status"
                                             delegate: Rectangle {
                                                 implicitHeight: 50
                                                 border.width: 1
@@ -321,7 +337,7 @@ ApplicationWindow {
                                             }
                                         }
                                         DelegateChoice {
-                                            column: 5
+                                            column: 6
                                             delegate: Rectangle {
                                                 implicitHeight: 50
                                                 border.width: 1
@@ -345,13 +361,18 @@ ApplicationWindow {
                                                 border.color: "lightgray"
                                                 color: row % 2 === 0 ? "gainsboro" : "white"
                                                 Text {
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    width: parent.width
+
                                                     text: model.display
+                                                    wrapMode: Text.Wrap
                                                     anchors.centerIn: parent
                                                 }
                                             }
                                         }
                                     }
-                                }}
+                                }
+
                             }
                         }
                     }
