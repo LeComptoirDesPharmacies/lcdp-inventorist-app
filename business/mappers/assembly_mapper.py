@@ -3,6 +3,8 @@ import array
 from api.consume.gen.factory.models.assembly_status import AssemblyStatus
 from api.consume.gen.factory.models.assembly import Assembly
 from datetime import datetime, timezone
+import os
+from typing import List
 
 LOCAL_TIMEZONE = datetime.now(timezone.utc).astimezone().tzinfo
 
@@ -27,6 +29,18 @@ def fromAssemblyTypeToString(factory_type : str) -> str:
     if factory_type == 'OFFER_PLANIFICATION':
         return 'Import offre'
     return factory_type
+
+def fromAssemblyTagsToString(tags: List[str]) -> str:
+    result = []
+    for tag in tags:
+        key, value = tag.split(":")
+        if key == "seller-id":
+            result.append("Vendeur : {}".format(value))
+        elif key == "filename":
+            result.append("Fichier : {}".format(value))
+
+    return os.linesep.join(result)
+
 
 def fromAssemblyStatusToString(status: str, failed_steps: int) -> str:
     if status == AssemblyStatus.PENDING:
@@ -59,6 +73,7 @@ def fromAssemblyToTable(assembly: Assembly) -> dict:
         'id': assembly.id,
         'created_at': assembly.created_at.astimezone(tz=LOCAL_TIMEZONE).strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type),
+        'tags': fromAssemblyTagsToString(assembly.tags),
         'status': fromAssemblyStatusToString(assembly.status, assembly.failed_steps),
         'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
         'action': get_action(assembly),

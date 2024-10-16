@@ -133,7 +133,7 @@ def __build_stock(stock_line):
 
 
 @execution_time
-def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
+def sale_offer_upsert_from_excel_lines(lines, filename, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
     items_by_owner = defaultdict(list)
@@ -176,6 +176,7 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
         manage_assembly_api.create_assembly(
             AssemblyCreationParameters(
                 owner_id=get_current_user_id(),
+                tags=['seller-id:{}'.format(owner_id), 'filename:{}'.format(filename)],
                 factory=AnyFactory({
                     'type': 'SALE_OFFER_UPSERT',
                     'clean': clean,
@@ -187,7 +188,7 @@ def sale_offer_upsert_from_excel_lines(lines, clean=False, **kwargs):
 
 
 @execution_time
-def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
+def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
     items_by_owner = defaultdict(list)
@@ -228,6 +229,7 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
         manage_assembly_api.create_assembly(
             AssemblyCreationParameters(
                 owner_id=get_current_user_id(),
+                tags=['seller-id:{}'.format(owner_id), 'filename:{}'.format(filename)],
                 factory=AnyFactory({
                     'type': 'OFFER_PLANIFICATION',
                     'clean': clean,
@@ -240,7 +242,7 @@ def create_offer_planificiation_from_excel_lines(lines, clean=False, **kwargs):
 
 
 @execution_time
-def product_upsert_from_excel_lines(lines, **kwargs):
+def product_upsert_from_excel_lines(lines, filename, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
 
     items = []
@@ -260,6 +262,7 @@ def product_upsert_from_excel_lines(lines, **kwargs):
     manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
             owner_id=get_current_user_id(),
+            tags=['filename:{}'.format(filename)],
             factory=AnyFactory({
                 'type': 'PRODUCT_UPSERT',
                 'records': items,

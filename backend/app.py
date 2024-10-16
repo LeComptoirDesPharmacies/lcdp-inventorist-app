@@ -50,7 +50,7 @@ class Worker(QRunnable):
         self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
 
         executor = self.action['executor']
-        executor(lines, clean=self.should_clean)
+        executor(lines, clean=self.should_clean, filename=os.path.basename(excel_path))
 
 
 class FetchAssemblies(QRunnable):
