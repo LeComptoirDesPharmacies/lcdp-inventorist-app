@@ -7,7 +7,7 @@ from typing import Tuple, List, Dict
 from sentry_sdk import capture_exception
 
 from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Signal, Slot, Qt
 
 from api.consume.gen.user.exceptions import ForbiddenException
 from business.mappers.assembly_mapper import fromAssembliesToTable
@@ -96,6 +96,7 @@ class App(QObject):
     signalActions = Signal(list)
     signalReset = Signal()
     signalConnexionStatus = Signal(bool)
+    downloadRequested = Signal(str)
     current_user_id = None
 
     def __init__(self):
@@ -106,6 +107,7 @@ class App(QObject):
         self.signalActions.emit(simple_actions)
         self.excel_path = None
         self._should_clean = False
+        self.downloadRequested.connect(self.downloadAndOpenFile, Qt.QueuedConnection)
 
     def on_exit(self):
         self.thread_pool.clear()
@@ -177,13 +179,17 @@ class App(QObject):
             self.excel_path = None
 
     @Slot(str)
-    def downloadAndOpenFile(self, id: str):
+    def queueDownloadAndOpenFile(self, file_id):
+        self.downloadRequested.emit(file_id)
+
+    @Slot(str)
+    def downloadAndOpenFile(self, assembly_id: str):
         try:
-            output = get_assembly_output(id)
+            output = get_assembly_output(assembly_id)
 
             # Create file in Download folder
             download_path = os.path.join(os.path.expanduser("~"), "Downloads")
-            download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(id))
+            download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(assembly_id))
 
             dict_to_excel(output, download_file)
             open_file_operating_system(download_file)
