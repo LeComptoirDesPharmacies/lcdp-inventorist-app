@@ -2,14 +2,13 @@ import logging
 import subprocess
 import sys
 import os
-from typing import Tuple, List, Dict
-
 from sentry_sdk import capture_exception
 
 from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 
 from api.consume.gen.user.exceptions import ForbiddenException
+from api.consume.gen.factory.exceptions import ApiException
 from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
 from business.services.assembly import get_user_assemblies
@@ -34,10 +33,16 @@ class Worker(QRunnable):
             self.loading_signal.emit(True)
             self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
             self.execute(self.excel_path)
-        except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
-            logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
-            capture_exception(err)
+        except ApiException as e:
+            if e.status == 409:
+                self.state_signal.emit("Un import est déjà en cours pour ce client", "ERROR", str(e))
+            else:
+                raise Exception(e)
+
+        except Exception as e:
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(e))
+            logging.exception('Error during excel import, excel url: {}'.format(self.excel_path), e)
+            capture_exception(e)
         finally:
             self.loading_signal.emit(False)
 
