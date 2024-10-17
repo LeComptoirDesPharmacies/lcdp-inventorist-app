@@ -337,6 +337,32 @@ ApplicationWindow {
                                             }
                                         }
                                         DelegateChoice {
+                                            column: 5 // Colonne "percent"
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
+
+                                                ProgressBar {
+                                                    anchors.centerIn: parent
+                                                    width: parent.width * 0.8
+                                                    height: 20
+                                                    from: 0
+                                                    to: 100
+                                                    value: model.display.replace(" %", "") // Supprime le "%" et convertit en nombre
+
+                                                    Text {
+                                                        anchors.centerIn: parent
+                                                        anchors.verticalCenterOffset: 15
+                                                        text: model.display
+                                                        color: "black"
+                                                        z: 1
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        DelegateChoice {
                                             column: 6
                                             delegate: Rectangle {
                                                 implicitHeight: 50
