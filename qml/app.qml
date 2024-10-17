@@ -352,13 +352,12 @@ ApplicationWindow {
                                                     to: 100
                                                     value: model.display.replace(" %", "") // Supprime le "%" et convertit en nombre
 
-                                                    // Option 1: Pourcentage en superposition
                                                     Text {
                                                         anchors.centerIn: parent
-                                                        anchors.verticalCenterOffset: 15 // Descend le texte d'un quart de la hauteur de la barre
+                                                        anchors.verticalCenterOffset: 15
                                                         text: model.display
                                                         color: "black"
-                                                        z: 1 // Assurez-vous que le texte est au-dessus de la barre de progression
+                                                        z: 1
                                                     }
                                                 }
                                             }
