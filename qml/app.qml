@@ -337,6 +337,33 @@ ApplicationWindow {
                                             }
                                         }
                                         DelegateChoice {
+                                            column: 5 // Colonne "percent"
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
+
+                                                ProgressBar {
+                                                    anchors.centerIn: parent
+                                                    width: parent.width * 0.8
+                                                    height: 20
+                                                    from: 0
+                                                    to: 100
+                                                    value: model.display.replace(" %", "") // Supprime le "%" et convertit en nombre
+
+                                                    // Option 1: Pourcentage en superposition
+                                                    Text {
+                                                        anchors.centerIn: parent
+                                                        anchors.verticalCenterOffset: 15 // Descend le texte d'un quart de la hauteur de la barre
+                                                        text: model.display
+                                                        color: "black"
+                                                        z: 1 // Assurez-vous que le texte est au-dessus de la barre de progression
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        DelegateChoice {
                                             column: 6
                                             delegate: Rectangle {
                                                 implicitHeight: 50
