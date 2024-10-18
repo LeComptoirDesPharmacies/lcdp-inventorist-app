@@ -272,18 +272,22 @@ def product_upsert_from_excel_lines(lines, filename, **kwargs):
     )
 
 
-
 def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
                   min_row, max_row=None, obj_unique_key=None, custom_dict=None):
     results = {}
     if isinstance(custom_dict, dict):
         results = custom_dict
 
-    wb = load_workbook(excel_path, read_only=True)
+    wb = load_workbook(excel_path, read_only=True, data_only=True)
     try:
         ws = wb[sheet_name]
         column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
-        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, values_only=True)):
+        max_col = len(column_indices.keys())
+        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, max_col=max_col, values_only=True)):
+            # check if row is empty
+            if not any(row):
+                continue
+
             obj = obj_class()
 
             cells = {
