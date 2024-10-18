@@ -78,7 +78,7 @@ def __build_product_upsert(product_line):
 
 
 def __build_distribution_mode(sale_offer_line):
-    if sale_offer_line.sale_offer.distribution.is_empty():
+    if not sale_offer_line.sale_offer.distribution or sale_offer_line.sale_offer.distribution.is_empty():
         return dict()
 
     if sale_offer_line.sale_offer.distribution_type == RANGE_DISTRIBUTION:
