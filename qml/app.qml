@@ -283,8 +283,10 @@ ApplicationWindow {
 
                                     columnWidthProvider: function (column) {
                                         switch(column) {
+                                            case 2: // type
+                                                return (width / 7) - 40;
                                             case 3: // tags
-                                                return (width / 7) + 80
+                                                return (width / 7) + 120
                                             case 5: // percent
                                                 return (width / 7) - 80;
                                             default:
@@ -316,7 +318,41 @@ ApplicationWindow {
                                         }
                                     }
 
+
                                     delegate: DelegateChooser {
+                                        DelegateChoice {
+                                            column: 3 // Colonne "tags"
+
+                                            delegate: Rectangle {
+                                                implicitHeight: 50
+                                                border.width: 1
+                                                border.color: "lightgray"
+                                                color: row % 2 === 0 ? "gainsboro" : "white"
+
+                                                Text {
+                                                    anchors.fill: parent
+                                                    anchors.margins: 5
+                                                    horizontalAlignment: Text.AlignLeft
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    text: model.display
+                                                    elide: Text.ElideRight
+                                                    wrapMode: Text.Wrap
+                                                }
+
+                                                 ToolTip {
+                                                    visible: mouseArea.containsMouse
+                                                    text: model.display
+                                                }
+
+                                                MouseArea {
+                                                    id: mouseArea
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                }
+
+                                            }
+                                        }
+
                                         DelegateChoice {
                                             column: 4 // Colonne "status"
                                             delegate: Rectangle {
@@ -389,7 +425,6 @@ ApplicationWindow {
                                                 Text {
                                                     horizontalAlignment: Text.AlignHCenter
                                                     width: parent.width
-
                                                     text: model.display
                                                     wrapMode: Text.Wrap
                                                     anchors.centerIn: parent
