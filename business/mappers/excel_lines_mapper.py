@@ -39,8 +39,6 @@ class ExcelLinesMapper:
             sheet_name=parameters.sheet_name,
             header_row=int(parameters.header_line),
             min_row=int(parameters.content_start_line),
-            max_row=int(parameters.content_start_line) + 50000,
-            check_max_row=True,
             obj_unique_key=self.unique_key,
             custom_dict=ConditionalDict(
                 condition_func=self.condition,

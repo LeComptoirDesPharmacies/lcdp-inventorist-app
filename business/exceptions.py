@@ -40,7 +40,3 @@ class TooManyProductInsight(ProcessingException):
     def __init__(self):
         super().__init__(ProcessingError.TOO_MANY_PRODUCT_INSIGHT)
 
-
-class ExcelRowLimitExceeded(Exception):
-    def __init__(self, message):
-        super().__init__(message)

@@ -13,7 +13,6 @@ from api.consume.gen.factory.models.any_distribution_mode import AnyDistribution
 from api.consume.gen.factory.models.any_factory import AnyFactory
 from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
 from business.constant import CHUNK_SIZE
-from business.exceptions import ExcelRowLimitExceeded
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
 from business.services.product import get_product_type_by_name
 from business.services.providers import get_manage_assembly_api
@@ -274,7 +273,7 @@ def product_upsert_from_excel_lines(lines, filename, **kwargs):
 
 
 def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
-                  min_row, max_row=None, check_max_row=False, obj_unique_key=None, custom_dict=None):
+                  min_row, max_row=None, obj_unique_key=None, custom_dict=None):
     results = {}
     if isinstance(custom_dict, dict):
         results = custom_dict
@@ -285,6 +284,10 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
         column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
         max_col = len(column_indices.keys())
         for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, max_col=max_col, values_only=True)):
+            # check if row is empty
+            if not any(row):
+                continue
+
             obj = obj_class()
 
             cells = {
@@ -300,14 +303,6 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
                 results[obj_key] = obj
             else:
                 results[idx] = obj
-
-        if check_max_row:
-            logging.info(f"Vérification de la ligne {max_row + 1}")
-            next_row = next(ws.iter_rows(min_row=max_row + 1, max_row=max_row + 1, max_col=max_col, values_only=True), None)
-            logging.info(f"ligne: {next_row}")
-            if next_row and any(next_row):
-               raise ExcelRowLimitExceeded(f"Le fichier d'import contient plus de {max_row - min_row} lignes avec des données.")
-
     finally:
         wb.close()
 
