@@ -36,6 +36,8 @@ class Worker(QRunnable):
         except ApiException as e:
             if e.status == 409:
                 self.state_signal.emit("Un import est déjà en cours pour ce client", "ERROR", str(e))
+            elif e.status == 422:
+                self.state_signal.emit("Le fichier sélectionné n'est pas valide, veuillez le vérifier", "ERROR", str(e))
             else:
                 raise Exception(e)
 
