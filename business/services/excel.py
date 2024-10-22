@@ -119,17 +119,24 @@ def __build_distribution_mode(sale_offer_line):
 
     return distribution_mode
 
-
-def __build_stock(stock_line):
+def __build_stock(stock_line, full=False):
+    '''
+    :param stock_line:
+    :param full: If'true', then all stock object will be built
+        when at least one field is set. Useful for offer planification as row are complete
+        but can be problematic when updating sale offers.
+        TODO : We can not reset lapsing_date NULL and batch NULL with SALE_OFFER_UPSERT
+    :return:
+    '''
     stock = dict()
 
-    if stock_line.remaining_quantity:
+    if stock_line.remaining_quantity != None or full:
         stock['remaining_quantity'] = stock_line.remaining_quantity
 
-    if stock_line.lapsing_date:
+    if stock_line.lapsing_date != None or full:
         stock['lapsing_date'] = stock_line.lapsing_date
 
-    if stock_line.batch:
+    if stock_line.batch != None or full:
         stock['batch'] = stock_line.batch
 
     return stock
@@ -201,7 +208,8 @@ def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, *
     for line in lines:
         product_upsert = __build_product_upsert(line.sale_offer.product)
         distribution_mode = __build_distribution_mode(line)
-        stock = __build_stock(line.sale_offer.stock)
+
+        stock = __build_stock(line.sale_offer.stock, full=True)
 
         new_item = dict()
 
