@@ -12,6 +12,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
 from api.consume.gen.factory.models.any_factory import AnyFactory
 from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
+from api.consume.gen.factory.models.offer_planification_factory_all_of_records import OfferPlanificationFactoryAllOfRecords
+from api.consume.gen.factory.models.product_upsert_factory_all_of_records import ProductUpsertFactoryAllOfRecords
+from api.consume.gen.factory.models.sale_offer_upsert_factory_all_of_records import SaleOfferUpsertFactoryAllOfRecords
 from business.constant import CHUNK_SIZE
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
 from business.services.product import get_product_type_by_name
@@ -168,7 +171,9 @@ def sale_offer_upsert_from_excel_lines(lines, filename, clean=False, **kwargs):
         owner_id = line.sale_offer.owner_id
 
         if owner_id:
-            items_by_owner[owner_id].append(new_item)
+            items_by_owner[owner_id].append(
+                SaleOfferUpsertFactoryAllOfRecords(**new_item)
+            )
 
     manage_assembly_api = get_manage_assembly_api()
 
@@ -221,7 +226,9 @@ def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, *
         owner_id = line.sale_offer.owner_id
 
         if owner_id:
-            items_by_owner[owner_id].append(new_item)
+            items_by_owner[owner_id].append(
+                OfferPlanificationFactoryAllOfRecords(**new_item)
+            )
 
     manage_assembly_api = get_manage_assembly_api()
 
@@ -255,7 +262,7 @@ def product_upsert_from_excel_lines(lines, filename, **kwargs):
         if product_upsert:
             new_item['product'] = product_upsert
 
-        items.append(new_item)
+        items.append(ProductUpsertFactoryAllOfRecords(**new_item))
 
     manage_assembly_api = get_manage_assembly_api()
 
