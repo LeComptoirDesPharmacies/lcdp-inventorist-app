@@ -248,7 +248,7 @@ def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, *
                 factory=AnyFactory({
                     'type': 'OFFER_PLANIFICATION',
                     'clean': clean,
-                    'offerName': 'inventorist',
+                    'offerName': None, # Update every sale offer, without taking care of the offer name
                     'sellerId': owner_id,
                     'records': items
                 })),
