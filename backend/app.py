@@ -193,6 +193,8 @@ class App(QObject):
     def downloadAndOpenFile(self, assembly_id: str):
         try:
             output = get_assembly_output(assembly_id)
+            if output is None or len(output) == 0:
+                raise Exception("Aucune sortie à afficher")
 
             # Create file in Download folder
             download_path = os.path.join(os.path.expanduser("~"), "Downloads")

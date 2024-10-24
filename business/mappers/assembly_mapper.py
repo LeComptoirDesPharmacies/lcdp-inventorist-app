@@ -75,7 +75,7 @@ def fromAssemblyToTable(assembly: Assembly) -> dict:
         'type': fromAssemblyTypeToString(assembly.factory_type),
         'tags': fromAssemblyTagsToString(assembly.tags),
         'status': fromAssemblyStatusToString(assembly.status, assembly.failed_steps),
-        'percent': "{} %".format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
+        'percent': format(computePercent(assembly.successful_steps, assembly.failed_steps, assembly.total_steps)),
         'action': get_action(assembly),
         'assembly': assembly,
         'statusType': assembly.status
