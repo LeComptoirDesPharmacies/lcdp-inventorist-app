@@ -386,12 +386,12 @@ ApplicationWindow {
                                                     height: 20
                                                     from: 0
                                                     to: 100
-                                                    value: model.display.replace(" %", "") // Supprime le "%" et convertit en nombre
+                                                    value: model.display
 
                                                     Text {
                                                         anchors.centerIn: parent
                                                         anchors.verticalCenterOffset: 15
-                                                        text: model.display
+                                                        text: model.display + " %"
                                                         color: "black"
                                                         z: 1
                                                     }
@@ -409,7 +409,7 @@ ApplicationWindow {
                                                     flat: true
                                                     text: "💾 Télécharger"
                                                     anchors.centerIn: parent
-                                                    visible: tableModel.rows.length ? (tableModel.rows[row].statusType === "DONE") : false
+                                                    visible: tableModel.rows.length ? (tableModel.rows[row].statusType === "DONE" && tableModel.rows[row].percent >= 100) : false
                                                     onClicked: {
                                                         appBackend.downloadAndOpenFile(tableModel.rows[row].id)
                                                     }
