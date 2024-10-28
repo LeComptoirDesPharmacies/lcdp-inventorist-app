@@ -196,11 +196,14 @@ class App(QObject):
             if output is None or len(output) == 0:
                 raise Exception("Aucune sortie à afficher")
 
-            # Create file in Download folder
-            download_path = os.path.join(os.path.expanduser("~"), "Downloads")
-            download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(assembly_id))
+            if output is not None and len(output) > 0:
+                # Create file in Download folder
+                download_path = os.path.join(os.path.expanduser("~"), "Downloads")
+                download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(assembly_id))
 
-            dict_to_excel(output, download_file)
-            open_file_operating_system(download_file)
-        except Exception as e:
+                dict_to_excel(output, download_file)
+                open_file_operating_system(download_file)
+            else:
+                logging.warn("Output for assembly {} is empty".format(assembly_id))
+        except Exception:
             logging.exception(f"Erreur lors du téléchargement")

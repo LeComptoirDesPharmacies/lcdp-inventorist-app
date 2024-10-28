@@ -58,7 +58,7 @@ def fromAssemblyStatusToString(status: str, failed_steps: int) -> str:
     if status == AssemblyStatus.POSTPROCESSING_FAILED:
         return 'Erreur en post traitement'
     if status == AssemblyStatus.DONE:
-        if failed_steps > 0:
+        if failed_steps is not None and failed_steps > 0:
             return 'Terminé avec erreurs'
         return 'Terminé'
     return status
