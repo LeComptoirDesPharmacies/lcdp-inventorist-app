@@ -114,7 +114,6 @@ ApplicationWindow {
                         TextField {
                             id: loginField
                             Layout.preferredWidth: 300
-                            text: qsTr("seller_buyer@mail.test")
                             selectByMouse: true
                             placeholderText: qsTr("Email")
                             focus: true
@@ -124,7 +123,6 @@ ApplicationWindow {
                         TextField {
                             id: passwordField
                             Layout.preferredWidth: 300
-                            text: qsTr("")
                             selectByMouse: true
                             placeholderText: qsTr("Mot de passe")
                             echoMode: TextInput.Password
