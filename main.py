@@ -17,7 +17,9 @@ from settings import get_settings
 
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
 import faulthandler
-faulthandler.enable()
+
+with open('fault_log.txt', 'a') as f:
+    faulthandler.enable(file=f)
 
 def on_exit():
     try:
