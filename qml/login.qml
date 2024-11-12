@@ -8,9 +8,8 @@ ApplicationWindow {
     id: loginWindow
     title: qsTr("Connexion")
     width: 400
-    height: 580
+    height: 620
     visible: true
-    flags: Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint | Qt.CustomizeWindowHint | Qt.MSWindowsFixedSizeDialogHint | Qt.WindowTitleHint
 
     Material.theme: Material.Light
     Material.accent: '#3AB872'
@@ -29,58 +28,64 @@ ApplicationWindow {
     Page {
         id: loginPage
         header: ColumnLayout {
-                    id: headerColumn
-                    Label {
-                        id: newVersion
-                        Layout.fillWidth: true
-                        text: qsTr(newVersionAvailable)
-                        color: '#FF0000'
-                        font.pointSize: 18
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        topPadding: 200
-                        visible: !isEmpty(newVersionAvailable)
-                    }
-                    Text {
-                        id: link
-                        Layout.fillWidth: true
-                        text: '<html><style type="text/css"></style><a href="' + newVersionUrl + '">Cliquez ici pour télécharger la nouvelle version</a></html>'
-                        onLinkActivated: Qt.openUrlExternally(newVersionUrl)
-                        font.pointSize: 18
-                        horizontalAlignment: Text.AlignHCenter
-                        MouseArea {
-                            anchors.fill: parent
-                            acceptedButtons: Qt.NoButton
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        visible: !isEmpty(newVersionAvailable)
-                    }
-                    Label {
-                        id: header
-                        anchors.fill: parent
-                        text: qsTr("Connexion")
-                        bottomPadding: 10
-                        topPadding: 10
-                        color: '#3AB872'
-                        background: Rectangle {
-                            implicitWidth: 100
-                            implicitHeight: 40
-                            color: '#1E276D'
-                        }
-                        font.pixelSize: 22
-                        horizontalAlignment: Text.AlignHCenter
-                        visible: isEmpty(newVersionAvailable)
-                    }
-                }
-            footer: Label {
-                id: footer
-                text: qsTr(version)
-                leftPadding: 10
+            id: headerColumn
+            Label {
+                id: newVersion
+                Layout.fillWidth: true
+                text: qsTr(newVersionAvailable)
+                color: '#FF0000'
+                font.pointSize: 18
+                font.bold: true
                 horizontalAlignment: Text.AlignHCenter
+                visible: !isEmpty(newVersionAvailable)
+                wrapMode: Text.WordWrap
             }
+            Text {
+                id: link
+                Layout.fillWidth: true
+                text: '<html><style type="text/css"></style><a href="' + newVersionUrl + '">Cliquez ici pour télécharger la nouvelle version</a></html>'
+                onLinkActivated: Qt.openUrlExternally(newVersionUrl)
+                font.pointSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.NoButton
+                    cursorShape: Qt.PointingHandCursor
+                }
+                visible: !isEmpty(newVersionAvailable)
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                id: header
+                Layout.fillWidth: true
+                text: qsTr("Connexion")
+                bottomPadding: 10
+                topPadding: 10
+                color: '#3AB872'
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: '#1E276D'
+                }
+                font.pixelSize: 22
+                horizontalAlignment: Text.AlignHCenter
+                visible: isEmpty(newVersionAvailable)
+            }
+        }
+        footer: Label {
+            id: footer
+            text: qsTr(version)
+            leftPadding: 10
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+         ScrollView {
+            id: pageView
+            anchors.fill: parent
+
             RowLayout {
                 id: rowLayout
-                anchors.fill: parent
+                width: pageView.width
                 focus: true
                 visible: isEmpty(newVersionAvailable)
                 Keys.onPressed: (event) => {
@@ -91,73 +96,109 @@ ApplicationWindow {
                 Pane {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Image {
-                        id: logo
-                        y: 50
-                        height: 100
-                        width: 100
-                        source: "../images/logo.png"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        verticalAlignment: Image.AlignVCenter
-                        horizontalAlignment: Image.AlignVCenter
-                    }
 
-                    TextField {
-                        id: loginField
-                        width: 300
-                        text: qsTr("")
-                        selectByMouse: true
-                        placeholderText: qsTr("Email")
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: logo.bottom
-                        anchors.topMargin: 60
-                        focus: true
-                    }
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 15
 
-                    TextField {
-                        id: passwordField
-                        width: 300
-                    text: qsTr("")
-                        selectByMouse: true
-                        placeholderText: qsTr("Mot de passe")
-                        echoMode: TextInput.Password
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loginField.bottom
-                        anchors.topMargin: 10
-                    }
+                        Image {
+                            id: logo
+                            Layout.topMargin: 30
+                            Layout.bottomMargin: 50
+                            Layout.preferredWidth: 100
+                            Layout.preferredHeight: 100
+                            source: "../images/logo.png"
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
 
-                    Button {
-                        id: loginButton
-                        text: qsTr("Se connecter")
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: passwordField.bottom
-                        anchors.topMargin: 15
-                        enabled: !isEmpty(passwordField.text) && !isEmpty(loginField.text)
-                        onClicked: loginBackend.login(loginField.text, passwordField.text)
-                    }
+                        TextField {
+                            id: loginField
+                            Layout.preferredWidth: 300
+                            selectByMouse: true
+                            placeholderText: qsTr("Email")
+                            focus: true
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
 
-                    ProgressBar {
-                        id: loader
-                        indeterminate: true
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loginButton.bottom
-                        anchors.topMargin: 15
-                        visible: false
-                    }
+                        TextField {
+                            id: passwordField
+                            Layout.preferredWidth: 300
+                            selectByMouse: true
+                            placeholderText: qsTr("Mot de passe")
+                            echoMode: TextInput.Password
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
 
-                    Label {
-                        id: loginState
-                        text: qsTr("")
-                        color: Material.color(Material.Indigo)
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.top: loader.bottom
-                        anchors.topMargin: 15
+                        Button {
+                            id: loginButton
+                            text: qsTr("Se connecter")
+                            Layout.topMargin: 5
+                            enabled: !isEmpty(passwordField.text) && !isEmpty(loginField.text)
+                            onClicked: loginBackend.login(loginField.text, passwordField.text)
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+
+                        ProgressBar {
+                            id: loader
+                            indeterminate: true
+                            Layout.topMargin: 5
+                            visible: false
+                            Layout.alignment: "Qt::AlignHCenter"
+                        }
+
+                        Label {
+                            id: loginState
+                            text: qsTr("")
+                            color: Material.color(Material.Indigo)
+                            Layout.alignment: "Qt::AlignHCenter"
+                            MouseArea{
+                                anchors.fill: parent
+                                onClicked:  loginDetails.text ? loginPane.shown = !loginPane.shown : undefined
+                                cursorShape: loginDetails.text ? Qt.PointingHandCursor : undefined
+                            }
+                        }
+
+                        Pane {
+                            id: loginPane
+                            Layout.preferredWidth: parent.width
+
+                            // ## relevant part ##
+                            property bool shown: false
+                            visible: height > 0
+                            height: shown ? implicitHeight : 0
+                            Behavior on height {
+                                NumberAnimation {
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                            clip: true
+                            // ## relevant part ##
+
+                            background: Rectangle {
+                                color: "#d0d0d0"
+                            }
+
+                            Column {
+                                anchors.right: parent.right
+                                anchors.left: parent.left
+
+                                TextEdit  {
+                                    width: parent.width
+                                    id: loginDetails
+                                    text: qsTr("")
+                                    font.pointSize: 12
+                                    Layout.alignment: "Qt::AlignHCenter"
+                                    wrapMode: Text.WordWrap
+                                    readOnly: true
+                                    selectByMouse: true
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+    }
 
 
     Connections {
@@ -175,7 +216,7 @@ ApplicationWindow {
             }
         }
 
-        function onSignalState(state, type) {
+        function onSignalState(state, type, details) {
             var color = Material.color(Material.Indigo)
             if (type == "ERROR") {
                 color = Material.color(Material.Red)
@@ -184,6 +225,9 @@ ApplicationWindow {
             }
             loginState.text = state
             loginState.color = color
+            loginPane.shown = false
+            loginDetails.text = details
+            loginDetails.color = Material.color(Material.Red)
         }
     }
 }

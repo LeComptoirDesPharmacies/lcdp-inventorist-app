@@ -1,68 +1,110 @@
 import logging
-import os
 import subprocess
 import sys
+import os
 from sentry_sdk import capture_exception
 
-from PySide6.QtCore import QObject, Slot, Signal, QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QThreadPool, QRunnable, Property, QUrl
+from PySide6.QtCore import QObject, Signal, Slot, Qt
 
+from api.consume.gen.user.exceptions import ForbiddenException
+from api.consume.gen.factory.exceptions import ApiException
+from business.mappers.assembly_mapper import fromAssembliesToTable
 from business.actions import detailed_actions, simple_actions
-from business.services.excel import create_excel_summary
+from business.services.assembly import get_user_assemblies
+from business.services.assembly import get_assembly_output
+from business.services.user import get_current_user_id
+from business.services.excel import dict_to_excel
 
 
 class Worker(QRunnable):
-    def __init__(self, action, excel_path, loading_signal, state_signal, result_signal, reset, should_clean):
+    def __init__(self, action, excel_path, loading_signal, state_signal, reset, connexion_status_signal, should_clean):
         super().__init__()
         self.action = action
         self.excel_path = excel_path
         self.loading_signal = loading_signal
         self.state_signal = state_signal
-        self.result_signal = result_signal
         self.reset = reset
+        self.connexion_status_signal = connexion_status_signal
         self.should_clean = should_clean
 
     def run(self):
         try:
             self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO")
+            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
             self.execute(self.excel_path)
-        except Exception as err:
-            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR")
-            logging.exception('Cannot read excel with url {}'.format(self.excel_path), err)
-            capture_exception(err)
+        except ApiException as e:
+            if e.status == 409:
+                self.state_signal.emit("Un import est déjà en cours pour ce client", "ERROR", str(e))
+            elif e.status == 422:
+                self.state_signal.emit("Le fichier sélectionné n'est pas valide, veuillez le vérifier", "ERROR", str(e))
+            else:
+                raise Exception(e)
+
+        except Exception as e:
+            self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(e))
+            logging.exception('Error during excel import, excel url: {}'.format(self.excel_path), e)
+            capture_exception(e)
         finally:
             self.loading_signal.emit(False)
 
     def execute(self, excel_path):
-        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO")
+        self.state_signal.emit("Récupération des ressources dans le fichier...", "INFO", "")
         mapper_class = self.action['mapper']
         mapper = mapper_class(excel_path)
         lines = mapper.map_to_obj()
 
-        if self.should_clean and self.action['cleaner']:
-            self.state_signal.emit("Nettoyage en cours...", "INFO")
-            cleaner = self.action['cleaner']
-            cleaner(lines)
+        self.state_signal.emit("Création/Modification des ressources...", "INFO", "")
 
-        self.state_signal.emit("Création/Modification des ressources...", "INFO")
         executor = self.action['executor']
-        results = executor(lines)
+        executor(lines, clean=self.should_clean, filename=os.path.basename(excel_path))
 
-        self.state_signal.emit("Création du rapport...", "INFO")
-        report_path = create_excel_summary(results, mapper.excel_mapper)
-        self.result_signal.emit(report_path)
-        self.state_signal.emit("Le fichier a bien été traité", "SUCCESS")
-        self.reset()
+
+class FetchAssemblies(QRunnable):
+    current_user_id = None
+
+    def __init__(self, refresh_data_signal, connexion_status_signal):
+        super().__init__()
+        self.refresh_data_signal = refresh_data_signal
+        self.connexion_status_signal = connexion_status_signal
+
+    def run(self):
+        try:
+            if FetchAssemblies.current_user_id is None:
+                FetchAssemblies.current_user_id = get_current_user_id()
+
+            if FetchAssemblies.current_user_id:
+                assemblies = get_user_assemblies(FetchAssemblies.current_user_id)
+                self.refresh_data_signal.emit(fromAssembliesToTable(assemblies))
+            self.connexion_status_signal.emit(True)
+        except ForbiddenException:
+            # User is forbidden so maybe api key is not working
+            self.connexion_status_signal.emit(False)
+            pass
+        except Exception as err:
+            logging.exception('Error while retrieving results', err)
+            self.connexion_status_signal.emit(False)
+
+
+def open_file_operating_system(file_path):
+    if sys.platform == "win32":
+        os.startfile(file_path)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, file_path])
 
 
 class App(QObject):
     signalLoading = Signal(bool)
     signalCanClean = Signal(bool)
-    signalState = Signal(str, str)
-    signalReportPath = Signal(str)
+    signalState = Signal(str, str, str)
+    signalRefreshData = Signal(list)
     signalTemplateUrl = Signal(str)
     signalActions = Signal(list)
     signalReset = Signal()
+    signalConnexionStatus = Signal(bool)
+    downloadRequested = Signal(str)
+    current_user_id = None
 
     def __init__(self):
         QObject.__init__(self)
@@ -72,6 +114,11 @@ class App(QObject):
         self.signalActions.emit(simple_actions)
         self.excel_path = None
         self._should_clean = False
+        self.downloadRequested.connect(self.downloadAndOpenFile, Qt.QueuedConnection)
+
+    def on_exit(self):
+        self.thread_pool.clear()
+        self.thread_pool.waitForDone()
 
     @Slot(str)
     def select_action(self, action_type):
@@ -95,12 +142,25 @@ class App(QObject):
             self.selected_action,
             self.excel_path,
             loading_signal=self.signalLoading,
-            result_signal=self.signalReportPath,
             state_signal=self.signalState,
             reset=self.do_reset,
             should_clean=self._should_clean,
+            connexion_status_signal=self.signalConnexionStatus
         )
         self.thread_pool.start(worker)
+
+
+    @Slot()
+    def refresh_data(self):
+        if self.current_user_id is None:
+            self.current_user_id = get_current_user_id()
+
+        worker = FetchAssemblies(
+            refresh_data_signal = self.signalRefreshData,
+			connexion_status_signal=self.signalConnexionStatus
+        )
+        self.thread_pool.start(worker)
+
 
     @Property(type=list, constant=True)
     def actions(self):
@@ -116,11 +176,7 @@ class App(QObject):
 
     @Slot(str)
     def open_file(self, file_path):
-        if sys.platform == "win32":
-            os.startfile(file_path)
-        else:
-            opener = "open" if sys.platform == "darwin" else "xdg-open"
-            subprocess.call([opener, file_path])
+        open_file_operating_system(file_path)
 
     @Slot(QUrl)
     def set_excel_path(self, url):
@@ -128,3 +184,26 @@ class App(QObject):
             self.excel_path = os.path.abspath(url.toLocalFile())
         else:
             self.excel_path = None
+
+    @Slot(str)
+    def queueDownloadAndOpenFile(self, file_id):
+        self.downloadRequested.emit(file_id)
+
+    @Slot(str)
+    def downloadAndOpenFile(self, assembly_id: str):
+        try:
+            output = get_assembly_output(assembly_id)
+            if output is None or len(output) == 0:
+                raise Exception("Aucune sortie à afficher")
+
+            if output is not None and len(output) > 0:
+                # Create file in Download folder
+                download_path = os.path.join(os.path.expanduser("~"), "Downloads")
+                download_file = os.path.join(download_path, 'Rapport de {}.xlsx'.format(assembly_id))
+
+                dict_to_excel(output, download_file)
+                open_file_operating_system(download_file)
+            else:
+                logging.warn("Output for assembly {} is empty".format(assembly_id))
+        except Exception:
+            logging.exception(f"Erreur lors du téléchargement")

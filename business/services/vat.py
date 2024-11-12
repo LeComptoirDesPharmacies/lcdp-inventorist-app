@@ -9,7 +9,7 @@ from business.services.security import get_api_key
 def get_vat_by_value(value):
     if value is not None:
         api = get_search_vat_api()
-        vats = api.get_vats(_request_auths=[api.api_client.create_auth_settings("apiKeyAuth", get_api_key())],)
+        vats = api.get_vats(_request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),)
         vat_iterator = filter(lambda x: x.value == value/100 or x.value == value, vats)
         vat = next(vat_iterator, None)
         if not vat:

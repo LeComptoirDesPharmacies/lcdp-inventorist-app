@@ -17,14 +17,15 @@ jobs:
             path: ~/Library/Caches/pip
           - os: windows-latest
             path: ~\AppData\Local\pip\Cache
-        python-version: ['3.8']
+        python-version: ['3.12']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/cache@v2
+          cache: 'pip'
+      - uses: actions/cache@v4
         with:
           path: ${{ matrix.path }}
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -33,6 +34,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt --extra-index-url https://${{ secrets.DEV_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp-dev/ --extra-index-url https://${{ secrets.PROD_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '11'
       - name: Prepare app
         run: python prepare.py
         env:

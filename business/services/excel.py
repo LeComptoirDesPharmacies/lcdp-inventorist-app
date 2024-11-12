@@ -1,27 +1,28 @@
+import json
 import logging
-import os
-import tempfile
-import time
-from concurrent.futures import as_completed, ThreadPoolExecutor
+from collections import defaultdict
+from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
+from typing import List
 
-from openpyxl import load_workbook, Workbook
+import tablib
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
 
-from api.consume.gen.catalog import ApiException as ProductInsightApiException
-from api.consume.gen.configuration import ApiException as ConfigurationApiException
-from api.consume.gen.laboratory import ApiException as LaboratoryApiException
-from api.consume.gen.product import ApiException as ProductApiException
-from api.consume.gen.sale_offer import ApiException as SaleOfferApiException
+from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
+from api.consume.gen.factory.models.any_factory import AnyFactory
+from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
+from api.consume.gen.factory.models.offer_planification_factory_all_of_records import OfferPlanificationFactoryAllOfRecords
+from api.consume.gen.factory.models.product_upsert_factory_all_of_records import ProductUpsertFactoryAllOfRecords
+from api.consume.gen.factory.models.sale_offer_upsert_factory_all_of_records import SaleOfferUpsertFactoryAllOfRecords
 from business.constant import CHUNK_SIZE
-from business.exceptions import CannotUpdateSaleOfferStatus
-from business.mappers.api_error import sale_offer_api_exception_to_muggle, product_api_exception_to_muggle, \
-    api_exception_to_muggle, product_insight_api_exception_to_muggle
-from business.mappers.excel_mapper import error_mapper
-from business.models.update_policy import UpdatePolicy
-from business.services.product import update_or_create_product, change_product_status, __get_products_by_barcodes
-from business.services.sale_offer import create_or_edit_sale_offer, delete_deprecated_sale_offers, __get_sale_offers, \
-    __get_latest_sale_offers
+from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
+from business.services.product import get_product_type_by_name
+from business.services.providers import get_manage_assembly_api
+from business.services.security import get_api_key
+from business.services.user import get_current_user_id
+from business.services.vat import get_vat_by_value
 from business.utils import rgetattr, execution_time
-
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
@@ -43,161 +44,247 @@ def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_ob
     return map_of_objects
 
 
+def __build_product_upsert(product_line):
+    product_type = get_product_type_by_name(product_line.product_type.name)
+    vat = get_vat_by_value(product_line.vat.value)
+
+    product_upsert = dict()
+
+    if product_line.principal_barcode:
+        product_upsert['principal_barcode'] = product_line.principal_barcode
+
+    if product_line.name:
+        product_upsert['name'] = product_line.name
+
+    if product_line.dci:
+        product_upsert['dci'] = product_line.dci
+
+    if product_line.laboratory.name:
+        product_upsert['laboratory_name'] = product_line.laboratory.name
+
+    if product_line.weight:
+        product_upsert['unit_weight'] = product_line.weight
+
+    if product_line.unit_price:
+        product_upsert['unit_price'] = product_line.unit_price
+
+    if product_line.status:
+        product_upsert['status'] = product_line.status.upper()
+
+    if product_type:
+        product_upsert['type_id'] = product_type.id
+
+    if vat:
+        product_upsert['vat_id'] = vat.id
+
+    return product_upsert
+
+
+def __build_distribution_mode(sale_offer_line):
+    if not sale_offer_line.sale_offer.distribution or sale_offer_line.sale_offer.distribution.is_empty():
+        return dict()
+
+    if sale_offer_line.sale_offer.distribution_type == RANGE_DISTRIBUTION:
+        ranges = []
+        for range in sale_offer_line.sale_offer.distribution.ranges:
+            new_range = {
+                'quantity': range.sold_by,
+                'unitPrice': range.discounted_price,
+                'freeUnits': range.free_unit or 0
+            }
+            ranges.append(new_range)
+        distribution_mode = {
+            'type': 'RANGE',
+            'ranges': ranges,
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+        }
+    elif sale_offer_line.sale_offer.distribution_type == UNITARY_DISTRIBUTION:
+        distribution_mode = {
+            'type': 'UNITARY',
+            'unitPrice': sale_offer_line.sale_offer.distribution.discounted_price,
+            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+        }
+    elif sale_offer_line.sale_offer.distribution_type == QUOTATION_DISTRIBUTION:
+        distribution_mode = {
+            'type': 'QUOTATION',
+            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'minimalQuantity': 1,
+            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+        }
+    else:
+        distribution_mode = dict()
+
+    return distribution_mode
+
+def __build_stock(stock_line, full=False):
+    '''
+    :param stock_line:
+    :param full: If'true', then all stock object will be built
+        when at least one field is set. Useful for offer planification as row are complete
+        but can be problematic when updating sale offers.
+        TODO : We can not reset lapsing_date NULL and batch NULL with SALE_OFFER_UPSERT
+    :return:
+    '''
+    stock = dict()
+
+    if stock_line.remaining_quantity != None or full:
+        stock['remaining_quantity'] = stock_line.remaining_quantity
+
+    if stock_line.lapsing_date != None or full:
+        stock['lapsing_date'] = stock_line.lapsing_date
+
+    if stock_line.batch != None or full:
+        stock['batch'] = stock_line.batch
+
+    return stock
+
+
 @execution_time
-def create_sale_offer_from_excel_lines(lines):
+def sale_offer_upsert_from_excel_lines(lines, filename, clean=False, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
 
-    products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
-                         x.sale_offer.product.principal_barcode is not None}
+    items_by_owner = defaultdict(list)
 
-    # [barcode, product]
-    prefetched_products = __prefetch('products',
-                                     products_barcodes,
-                                     __get_products_by_barcodes,
-                                     lambda x: list(
-                                         filter(None, [x.barcodes.principal, x.barcodes.cip,
-                                                       x.barcodes.cip13] + x.barcodes.eans)))
+    for line in lines:
+        product_upsert = __build_product_upsert(line.sale_offer.product)
+        distribution_mode = __build_distribution_mode(line)
+        stock = __build_stock(line.sale_offer.stock)
 
-    # assume that all lines have the same update_policy
-    update_policy = lines[0].sale_offer.update_policy
+        new_item = dict()
 
-    if update_policy == UpdatePolicy.PRODUCT_BARCODE.value:
-        logging.info("Update policy is PRODUCT_BARCODE, we will get the latest sale offers by product_id")
+        new_item['reference'] = line.sale_offer.reference
 
-        # [owner_id, [product_id]]
-        owner_id_barcodes = {}
-        for line in lines:
-            if (line.sale_offer.product.principal_barcode and
-                    line.sale_offer.product.principal_barcode in prefetched_products):
-                owner_id_barcodes.setdefault(line.sale_offer.owner_id, []).append(
-                    prefetched_products[line.sale_offer.product.principal_barcode].id)
+        if product_upsert:
+            new_item['product'] = product_upsert
 
-        # [(owner_id, product_id), sale_offer]
-        prefetched_sale_offers = {}
-        for (owner_id, product_ids) in owner_id_barcodes.items():
-            prefetched_sale_offers = __prefetch('sale_offers enabled by (owner_id, product_id)',
-                                                product_ids,
-                                                lambda x: __get_latest_sale_offers(x, owner_id, ['ENABLED']),
-                                                lambda x: [(owner_id, x.product.id)])
+        if distribution_mode:
+            new_item['distributionMode'] = AnyDistributionMode.from_dict(distribution_mode)
 
-        product_ids_not_found = [product_id for (owner_id, product_ids) in owner_id_barcodes.items() for product_id in
-                                 product_ids if (owner_id, product_id) not in prefetched_sale_offers]
+        if stock:
+            new_item['stock'] = stock
 
-        if len(product_ids_not_found):
-            prefetched_sale_offers_others_status = __prefetch('sale_offers others status by (owner_id, product_id)',
-                                                              product_ids_not_found,
-                                                              lambda x: __get_latest_sale_offers(x, owner_id,
-                                                                                                 ['WAITING_FOR_PRODUCT',
-                                                                                                  'ASKING_FOR_INVOICE',
-                                                                                                  'HOLIDAY',
-                                                                                                  'DISABLED']),
-                                                              lambda x: [(owner_id, x.product.id)])
-            prefetched_sale_offers.update(prefetched_sale_offers_others_status)
-    else:
-        logging.info("Update policy is PRODUCT_REFERENCE, we will get the sale offers by reference")
+        if line.sale_offer.status:
+            new_item['status'] = line.sale_offer.status.upper()
 
-        # [reference, sale_offer]
-        sale_offers_reference = {x.sale_offer.reference for x in lines if
-                                 x.sale_offer.reference is not None}
+        if line.sale_offer.rank:
+            new_item['rank'] = line.sale_offer.rank
 
-        prefetched_sale_offers = __prefetch('sale_offers by reference',
-                                            sale_offers_reference,
-                                            __get_sale_offers,
-                                            lambda x: [x.reference])
+        if line.sale_offer.description:
+            new_item['description'] = line.sale_offer.description
 
-    results = []
-    with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(__create_sale_offer_from_excel_line,
-                                   prefetched_sale_offers,
-                                   prefetched_products,
-                                   line): line for line in lines}
-        for future in as_completed(futures):
-            try:
-                result = future.result()
-                results.append(result)
-            except Exception as e:
-                logging.error(f"Error processing line {futures[future]}: {e}")
+        owner_id = line.sale_offer.owner_id
 
-    return results
+        if owner_id:
+            items_by_owner[owner_id].append(
+                SaleOfferUpsertFactoryAllOfRecords(**new_item)
+            )
+
+    manage_assembly_api = get_manage_assembly_api()
+
+    for owner_id, items in items_by_owner.items():
+        manage_assembly_api.create_assembly(
+            AssemblyCreationParameters(
+                owner_id=get_current_user_id(),
+                tags=['seller-id:{}'.format(owner_id), 'filename:{}'.format(filename)],
+                factory=AnyFactory({
+                    'type': 'SALE_OFFER_UPSERT',
+                    'clean': clean,
+                    'sellerId': owner_id,
+                    'records': items
+                })),
+            _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        )
 
 
 @execution_time
-def create_or_update_product_from_excel_lines(lines):
+def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, **kwargs):
+    logging.info(f"{len(lines)} excel line(s) are candide for sale offer modification/creation")
+
+    items_by_owner = defaultdict(list)
+
+    for line in lines:
+        product_upsert = __build_product_upsert(line.sale_offer.product)
+        distribution_mode = __build_distribution_mode(line)
+
+        stock = __build_stock(line.sale_offer.stock, full=True)
+
+        new_item = dict()
+
+        if product_upsert:
+            new_item['product'] = product_upsert
+
+        if distribution_mode:
+            new_item['distributionMode'] = AnyDistributionMode.from_dict(distribution_mode)
+
+        if stock:
+            new_item['stock'] = stock
+
+        if line.sale_offer.status:
+            new_item['status'] = line.sale_offer.status.upper()
+
+        if line.sale_offer.rank:
+            new_item['rank'] = line.sale_offer.rank
+
+        if line.sale_offer.description:
+            new_item['description'] = line.sale_offer.description
+
+        owner_id = line.sale_offer.owner_id
+
+        if owner_id:
+            items_by_owner[owner_id].append(
+                OfferPlanificationFactoryAllOfRecords(**new_item)
+            )
+
+    manage_assembly_api = get_manage_assembly_api()
+
+    for owner_id, items in items_by_owner.items():
+        manage_assembly_api.create_assembly(
+            AssemblyCreationParameters(
+                owner_id=get_current_user_id(),
+                tags=['seller-id:{}'.format(owner_id), 'filename:{}'.format(filename)],
+                factory=AnyFactory({
+                    'type': 'OFFER_PLANIFICATION',
+                    'clean': clean,
+                    'offerName': None, # Update every sale offer, without taking care of the offer name
+                    'sellerId': owner_id,
+                    'records': items
+                })),
+            _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+        )
+
+
+@execution_time
+def product_upsert_from_excel_lines(lines, filename, **kwargs):
     logging.info(f"{len(lines)} excel line(s) are candide for product modification/creation")
 
-    products_barcodes = {x.sale_offer.product.principal_barcode for x in lines if
-                         x.sale_offer.product.principal_barcode is not None}
-
-    # [barcode, product]
-    prefetched_products = __prefetch('products',
-                                     products_barcodes,
-                                     __get_products_by_barcodes,
-                                     lambda x: list(
-                                         filter(None, [x.barcodes.principal, x.barcodes.cip,
-                                                       x.barcodes.cip13] + x.barcodes.eans)))
-
-    results = []
-    with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(__create_or_update_product_from_excel_line, prefetched_products, line): line for
-                   line in lines}
-        for future in as_completed(futures):
-            try:
-                result = future.result()
-                results.append(result)
-            except Exception as e:
-                logging.error(f"Error processing line {futures[future]}: {e}")
-
-    return results
-
-
-def create_excel_summary(results, excel_mapper):
-    wb = Workbook()
-    wb.remove_sheet(wb.active)
-
-    dirpath = tempfile.mkdtemp()
-    current_time = int(time.time())
-
-    summary_path = os.path.join(dirpath, str(current_time) + "-summary.xlsx")
-
-    succeeded_lines = list(filter(lambda o: o['result'] is not None, results))
-    __create_success_sheet(wb, excel_mapper, succeeded_lines, wb.active)
-
-    errors_lines = list(filter(lambda o: o['error'] is not None, results))
-    __create_error_sheet(wb, excel_mapper, errors_lines)
-
-    logging.info(f"{len(succeeded_lines)} sale offer(s) has been created")
-    logging.info(f"{len(errors_lines)} line have an error")
-    wb.save(filename=summary_path)
-    return summary_path
-
-
-def __create_success_sheet(wb, excel_mapper, lines, sheet=None):
-    if not sheet:
-        sheet = wb.create_sheet(title="Succès")
-    else:
-        sheet.title = "Succès"
-    sheet.append(list(map(lambda x: x.excel_column_name, excel_mapper)))
-    for line in lines:
-        sheet.append(list(map(lambda x: x.get_from_obj(line['excel_line']), excel_mapper)))
-    return sheet
-
-
-def __create_error_sheet(wb, excel_mapper, lines, sheet=None):
-    if not sheet:
-        sheet = wb.create_sheet(title="Erreur")
-    else:
-        sheet.title = "Erreur"
-
-    summary_error_excel_mapper = excel_mapper + error_mapper
-    headers = list(map(lambda x: x.excel_column_name, summary_error_excel_mapper))
-    headers.append("Erreur application")
-    sheet.append(headers)
+    items = []
 
     for line in lines:
-        sheet.append(list(map(
-            lambda x: x.get_from_obj(line['excel_line']), summary_error_excel_mapper
-        )) + [line["error"]])
-    return sheet
+        product_upsert = __build_product_upsert(line.sale_offer.product)
+
+        new_item = dict()
+
+        if product_upsert:
+            new_item['product'] = product_upsert
+
+        items.append(ProductUpsertFactoryAllOfRecords(**new_item))
+
+    manage_assembly_api = get_manage_assembly_api()
+
+    manage_assembly_api.create_assembly(
+        AssemblyCreationParameters(
+            owner_id=get_current_user_id(),
+            tags=['filename:{}'.format(filename)],
+            factory=AnyFactory({
+                'type': 'PRODUCT_UPSERT',
+                'records': items,
+            })
+        ),
+        _request_auth=manage_assembly_api.api_client.create_auth_settings("apiKeyAuth", get_api_key()),
+    )
 
 
 def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
@@ -206,11 +293,16 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     if isinstance(custom_dict, dict):
         results = custom_dict
 
-    wb = load_workbook(excel_path, read_only=True)
+    wb = load_workbook(excel_path, read_only=True, data_only=True)
     try:
         ws = wb[sheet_name]
         column_indices = {col: cell.value for col, cell in enumerate(ws[header_row])}
-        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, values_only=True)):
+        max_col = len(column_indices.keys())
+        for idx, row in enumerate(ws.iter_rows(min_row=min_row, max_row=max_row, max_col=max_col, values_only=True)):
+            # check if row is empty
+            if not any(row):
+                continue
+
             obj = obj_class()
 
             cells = {
@@ -232,66 +324,62 @@ def excel_to_dict(obj_class, excel_path, excel_mapper, sheet_name, header_row,
     return results
 
 
-def __create_sale_offer_from_excel_line(prefetched_sale_offers, prefetched_products, excel_line):
-    sale_offer = None
-    error = None
-    try:
-        product = update_or_create_product(prefetched_products, excel_line.sale_offer.product,
-                                           excel_line.can_create_product_from_scratch())
-        change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
-        sale_offer = create_or_edit_sale_offer(prefetched_sale_offers, excel_line.sale_offer, product,
-                                               excel_line.can_create_sale_offer())
-    except SaleOfferApiException as sale_offer_api_err:
-        logging.error('An API error occur in sale offer api', sale_offer_api_err)
-        error = sale_offer_api_exception_to_muggle(sale_offer_api_err)
-    except CannotUpdateSaleOfferStatus as sale_offer_status_error:
-        logging.error('An API error occur during the sale offer status update', sale_offer_status_error)
-        error = str(sale_offer_status_error)
-    except ProductApiException as product_api_err:
-        logging.error('An API error occur in product api', product_api_err)
-        error = product_api_exception_to_muggle(product_api_err)
-    except (LaboratoryApiException, ConfigurationApiException) as api_err:
-        logging.error('An API error occur in laboratory api or configuration api', api_err)
-        error = api_exception_to_muggle(api_err)
-    except ProductInsightApiException as product_insight_api_err:
-        logging.error('An API error occur in product insight api', product_insight_api_err)
-        error = product_insight_api_exception_to_muggle(product_insight_api_err)
-    except Exception as err:
-        logging.error('An error occur during line processing', err)
-        error = str(err)
+def dict_to_excel(assembly_output_list: List[AssemblyOutputInner], excel_path):
+    dataset = tablib.Dataset()
 
-    return {
-        'excel_line': excel_line,
-        'result': sale_offer,
-        'error': error
-    }
+    # sort headers by name
+    headers = list()
+    for header in sorted(assembly_output_list[0].unit.keys()):
+        headers.append(header)
 
+    dataset.headers = headers
+    dataset.headers.append('status_comment')
 
-def __create_or_update_product_from_excel_line(prefetched_products, excel_line):
-    product = None
-    error = None
-    try:
-        product = update_or_create_product(prefetched_products, excel_line.sale_offer.product,
-                                           excel_line.can_create_product_from_scratch())
-        change_product_status(product=product, new_status=excel_line.sale_offer.product.status)
-    except ProductApiException as product_api_err:
-        logging.error('An API error occur in product api', product_api_err)
-        error = product_api_exception_to_muggle(product_api_err)
-    except ProductInsightApiException as product_insight_api_err:
-        logging.error('An API error occur in product insight api', product_insight_api_err)
-        error = product_insight_api_exception_to_muggle(product_insight_api_err)
-    except Exception as err:
-        logging.error('An error occur during line processing', err)
-        error = str(err)
+    # build dataset
+    for assembly_output in assembly_output_list:
+        unit_value = []
+        for header in headers:
+            header_value = assembly_output.unit.get(header, None)
+            if isinstance(header_value, dict):
+                header_value = json.dumps(header_value, indent=2)
+            unit_value.append(header_value)
+        unit_value.append(assembly_output.status_comment)
 
-    return {
-        'excel_line': excel_line,
-        'result': product,
-        'error': error
-    }
+        dataset.rpush(unit_value, tags=[assembly_output.status])
+
+    tabSuccess = "Succès"
+    tabErrors = "Erreurs"
+
+    # Créer un Dataset pour les données "succeeded"
+    dataset_succeeded = dataset.filter('SUCCEEDED')
+    dataset_succeeded.title = tabSuccess
+    # Créer un Dataset pour les données "failed"
+    dataset_failed = dataset.filter('FAILED')
+    dataset_failed.title = tabErrors
+
+    workbook = tablib.Databook()
+    workbook.add_sheet(dataset_succeeded)
+    workbook.add_sheet(dataset_failed)
+
+    with open(excel_path, 'wb') as f:
+        f.write(workbook.xlsx)
+
+    # Resize columns width for readability
+    wb = load_workbook(excel_path)
+    resize_column_width(wb.get_sheet_by_name(tabSuccess))
+    resize_column_width(wb.get_sheet_by_name(tabErrors))
+    wb.save(excel_path)
+
+    return excel_path
+
+def resize_column_width(ws: Worksheet):
+    for column in ws.columns:
+        column_letter = get_column_letter(column[0].column)
+        # set arbitrary to 50
+        ws.column_dimensions[column_letter].width = 50
 
 
 def clean_sale_offers(lines):
-    owner_id = next((line.sale_offer.owner_id for line in lines if line.sale_offer.owner_id), None)
-    if owner_id:
-        delete_deprecated_sale_offers(owner_id)
+    print("----------------------")
+    print("TODO clean_sale_offers")
+    print("----------------------")
