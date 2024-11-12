@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import requests
-import sentry_sdk
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
@@ -17,7 +16,8 @@ from business.services.authentication import delete_api_key
 from settings import get_settings
 
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
-
+import faulthandler
+faulthandler.enable()
 
 def on_exit():
     try:
@@ -30,11 +30,11 @@ def configure_sentry(settings):
     sentry_dsn = settings.value("SENTRY_DSN")
     lcdp_environment = settings.value("LCDP_ENVIRONMENT")
     version = settings.value("VERSION")
-    sentry_sdk.init(
-        dsn=sentry_dsn,
-        environment=lcdp_environment,
-        release=version,
-    )
+    # sentry_sdk.init(
+    #     dsn=sentry_dsn,
+    #     environment=lcdp_environment,
+    #     release=version,
+    # )
 
 
 if __name__ == "__main__":
@@ -76,9 +76,12 @@ if __name__ == "__main__":
 
     login_backend = Login()
     app_backend = App()
+    app.aboutToQuit.connect(app_backend.on_exit)
     engine.rootContext().setContextProperty("version", settings.value("VERSION"))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
+
+
     filename = os.fspath(CURRENT_DIRECTORY / "qml" / "login.qml")
     url = QUrl.fromLocalFile(filename)
     engine.load(url)

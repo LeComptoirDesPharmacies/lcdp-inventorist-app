@@ -1,6 +1,5 @@
 from business.models.column import Column
 from business.models.sale_offer import UNITARY_DISTRIBUTION
-from business.models.update_policy import UpdatePolicy
 
 
 error_mapper = [
@@ -27,7 +26,6 @@ create_laboratory_sale_offer_mapper = [
     Column("PU HT catalogue***", 'sale_offer.product.unit_price'),
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),
     Column("Identifiant vendeur", 'sale_offer.owner_id'),
-    Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.PRODUCT_BARCODE.value),
     Column("Statut produit", 'sale_offer.product.status', "VALIDATED"),
     Column("Statut de l'annonce", 'sale_offer.status'),
 ]
@@ -71,6 +69,5 @@ create_update_drugstore_sale_offer_mapper = [
     Column("PU HT catalogue***", 'sale_offer.product.unit_price'),
     Column("PU HT remisé*", 'sale_offer.distribution.discounted_price'),
     Column("Identifiant vendeur", 'sale_offer.owner_id'),
-    Column("Politique de mise à jour", 'sale_offer.update_policy', UpdatePolicy.SALE_OFFER_REFERENCE.value),
     Column("Statut de l'annonce", 'sale_offer.status')
 ]
