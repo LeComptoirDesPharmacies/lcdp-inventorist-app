@@ -30,16 +30,17 @@ class Worker(QRunnable):
 
     def run(self):
         try:
-            self.loading_signal.emit(True)
-            self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
-            self.execute(self.excel_path)
-        except ApiException as e:
-            if e.status == 409:
-                self.state_signal.emit("Un import est déjà en cours pour ce client", "ERROR", str(e))
-            elif e.status == 422:
-                self.state_signal.emit("Le fichier sélectionné n'est pas valide, veuillez le vérifier", "ERROR", str(e))
-            else:
-                raise Exception(e)
+            try:
+                self.loading_signal.emit(True)
+                self.state_signal.emit("Récupération du fichier excel...", "INFO", "")
+                self.execute(self.excel_path)
+            except ApiException as e:
+                if e.status == 409:
+                    self.state_signal.emit("Un import est déjà en cours pour ce client", "ERROR", str(e))
+                elif e.status == 422:
+                    self.state_signal.emit("Le fichier sélectionné n'est pas valide, veuillez le vérifier", "ERROR", str(e))
+                else:
+                    raise e
 
         except Exception as e:
             self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(e))
