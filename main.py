@@ -2,6 +2,8 @@
 import logging
 import os
 import sys
+import sentry_sdk
+
 from pathlib import Path
 
 import requests
@@ -32,11 +34,11 @@ def configure_sentry(settings):
     sentry_dsn = settings.value("SENTRY_DSN")
     lcdp_environment = settings.value("LCDP_ENVIRONMENT")
     version = settings.value("VERSION")
-    # sentry_sdk.init(
-    #     dsn=sentry_dsn,
-    #     environment=lcdp_environment,
-    #     release=version,
-    # )
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=lcdp_environment,
+        release=version,
+    )
 
 
 if __name__ == "__main__":
