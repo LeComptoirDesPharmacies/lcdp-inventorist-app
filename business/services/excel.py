@@ -63,7 +63,6 @@ def __build_product_upsert(product_line):
         product_upsert['laboratory_name'] = product_line.laboratory.name
 
     if product_line.weight:
-        print("product_line.weight", product_line.weight)
         product_upsert['unit_weight'] = product_line.weight
 
     if product_line.unit_price:
