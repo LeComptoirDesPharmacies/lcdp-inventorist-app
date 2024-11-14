@@ -6,7 +6,7 @@ envsubst==0.1.5
 nose2==0.11.0
 Pillow==9.5.0
 python-rest-client-codegen==1.4.0
-lcdp-api==1.10.1
+lcdp-api==1.10.1.post1+git.1c31326b
 urllib3==2.2.3
 python-dateutil==2.8.2
 six==1.16.0
