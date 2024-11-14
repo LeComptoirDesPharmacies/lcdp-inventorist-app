@@ -1,7 +1,6 @@
 import json
 import logging
 from collections import defaultdict
-from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
 from typing import List
 
 import tablib
@@ -12,7 +11,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from api.consume.gen.factory.models.any_distribution_mode import AnyDistributionMode
 from api.consume.gen.factory.models.any_factory import AnyFactory
 from api.consume.gen.factory.models.assembly_creation_parameters import AssemblyCreationParameters
-from api.consume.gen.factory.models.offer_planification_factory_all_of_records import OfferPlanificationFactoryAllOfRecords
+from api.consume.gen.factory.models.assembly_output_inner import AssemblyOutputInner
+from api.consume.gen.factory.models.offer_planification_factory_all_of_records import \
+    OfferPlanificationFactoryAllOfRecords
 from api.consume.gen.factory.models.product_upsert_factory_all_of_records import ProductUpsertFactoryAllOfRecords
 from api.consume.gen.factory.models.sale_offer_upsert_factory_all_of_records import SaleOfferUpsertFactoryAllOfRecords
 from business.constant import CHUNK_SIZE
@@ -22,7 +23,8 @@ from business.services.providers import get_manage_assembly_api
 from business.services.security import get_api_key
 from business.services.user import get_current_user_id
 from business.services.vat import get_vat_by_value
-from business.utils import rgetattr, execution_time
+from business.utils import rgetattr, execution_time, clean_int, clean_float
+
 
 def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_object):
     packets = [list(keys_from_file)[i:i + CHUNK_SIZE] for i in range(0, len(keys_from_file), CHUNK_SIZE)]
@@ -63,10 +65,10 @@ def __build_product_upsert(product_line):
         product_upsert['laboratory_name'] = product_line.laboratory.name
 
     if product_line.weight:
-        product_upsert['unit_weight'] = product_line.weight
+        product_upsert['unit_weight'] = clean_float(product_line.weight)
 
     if product_line.unit_price:
-        product_upsert['unit_price'] = product_line.unit_price
+        product_upsert['unit_price'] = clean_float(product_line.unit_price)
 
     if product_line.status:
         product_upsert['status'] = product_line.status.upper()
@@ -88,36 +90,37 @@ def __build_distribution_mode(sale_offer_line):
         ranges = []
         for range in sale_offer_line.sale_offer.distribution.ranges:
             new_range = {
-                'quantity': range.sold_by,
-                'unitPrice': range.discounted_price,
-                'freeUnits': range.free_unit or 0
+                'quantity': clean_int(range.sold_by),
+                'unitPrice': clean_float(range.discounted_price),
+                'freeUnits': clean_int(range.free_unit) or 0
             }
             ranges.append(new_range)
         distribution_mode = {
             'type': 'RANGE',
             'ranges': ranges,
             'minimalQuantity': 1,
-            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'maximalQuantity': clean_int(sale_offer_line.sale_offer.distribution.maximal_quantity)
         }
     elif sale_offer_line.sale_offer.distribution_type == UNITARY_DISTRIBUTION:
         distribution_mode = {
             'type': 'UNITARY',
-            'unitPrice': sale_offer_line.sale_offer.distribution.discounted_price,
-            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'unitPrice': clean_float(sale_offer_line.sale_offer.distribution.discounted_price),
+            'soldBy': clean_int(sale_offer_line.sale_offer.distribution.sold_by),
             'minimalQuantity': 1,
-            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'maximalQuantity': clean_int(sale_offer_line.sale_offer.distribution.maximal_quantity)
         }
     elif sale_offer_line.sale_offer.distribution_type == QUOTATION_DISTRIBUTION:
         distribution_mode = {
             'type': 'QUOTATION',
-            'soldBy': sale_offer_line.sale_offer.distribution.sold_by,
+            'soldBy': clean_int(sale_offer_line.sale_offer.distribution.sold_by),
             'minimalQuantity': 1,
-            'maximalQuantity': sale_offer_line.sale_offer.distribution.maximal_quantity
+            'maximalQuantity': clean_int(sale_offer_line.sale_offer.distribution.maximal_quantity)
         }
     else:
         distribution_mode = dict()
 
     return distribution_mode
+
 
 def __build_stock(stock_line, full=False):
     '''
@@ -131,14 +134,7 @@ def __build_stock(stock_line, full=False):
     stock = dict()
 
     if stock_line.remaining_quantity != None or full:
-        remaining_quantity = stock_line.remaining_quantity
-        try:
-            int(remaining_quantity)
-        except ValueError:
-            # stock can contain non-breaking space character to separate thousands
-            remaining_quantity = int(remaining_quantity.replace('\u202f', ''))
-            pass
-        stock['remaining_quantity'] = remaining_quantity
+        stock['remaining_quantity'] = clean_int(stock_line.remaining_quantity)
 
     if stock_line.lapsing_date != None or full:
         stock['lapsing_date'] = stock_line.lapsing_date
@@ -177,7 +173,7 @@ def sale_offer_upsert_from_excel_lines(lines, filename, clean=False, **kwargs):
             new_item['status'] = line.sale_offer.status.upper()
 
         if line.sale_offer.rank:
-            new_item['rank'] = line.sale_offer.rank
+            new_item['rank'] = clean_int(line.sale_offer.rank)
 
         if line.sale_offer.description:
             new_item['description'] = line.sale_offer.description
@@ -233,7 +229,7 @@ def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, *
             new_item['status'] = line.sale_offer.status.upper()
 
         if line.sale_offer.rank:
-            new_item['rank'] = line.sale_offer.rank
+            new_item['rank'] = clean_int(line.sale_offer.rank)
 
         if line.sale_offer.description:
             new_item['description'] = line.sale_offer.description
@@ -255,7 +251,7 @@ def create_offer_planificiation_from_excel_lines(lines, filename, clean=False, *
                 factory=AnyFactory({
                     'type': 'OFFER_PLANIFICATION',
                     'clean': clean,
-                    'offerName': None, # Update every sale offer, without taking care of the offer name
+                    'offerName': None,  # Update every sale offer, without taking care of the offer name
                     'sellerId': owner_id,
                     'records': items
                 })),
@@ -378,6 +374,7 @@ def dict_to_excel(assembly_output_list: List[AssemblyOutputInner], excel_path):
     wb.save(excel_path)
 
     return excel_path
+
 
 def resize_column_width(ws: Worksheet):
     for column in ws.columns:

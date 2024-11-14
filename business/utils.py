@@ -1,4 +1,5 @@
 import functools
+import re
 import time
 
 
@@ -82,3 +83,25 @@ def execution_time(func):
         return result
 
     return wrapper
+
+
+def clean_int(value):
+    if value is None:
+        return None
+
+    try:
+        return int(value)
+    except ValueError:
+        # stock can contain non-breaking space character to separate thousands
+        return int(re.sub(r'\s', '', value))
+
+
+def clean_float(value):
+    if value is None:
+        return None
+
+    try:
+        return float(value)
+    except ValueError:
+        # stock can contain non-breaking space character to separate thousands
+        return float(re.sub(r'\s', '', value).replace(',', '.'))
