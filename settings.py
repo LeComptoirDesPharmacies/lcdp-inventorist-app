@@ -17,7 +17,7 @@ def setup_settings():
         new_settings.setValue("LCDP_ENVIRONMENT", config_json['LCDP_ENVIRONMENT'])
         new_settings.setValue("PROVIDER_HOST", config_json['PROVIDER_HOST'])
         new_settings.setValue("IS_PROVIDER_SECURE", config_json['IS_PROVIDER_SECURE'])
-        new_settings.setValue("VERSION", config_json['VERSION'])
+        new_settings.setValue("VERSION", config_json['VERSION'] + ' - ' + config_json['PROVIDER_HOST'])
         return new_settings
     except OSError as osErr:
         logging.exception("Cannot read config.json file, please execute prepare.py", osErr)

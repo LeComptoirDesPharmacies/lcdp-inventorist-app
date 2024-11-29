@@ -143,7 +143,8 @@ ApplicationWindow {
                                 spacing: 5
                                 CheckBox{
                                     id: shouldClean
-                                    text: qsTr("Supprimer les autres annonces de cet utilisateur ?")
+                                    text: qsTr("SUPPRIMER TOUTES LES ANNONCES EXISTANTES
+        (Garder uniquement celles du fichier excel)")
                                     visible: canClean
                                     Layout.alignment: "Qt::AlignHCenter"
                                     onCheckedChanged : {
