@@ -73,7 +73,7 @@ def show_alert(message):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-    if not check_single_instance():
+    if check_single_instance():
         show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
         sys.exit(1)
 
