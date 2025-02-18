@@ -73,13 +73,19 @@ def show_alert(message):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-    if check_single_instance():
-        show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
-        sys.exit(1)
+    settings = get_settings()
+    lcdp_environment = settings.value("LCDP_ENVIRONMENT")
+
+    if lcdp_environment == "dev":
+        print(
+            "Dev mode. No check for concurrent run. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
+    else:
+        if check_single_instance():
+            show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
+            sys.exit(1)
 
     logging.info("Starting app")
 
-    settings = get_settings()
     configure_sentry(settings)
 
     logging.info("Configure app")
@@ -97,8 +103,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("newVersionAvailable", "")
     engine.rootContext().setContextProperty("newVersionUrl", "")
 
-    type_env = os.environ.get("LCDP_ENVIRONMENT")
-    if type_env == "dev":
+    if lcdp_environment == "dev":
         print(
             "Dev mode. No check for new version. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
     else:
