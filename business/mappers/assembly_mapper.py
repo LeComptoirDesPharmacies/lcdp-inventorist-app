@@ -33,11 +33,12 @@ def fromAssemblyTypeToString(factory_type : str) -> str:
 def fromAssemblyTagsToString(tags: List[str]) -> str:
     result = []
     for tag in tags:
-        key, value = tag.split(":")
-        if key == "seller-id":
-            result.append("Vendeur : {}".format(value))
-        elif key == "filename":
-            result.append("Fichier : {}".format(value))
+        if ":" in tag:
+            key, value = tag.split(":")
+            if key == "seller-id":
+                result.append("Vendeur : {}".format(value))
+            elif key == "filename":
+                result.append("Fichier : {}".format(value))
 
     return os.linesep.join(result)
 
