@@ -133,13 +133,19 @@ def __build_stock(stock_line, full=False):
     '''
     stock = dict()
 
-    if stock_line.remaining_quantity != None or full:
+    # if full, check if at least one field is set
+    set_all_stock = full and (
+            stock_line.remaining_quantity is not None or
+            stock_line.lapsing_date is not None or
+            stock_line.batch is not None)
+
+    if stock_line.remaining_quantity != None or set_all_stock:
         stock['remaining_quantity'] = clean_int(stock_line.remaining_quantity)
 
-    if stock_line.lapsing_date != None or full:
+    if stock_line.lapsing_date != None or set_all_stock:
         stock['lapsing_date'] = stock_line.lapsing_date
 
-    if stock_line.batch != None or full:
+    if stock_line.batch != None or set_all_stock:
         stock['batch'] = stock_line.batch
 
     return stock
