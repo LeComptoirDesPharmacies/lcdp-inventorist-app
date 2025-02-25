@@ -80,7 +80,7 @@ if __name__ == "__main__":
         print(
             "Dev mode. No check for concurrent run. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
     else:
-        if check_single_instance():
+        if not check_single_instance():
             show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
             sys.exit(1)
 
