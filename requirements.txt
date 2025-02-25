@@ -5,13 +5,14 @@ openpyxl==3.1.3
 envsubst==0.1.5
 nose2==0.11.0
 Pillow==9.5.0
-python-rest-client-codegen==1.4.0
-lcdp-api==1.10.1.post1+git.1c31326b
+python-rest-client-codegen==1.5.1
+lcdp-api==1.10.6
 urllib3==2.2.3
 python-dateutil==2.8.2
 six==1.16.0
-requests==2.31.0
+requests==2.32.2
 backoff==2.2.1
 pydantic==2.9.2
 tablib[xlsx]==3.6.1
 flatten-json==0.1.14
+psutil==7.0.0
