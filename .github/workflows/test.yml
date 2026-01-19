@@ -30,8 +30,7 @@ jobs:
       - name: Install dependencies
         run: | 
           pip install -r requirements.txt \
-            --extra-index-url https://${{ secrets.DEV_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp-dev/ \
-            --extra-index-url https://${{ secrets.PROD_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+            --extra-index-url https://${{ secrets.DEV_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
       - name: Prepare app
         run: python prepare.py
       - name: Run tests
