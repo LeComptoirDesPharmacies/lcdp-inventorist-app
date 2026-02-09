@@ -11,9 +11,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, windows-latest]
+        os: [macos-latest, windows-latest]
         include:
-          - os: macos-13
+          - os: macos-latest
             path: ~/Library/Caches/pip
           - os: windows-latest
             path: ~\AppData\Local\pip\Cache
