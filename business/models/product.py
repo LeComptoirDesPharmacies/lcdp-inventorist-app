@@ -7,6 +7,17 @@ from business.utils import cast_or_default, cast_yes_to_bool
 
 
 class ProductType:
+    DISPLAY_NAME_TO_ENUM = {
+        "Parapharmacie": "PARAPHARMACIE",
+        "Dispositifs médicaux": "DM",
+        "Médicament": "MEDICAMENT",
+        "Homéopathie": "HOMEOPATHIE",
+        "Vétérinaire": "VETERINAIRE",
+        "Complément alimentaire": "COMPLEMENT",
+    }
+
+    ENUM_TO_DISPLAY_NAME = {v: k for k, v in DISPLAY_NAME_TO_ENUM.items()}
+
     def __init__(self):
         self._name = None
 
@@ -17,6 +28,21 @@ class ProductType:
     @name.setter
     def name(self, name):
         self._name = name
+
+    def to_enum(self):
+        """Convert display name to enum value, or return the name as-is if already an enum."""
+        if self._name is None:
+            return None
+        if self._name in self.ENUM_TO_DISPLAY_NAME:
+            return self._name
+        return self.DISPLAY_NAME_TO_ENUM.get(self._name)
+
+    @staticmethod
+    def display_name(enum_value):
+        """Convert enum value to display name."""
+        if enum_value is None:
+            return None
+        return ProductType.ENUM_TO_DISPLAY_NAME.get(enum_value, enum_value)
 
 
 class Vat(SupervisedEntity):
