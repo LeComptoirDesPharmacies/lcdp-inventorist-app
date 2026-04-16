@@ -4,7 +4,7 @@ from business.models.product import ProductType
 
 # Build a case-insensitive lookup from display name to enum value
 _DISPLAY_NAME_TO_ENUM_CI = {k.lower(): v for k, v in ProductType.DISPLAY_NAME_TO_ENUM.items()}
-_ENUM_VALUES = set(ProductType.ENUM_TO_DISPLAY_NAME.keys())
+_ENUM_VALUES = set(ProductType.DISPLAY_NAME_TO_ENUM.values())
 
 
 def get_product_type_enum_by_name(name):
