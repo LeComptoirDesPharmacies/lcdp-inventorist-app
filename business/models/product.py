@@ -31,6 +31,8 @@ class ProductType:
 
     def to_enum(self):
         """Convert display name to enum value, or return the name as-is if already an enum."""
+        print(f'self.ENUM_TO_DISPLAY_NAME: {self.ENUM_TO_DISPLAY_NAME}')
+        print(f'Converting display name: {self.name}')
         if self._name is None:
             return None
         if self._name in self.ENUM_TO_DISPLAY_NAME:

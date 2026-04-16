@@ -79,6 +79,8 @@ def __build_product_upsert(product_line):
     if vat:
         product_upsert['vat_id'] = vat.id
 
+    print(f'product_upsert: {product_upsert}')
+
     return product_upsert
 
 
@@ -282,6 +284,11 @@ def product_upsert_from_excel_lines(lines, filename, **kwargs):
         items.append(ProductUpsertFactoryAllOfRecords(**new_item))
 
     manage_assembly_api = get_manage_assembly_api()
+
+    print(f'anyfactory: {AnyFactory({
+                'type': 'PRODUCT_UPSERT',
+                'records': items,
+            })}')
 
     manage_assembly_api.create_assembly(
         AssemblyCreationParameters(
