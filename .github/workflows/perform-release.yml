@@ -42,18 +42,23 @@ jobs:
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "release_branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
 
-      - name: Merge release branch into main and tag
+      - name: Merge release branch into main via PR and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          RELEASE_BRANCH: ${{ steps.version.outputs.release_branch }}
         run: |
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
-          RELEASE_BRANCH="${{ steps.version.outputs.release_branch }}"
+          gh pr create \
+            --base main \
+            --head "$RELEASE_BRANCH" \
+            --title "Release $NEW_VERSION" \
+            --body "Automated release $NEW_VERSION."
+          gh pr merge "$RELEASE_BRANCH" --merge --delete-branch
+          git fetch origin main
           git checkout main
-          git merge "$RELEASE_BRANCH" -m "Merge $RELEASE_BRANCH into main"
-          git push origin main
+          git pull --ff-only origin main
           git tag -a -m "Tagging for release $NEW_VERSION" "$NEW_VERSION"
           git push origin "$NEW_VERSION"
-
-      - name: Delete release branch
-        run: git push origin --delete "${{ steps.version.outputs.release_branch }}"
 
       - name: Back-merge main into develop via PR
         env:
