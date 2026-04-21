@@ -13,6 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [macos-13, macos-14, windows-latest]
+        python-version: ['3.12']
         include:
           - os: macos-13
             label: macos-intel
@@ -23,7 +25,6 @@ jobs:
           - os: windows-latest
             label: windows
             path: ~\AppData\Local\pip\Cache
-        python-version: ['3.12']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
