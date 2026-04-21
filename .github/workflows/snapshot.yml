@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - 'develop'
+      - 'bugfix/**'
 
 name: Snapshot App
 
@@ -10,6 +11,7 @@ jobs:
     name: Create Snapshot
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-13
