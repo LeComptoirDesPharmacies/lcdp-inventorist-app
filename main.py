@@ -80,7 +80,7 @@ if __name__ == "__main__":
         print(
             "Dev mode. No check for concurrent run. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
     else:
-        if check_single_instance():
+        if not check_single_instance():
             show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
             sys.exit(1)
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     login_backend = Login()
     app_backend = App()
     app.aboutToQuit.connect(app_backend.on_exit)
-    engine.rootContext().setContextProperty("version", settings.value("VERSION"))
+    engine.rootContext().setContextProperty("version", settings.value("VERSION") + ' - ' + settings.value('PROVIDER_HOST'))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
 
