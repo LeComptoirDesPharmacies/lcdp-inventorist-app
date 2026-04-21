@@ -3,19 +3,23 @@ on:
     branches:
       - 'develop'
 
-name: Pre-Release App
+name: Snapshot App
 
 jobs:
   Package_app:
-    name: Create Pre Release
+    name: Create Snapshot
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, windows-latest]
         include:
           - os: macos-13
+            label: macos-intel
+            path: ~/Library/Caches/pip
+          - os: macos-14
+            label: macos-applesilicon
             path: ~/Library/Caches/pip
           - os: windows-latest
+            label: windows
             path: ~\AppData\Local\pip\Cache
         python-version: ['3.12']
     steps:
@@ -33,7 +37,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEV_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp-dev/ --extra-index-url https://${{ secrets.PROD_DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
@@ -47,16 +51,16 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ matrix.os }}-${{ github.ref_name }}-app
+        run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ github.ref_name }}-app
       - name: Zip project
-        run: 7z a ${{ matrix.os }}-${{ github.ref_name }}-app.zip ./${{ matrix.os }}-${{ github.ref_name }}-app/*
+        run: 7z a ${{ matrix.label }}-${{ github.ref_name }}-app.zip ./${{ matrix.label }}-${{ github.ref_name }}-app/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
-          name: pre-release-${{ github.run_id }}
-          tag: ${{ github.run_id }}-pre
+          name: snapshot-${{ github.run_id }}
+          tag: ${{ github.run_id }}-snapshot
           prerelease: true
           commit: ${{ github.sha }}
-          artifacts: ${{ matrix.os }}-${{ github.ref_name }}-app.zip
+          artifacts: ${{ matrix.label }}-${{ github.ref_name }}-app.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
