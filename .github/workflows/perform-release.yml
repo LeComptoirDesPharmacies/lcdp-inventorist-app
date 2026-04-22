@@ -129,6 +129,22 @@ jobs:
         run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app
         env:
           GITHUB_REF_NAME: ${{ needs.git-release.outputs.new_version }}
+      - name: Add macOS install script
+        if: runner.os == 'macOS'
+        run: |
+          cat > "./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app/install.command" <<'EOF'
+          #!/bin/bash
+          set -e
+          cd "$(dirname "$0")"
+          APP="LCDP - Inventorist App.app"
+          echo "Removing quarantine attribute..."
+          xattr -cr "$APP"
+          echo "Re-signing ad-hoc locally (required on Apple Silicon)..."
+          codesign --force --deep --sign - "$APP"
+          echo "Launching $APP..."
+          open "$APP"
+          EOF
+          chmod +x "./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app/install.command"
       - name: Zip project
         run: 7z a ${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app.zip ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app/*
       - name: Upload Release

@@ -50,10 +50,28 @@ jobs:
           IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: pip install pyinstaller
+      - name: Compute safe branch name
+        id: branch
+        run: echo "safe=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ github.ref_name }}-app
+        run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app
+      - name: Add macOS install script
+        run: |
+          cat > "./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app/install.command" <<'EOF'
+          #!/bin/bash
+          set -e
+          cd "$(dirname "$0")"
+          APP="LCDP - Inventorist App.app"
+          echo "Removing quarantine attribute..."
+          xattr -cr "$APP"
+          echo "Re-signing ad-hoc locally (required on Apple Silicon)..."
+          codesign --force --deep --sign - "$APP"
+          echo "Launching $APP..."
+          open "$APP"
+          EOF
+          chmod +x "./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app/install.command"
       - name: Zip project
-        run: 7z a ${{ matrix.label }}-${{ github.ref_name }}-app.zip ./${{ matrix.label }}-${{ github.ref_name }}-app/*
+        run: 7z a ${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app.zip ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
@@ -61,6 +79,6 @@ jobs:
           tag: ${{ github.run_id }}-snapshot
           prerelease: true
           commit: ${{ github.sha }}
-          artifacts: ${{ matrix.label }}-${{ github.ref_name }}-app.zip
+          artifacts: ${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
