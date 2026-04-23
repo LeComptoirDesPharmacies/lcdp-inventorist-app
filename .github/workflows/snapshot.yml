@@ -53,17 +53,6 @@ jobs:
       - name: Compute safe branch name
         id: branch
         run: echo "safe=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
-      - name: Debug Python env
-        run: |
-          echo "--- which python ---"
-          which python
-          python --version
-          echo "--- sys.executable / sys.path ---"
-          python -c "import sys; print(sys.executable); print('\n'.join(sys.path))"
-          echo "--- pip list (Pillow related) ---"
-          python -m pip list 2>/dev/null | grep -iE "pillow|pil" || echo "no Pillow found in pip list"
-          echo "--- try import PIL ---"
-          python -c "from PIL import Image; print('PIL OK:', Image.__file__)" || echo "PIL import FAILED"
       - name: Package project
         run: python -m PyInstaller app.spec --distpath ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app
       - name: Add macOS install script
