@@ -62,68 +62,9 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           DIST="./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app"
-          cat > "$DIST/install.command" <<'EOF'
-          #!/bin/bash
-          set -e
-          cd "$(dirname "$0")"
-          APP="LCDP - Inventorist App.app"
-          echo "Removing quarantine attribute..."
-          xattr -cr "$APP"
-          echo "Re-signing ad-hoc locally (required on Apple Silicon)..."
-          codesign --force --deep --sign - "$APP"
-          echo "Launching $APP..."
-          open "$APP"
-          EOF
+          cp packaging/macos/install.command "$DIST/"
+          cp packaging/macos/LISEZ-MOI.txt "$DIST/"
           chmod +x "$DIST/install.command"
-          cat > "$DIST/LISEZ-MOI.txt" <<'EOF'
-          LCDP - Inventorist App
-          ======================
-
-          IMPORTANT - A LIRE AVANT LE PREMIER LANCEMENT
-
-          A cause des regles de securite de macOS, l'application doit etre
-          autorisee manuellement a sa premiere utilisation.
-          Suivez ces etapes UNE SEULE FOIS :
-
-          --------------------------------------------------------------
-          1. Double-cliquez sur "install.command"
-          --------------------------------------------------------------
-
-          Au premier lancement, macOS affiche un message du type :
-             "install.command ne peut pas etre ouvert car Apple n'a pas
-             pu en verifier l'innocuite."
-
-          Cliquez "OK" pour fermer ce message.
-
-          --------------------------------------------------------------
-          2. Autorisez le script dans les Reglages Systeme
-          --------------------------------------------------------------
-
-          a) Ouvrez Reglages Systeme (menu Pomme > Reglages Systeme)
-          b) Cliquez sur "Confidentialite et securite" (panneau gauche)
-          c) Faites defiler jusqu'a la section "Securite"
-          d) Vous verrez : "install.command a ete bloque pour vous proteger"
-          e) Cliquez sur le bouton "Ouvrir quand meme"
-          f) Confirmez avec votre mot de passe Mac (ou Touch ID)
-
-          --------------------------------------------------------------
-          3. Re-double-cliquez sur "install.command"
-          --------------------------------------------------------------
-
-          Une fenetre Terminal s'ouvre, le script tourne quelques secondes,
-          puis "LCDP - Inventorist App" se lance automatiquement.
-
-          --------------------------------------------------------------
-          4. Pour les prochains lancements
-          --------------------------------------------------------------
-
-          Double-cliquez directement sur "LCDP - Inventorist App.app".
-          Plus besoin de repasser par install.command.
-
-          --------------------------------------------------------------
-
-          En cas de probleme : webmaster@lecomptoirdespharmacies.fr
-          EOF
       - name: Zip project
         run: 7z a ${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app.zip ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app/*
       - name: Upload Release
