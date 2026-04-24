@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - 'develop'
+      - 'bugfix/**'
 
 name: Snapshot App
 
@@ -12,13 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, windows-latest]
+        os: [macos-15-intel, macos-15, windows-latest]
         python-version: ['3.12']
         include:
-          - os: macos-13
+          - os: macos-15-intel
             label: macos-intel
             path: ~/Library/Caches/pip
-          - os: macos-14
+          - os: macos-15
             label: macos-applesilicon
             path: ~/Library/Caches/pip
           - os: windows-latest
@@ -39,7 +40,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+          python -m pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
@@ -51,11 +52,21 @@ jobs:
           PROVIDER_HOST: www.lcdp.ovh
           IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      - run: pip install pyinstaller
+      - run: python -m pip install pyinstaller
+      - name: Compute safe branch name
+        id: branch
+        run: echo "safe=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ github.ref_name }}-app
+        run: python -m PyInstaller app.spec --distpath ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app
+      - name: Add macOS install script and README
+        if: runner.os == 'macOS'
+        run: |
+          DIST="./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app"
+          cp packaging/macos/install.command "$DIST/"
+          cp packaging/macos/LISEZ-MOI.txt "$DIST/"
+          chmod +x "$DIST/install.command"
       - name: Zip project
-        run: 7z a ${{ matrix.label }}-${{ github.ref_name }}-app.zip ./${{ matrix.label }}-${{ github.ref_name }}-app/*
+        run: 7z a ${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app.zip ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app/*
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
@@ -63,6 +74,6 @@ jobs:
           tag: ${{ github.run_id }}-snapshot
           prerelease: true
           commit: ${{ github.sha }}
-          artifacts: ${{ matrix.label }}-${{ github.ref_name }}-app.zip
+          artifacts: ${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true

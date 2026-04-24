@@ -82,13 +82,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, windows-latest]
+        os: [macos-15-intel, macos-latest, windows-latest]
         python-version: ['3.12']
         include:
-          - os: macos-13
+          - os: macos-15-intel
             label: macos-intel
             path: ~/Library/Caches/pip
-          - os: macos-14
+          - os: macos-latest
             label: macos-applesilicon
             path: ~/Library/Caches/pip
           - os: windows-latest
@@ -111,7 +111,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+          python -m pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
@@ -124,11 +124,18 @@ jobs:
           PROVIDER_HOST: www.lecomptoirdespharmacies.fr
           IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      - run: pip install pyinstaller
+      - run: python -m pip install pyinstaller
       - name: Package project
-        run: pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app
+        run: python -m PyInstaller app.spec --distpath ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app
         env:
           GITHUB_REF_NAME: ${{ needs.git-release.outputs.new_version }}
+      - name: Add macOS install script and README
+        if: runner.os == 'macOS'
+        run: |
+          DIST="./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app"
+          cp packaging/macos/install.command "$DIST/"
+          cp packaging/macos/LISEZ-MOI.txt "$DIST/"
+          chmod +x "$DIST/install.command"
       - name: Zip project
         run: 7z a ${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app.zip ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app/*
       - name: Upload Release
