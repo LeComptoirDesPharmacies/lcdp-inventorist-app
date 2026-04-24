@@ -21,8 +21,20 @@ from settings import get_settings
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
 import faulthandler
 
-with open('fault_log.txt', 'a') as f:
-    faulthandler.enable(file=f)
+
+def _fault_log_path() -> Path:
+    if sys.platform == 'darwin':
+        log_dir = Path.home() / 'Library' / 'Logs' / APPLICATION_NAME
+    elif sys.platform == 'win32':
+        log_dir = Path(os.environ.get('LOCALAPPDATA') or Path.home()) / APPLICATION_NAME / 'Logs'
+    else:
+        log_dir = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local' / 'state') / APPLICATION_NAME
+    log_dir.mkdir(parents=True, exist_ok=True)
+    return log_dir / 'fault_log.txt'
+
+
+_fault_log_file = open(_fault_log_path(), 'a')
+faulthandler.enable(file=_fault_log_file)
 
 
 def on_exit():
