@@ -3,5 +3,5 @@
   "PROVIDER_HOST": "${PROVIDER_HOST:-www.lcdp.localhost}",
   "IS_PROVIDER_SECURE": "${IS_PROVIDER_SECURE:-False}",
   "SENTRY_DSN": "${SENTRY_DSN}",
-  "VERSION": "${GITHUB_REF_NAME:-v0.0.0}"
+  "VERSION": "${APP_VERSION:-v0.0.0}"
 }

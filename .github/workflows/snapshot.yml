@@ -48,6 +48,7 @@ jobs:
       - name: Prepare app
         run: python prepare.py
         env:
+          APP_VERSION: ${{ github.ref_name }}
           LCDP_ENVIRONMENT: staging
           PROVIDER_HOST: www.lcdp.ovh
           IS_PROVIDER_SECURE: "True"
