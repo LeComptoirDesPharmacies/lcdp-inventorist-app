@@ -7,6 +7,15 @@ from business.utils import cast_or_default, cast_yes_to_bool
 
 
 class ProductType:
+    DISPLAY_NAME_TO_ENUM = {
+        "Parapharmacie": "PARAPHARMACIE",
+        "Dispositifs médicaux": "DM",
+        "Médicament": "MEDICAMENT",
+        "Homéopathie": "HOMEOPATHIE",
+        "Vétérinaire": "VETERINAIRE",
+        "Complément alimentaire": "COMPLEMENT",
+    }
+
     def __init__(self):
         self._name = None
 

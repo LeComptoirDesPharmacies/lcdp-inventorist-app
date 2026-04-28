@@ -1,22 +1,23 @@
 import logging
-from functools import lru_cache
 
-from business.services.providers import get_search_product_metadata_api
-from business.services.security import get_api_key
-from business.services.vat import get_vat_by_value
+from business.models.product import ProductType
 
-
-def service_unavailable_status_code(e):
-    # do not retry if status code is different to 503
-    return e.status != 503
+# Build a case-insensitive lookup from display name to enum value
+_DISPLAY_NAME_TO_ENUM_CI = {k.lower(): v for k, v in ProductType.DISPLAY_NAME_TO_ENUM.items()}
+_ENUM_VALUES = set(ProductType.DISPLAY_NAME_TO_ENUM.values())
 
 
-@lru_cache(maxsize=128)
-def get_product_type_by_name(name):
+def get_product_type_enum_by_name(name):
+    """Convert a product type display name to its enum value using local mapping.
+    Returns the enum string (e.g. 'MEDICAMENT') or None if not found."""
     if name:
-        api = get_search_product_metadata_api()
-        product_types = api.get_product_types(
-            _request_auth=api.api_client.create_auth_settings("apiKeyAuth", get_api_key())
-        )
-        type_iterator = filter(lambda x: x.name == name, product_types)
-        return next(type_iterator, None)
+        # If the name is already an enum value, return it directly
+        upper_name = name.upper()
+        if upper_name in _ENUM_VALUES:
+            return upper_name
+        # Case-insensitive lookup of display name
+        enum_value = _DISPLAY_NAME_TO_ENUM_CI.get(name.lower())
+        if enum_value is None:
+            logging.warning(f"Unknown product type name: {name}")
+        return enum_value
+    return None

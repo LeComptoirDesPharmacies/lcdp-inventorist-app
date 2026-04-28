@@ -18,7 +18,7 @@ from api.consume.gen.factory.models.product_upsert_factory_all_of_records import
 from api.consume.gen.factory.models.sale_offer_upsert_factory_all_of_records import SaleOfferUpsertFactoryAllOfRecords
 from business.constant import CHUNK_SIZE
 from business.models.sale_offer import UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION
-from business.services.product import get_product_type_by_name
+from business.services.product import get_product_type_enum_by_name
 from business.services.providers import get_manage_assembly_api
 from business.services.security import get_api_key
 from business.services.user import get_current_user_id
@@ -47,7 +47,7 @@ def __prefetch(prefetch_type, keys_from_file, get_from_api, get_keys_from_api_ob
 
 
 def __build_product_upsert(product_line):
-    product_type = get_product_type_by_name(product_line.product_type.name)
+    product_type_enum = get_product_type_enum_by_name(product_line.product_type.name)
     vat = get_vat_by_value(product_line.vat.value)
 
     product_upsert = dict()
@@ -73,8 +73,8 @@ def __build_product_upsert(product_line):
     if product_line.status:
         product_upsert['status'] = product_line.status.upper()
 
-    if product_type:
-        product_upsert['type_id'] = product_type.id
+    if product_type_enum:
+        product_upsert['type'] = product_type_enum
 
     if vat:
         product_upsert['vat_id'] = vat.id

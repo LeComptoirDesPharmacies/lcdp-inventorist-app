@@ -1,8 +1,7 @@
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
-from api.consume.gen.user.api_client_utils import create_search_user_api
-from api.consume.gen.factory.api_client_utils import create_manage_assembly_api, create_search_assembly_api
-from api.consume.gen.product.api_client_utils import create_search_product_metadata_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
+from api.consume.gen.factory.api_client_utils import create_manage_assembly_api, create_search_assembly_api
+from api.consume.gen.user.api_client_utils import create_search_user_api
 from settings import get_settings
 
 _auth_api = None
@@ -45,12 +44,6 @@ def get_search_vat_api():
     if not _search_vat_api:
         _search_vat_api = create_search_vat_api(configuration)
     return _search_vat_api
-
-def get_search_product_metadata_api():
-    global _search_product_metadata_api
-    if not _search_product_metadata_api:
-        _search_product_metadata_api = create_search_product_metadata_api(configuration)
-    return _search_product_metadata_api
 
 def get_search_assembly_api():
     global _search_assembly_api
