@@ -21,8 +21,20 @@ from settings import get_settings
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
 import faulthandler
 
-with open('fault_log.txt', 'a') as f:
-    faulthandler.enable(file=f)
+
+def _fault_log_path() -> Path:
+    if sys.platform == 'darwin':
+        log_dir = Path.home() / 'Library' / 'Logs' / APPLICATION_NAME
+    elif sys.platform == 'win32':
+        log_dir = Path(os.environ.get('LOCALAPPDATA') or Path.home()) / APPLICATION_NAME / 'Logs'
+    else:
+        log_dir = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local' / 'state') / APPLICATION_NAME
+    log_dir.mkdir(parents=True, exist_ok=True)
+    return log_dir / 'fault_log.txt'
+
+
+_fault_log_file = open(_fault_log_path(), 'a')
+faulthandler.enable(file=_fault_log_file)
 
 
 def on_exit():
@@ -80,7 +92,7 @@ if __name__ == "__main__":
         print(
             "Dev mode. No check for concurrent run. Change LCDP_ENVIRONMENT to other value as 'dev' to enable check for new version")
     else:
-        if check_single_instance():
+        if not check_single_instance():
             show_alert("Une autre instance de l'application est déjà en cours d'exécution.")
             sys.exit(1)
 
@@ -121,7 +133,7 @@ if __name__ == "__main__":
     login_backend = Login()
     app_backend = App()
     app.aboutToQuit.connect(app_backend.on_exit)
-    engine.rootContext().setContextProperty("version", settings.value("VERSION"))
+    engine.rootContext().setContextProperty("version", settings.value("VERSION") + ' - ' + settings.value('PROVIDER_HOST'))
     engine.rootContext().setContextProperty("loginBackend", login_backend)
     engine.rootContext().setContextProperty("appBackend", app_backend)
 

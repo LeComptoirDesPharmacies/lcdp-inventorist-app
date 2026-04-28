@@ -1,0 +1,145 @@
+name: perform-release
+
+# Must be triggered from a release/v* branch.
+# merge into main → tag → delete release branch → merge main into develop → build & publish app.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  git-release:
+    name: Git release flow (merge → tag → back-merge)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+    steps:
+      - name: Validate branch name
+        run: |
+          if [[ ! "${{ github.ref_name }}" =~ ^release/v.+ ]]; then
+            echo "::error::This workflow must be triggered from a release/v* branch (got: ${{ github.ref_name }})"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Configure git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git fetch origin main:main develop:develop
+
+      - name: Extract release version
+        id: version
+        run: |
+          RELEASE_BRANCH="${{ github.ref_name }}"
+          NEW_VERSION="${RELEASE_BRANCH#release/}"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Merge release branch into main via PR and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          RELEASE_BRANCH: ${{ steps.version.outputs.release_branch }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "$RELEASE_BRANCH" \
+            --title "Release $NEW_VERSION" \
+            --body "Automated release $NEW_VERSION."
+          gh pr merge "$RELEASE_BRANCH" --merge --delete-branch
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          git tag -a -m "Tagging for release $NEW_VERSION" "$NEW_VERSION"
+          git push origin "$NEW_VERSION"
+
+      - name: Back-merge main into develop via PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          BACK_MERGE_BRANCH="chore/back-merge-main-${NEW_VERSION}"
+          git checkout -b "$BACK_MERGE_BRANCH" main
+          git push origin "$BACK_MERGE_BRANCH"
+          gh pr create \
+            --base develop \
+            --head "$BACK_MERGE_BRANCH" \
+            --title "Back-merge main into develop after ${NEW_VERSION}" \
+            --body "Automated back-merge after release ${NEW_VERSION}."
+          gh pr merge "$BACK_MERGE_BRANCH" --merge --delete-branch
+
+  build-and-publish:
+    name: Build and publish release
+    needs: git-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15-intel, macos-latest, windows-latest]
+        python-version: ['3.12']
+        include:
+          - os: macos-15-intel
+            label: macos-intel
+            path: ~/Library/Caches/pip
+          - os: macos-latest
+            label: macos-applesilicon
+            path: ~/Library/Caches/pip
+          - os: windows-latest
+            label: windows
+            path: ~\AppData\Local\pip\Cache
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.git-release.outputs.new_version }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - uses: actions/cache@v4
+        with:
+          path: ${{ matrix.path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+      - name: Prepare app
+        run: python prepare.py
+        env:
+          APP_VERSION: ${{ needs.git-release.outputs.new_version }}
+          LCDP_ENVIRONMENT: production
+          PROVIDER_HOST: www.lecomptoirdespharmacies.fr
+          IS_PROVIDER_SECURE: "True"
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      - run: python -m pip install pyinstaller
+      - name: Package project
+        run: python -m PyInstaller app.spec --distpath ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app
+      - name: Add macOS install script and README
+        if: runner.os == 'macOS'
+        run: |
+          DIST="./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app"
+          cp packaging/macos/install.command "$DIST/"
+          cp packaging/macos/LISEZ-MOI.txt "$DIST/"
+          chmod +x "$DIST/install.command"
+      - name: Zip project
+        run: 7z a ${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app.zip ./${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app/*
+      - name: Upload Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.git-release.outputs.new_version }}
+          artifacts: ${{ matrix.label }}-${{ needs.git-release.outputs.new_version }}-app.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true

@@ -1,0 +1,47 @@
+LCDP - Inventorist App
+======================
+
+IMPORTANT - À LIRE AVANT LE PREMIER LANCEMENT
+
+À cause des règles de sécurité de macOS, l'application doit être
+autorisée manuellement à sa première utilisation.
+Suivez ces étapes UNE SEULE FOIS :
+
+--------------------------------------------------------------
+1. Double-cliquez sur "install.command"
+--------------------------------------------------------------
+
+Au premier lancement, macOS affiche un message du type :
+   « install.command ne peut pas être ouvert car Apple n'a pas
+   pu en vérifier l'innocuité. »
+
+Cliquez "OK" pour fermer ce message.
+
+--------------------------------------------------------------
+2. Autorisez le script dans les Réglages Système
+--------------------------------------------------------------
+
+a) Ouvrez Réglages Système (menu Pomme > Réglages Système)
+b) Cliquez sur "Confidentialité et sécurité" (panneau gauche)
+c) Faites défiler jusqu'à la section "Sécurité"
+d) Vous verrez : « install.command a été bloqué pour vous protéger »
+e) Cliquez sur le bouton "Ouvrir quand même"
+f) Confirmez avec votre mot de passe Mac (ou Touch ID)
+
+--------------------------------------------------------------
+3. Re-double-cliquez sur "install.command"
+--------------------------------------------------------------
+
+Une fenêtre Terminal s'ouvre, le script tourne quelques secondes,
+puis "LCDP - Inventorist App" se lance automatiquement.
+
+--------------------------------------------------------------
+4. Pour les prochains lancements
+--------------------------------------------------------------
+
+Double-cliquez directement sur "LCDP - Inventorist App.app".
+Plus besoin de repasser par install.command.
+
+--------------------------------------------------------------
+
+En cas de problème : webmaster@lecomptoirdespharmacies.fr
