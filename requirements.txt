@@ -8,6 +8,7 @@ Pillow==12.2.0
 python-rest-client-codegen==1.9.1
 lcdp-api==1.13.1
 urllib3==2.2.3
+certifi
 python-dateutil==2.8.2
 six==1.16.0
 requests==2.32.2
