@@ -1,3 +1,4 @@
+import certifi
 from api.consume.gen.auth.api_client_utils import create_auth_api, create_manage_api_key_api
 from api.consume.gen.configuration.api_client_utils import create_search_vat_api
 from api.consume.gen.factory.api_client_utils import create_manage_assembly_api, create_search_assembly_api
@@ -16,7 +17,8 @@ settings = get_settings()
 
 configuration = {
     'host': settings.value("PROVIDER_HOST"),
-    'is_secured': settings.value("IS_PROVIDER_SECURE") == "True"
+    'is_secured': settings.value("IS_PROVIDER_SECURE") == "True",
+    'ssl_ca_cert': certifi.where()
 }
 
 def get_auth_api():
