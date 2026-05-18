@@ -121,7 +121,7 @@ jobs:
         env:
           APP_VERSION: ${{ needs.git-release.outputs.new_version }}
           LCDP_ENVIRONMENT: production
-          PROVIDER_HOST: api.lecomptoirdespharmacies.fr
+          PROVIDER_HOST: www.lecomptoirdespharmacies.fr
           IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - run: python -m pip install pyinstaller
