@@ -26,7 +26,7 @@ class Worker(QRunnable):
                 self.state_signal.emit("Connecté", "SUCCESS", "")
         except AuthApiException as auth_ex:
             self.connected_signal.emit(False)
-            self.state_signal.emit("Email ou mot de passe érroné", "ERROR", str(auth_ex))
+            self.state_signal.emit("Email ou mot de passe erroné", "ERROR", str(auth_ex))
             logging.exception("An AuthApiException occur during authentication", auth_ex)
         except Exception as err:
             self.state_signal.emit("Une erreur s'est produite, veuillez contacter l'administrateur", "ERROR", str(err))
