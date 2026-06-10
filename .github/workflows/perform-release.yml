@@ -1,7 +1,7 @@
 name: perform-release
 
 # Must be triggered from a release/v* branch.
-# merge into main → tag → delete release branch → merge main into develop → build & publish app.
+# merge into main → tag → delete release branch → back-merge main into develop (bot) → build & publish app.
 
 on:
   workflow_dispatch:
@@ -65,20 +65,23 @@ jobs:
           git tag -a -m "Tagging for release $NEW_VERSION" "$NEW_VERSION"
           git push origin "$NEW_VERSION"
 
-      - name: Back-merge main into develop via PR
+      # Back-merge main → develop via le bot lcdp-back-merge (PR + résolution IA
+      # des conflits) plutôt qu'un merge brut qui ferait planter la release au
+      # moindre conflit. Le bot crée une PR auto-merge/main-into-develop et
+      # l'auto-merge si le merge est propre (ou high-confidence après IA).
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Back merge main into develop
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEW_VERSION: ${{ steps.version.outputs.new_version }}
-        run: |
-          BACK_MERGE_BRANCH="chore/back-merge-main-${NEW_VERSION}"
-          git checkout -b "$BACK_MERGE_BRANCH" main
-          git push origin "$BACK_MERGE_BRANCH"
-          gh pr create \
-            --base develop \
-            --head "$BACK_MERGE_BRANCH" \
-            --title "Back-merge main into develop after ${NEW_VERSION}" \
-            --body "Automated back-merge after release ${NEW_VERSION}."
-          gh pr merge "$BACK_MERGE_BRANCH" --merge --delete-branch
+          # Le workflow est déclenché sur release/vX → on FORCE main comme branche
+          # source (le bot lit la source depuis GITHUB_REF_NAME).
+          GITHUB_REF_NAME: main
+          GITHUB_APP_ID: ${{ vars.LCDP_BACKMERGE_APP_ID }}
+          GITHUB_APP_PRIVATE_KEY: ${{ secrets.LCDP_BACKMERGE_APP_PRIVATE_KEY }}
+          AUTO_MERGE_TARGET_PATTERNS: "develop"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: uvx lcdp-back-merge
 
   build-and-publish:
     name: Build and publish release
