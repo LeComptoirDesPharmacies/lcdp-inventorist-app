@@ -93,7 +93,6 @@ jobs:
     # authenticates the gemfury index for internal packages.
     env:
       NO_PROXY: "lcdp.fury.site,pypi.fury.io"
-      no_proxy: "lcdp.fury.site,pypi.fury.io"
       PIP_DEFAULT_TIMEOUT: "180"
       AIKIDO_SCAN_TIMEOUT_MS: "180000"
       UV_INDEX_FURY_USERNAME: ${{ secrets.DEPLOY_GEMFURY_TOKEN }}
