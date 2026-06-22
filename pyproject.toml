@@ -1,0 +1,67 @@
+[project]
+name = "lcdp-inventorist-app"
+version = "0.0.0"
+description = "LCDP Inventorist desktop app (sale offers & products mass management)."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "PySide6==6.6.3.1",
+    "keyring==23.4.0",
+    "sentry-sdk==0.15.1",
+    "openpyxl==3.1.3",
+    "envsubst==0.1.5",
+    "Pillow==12.2.0",
+    "python-rest-client-codegen==1.10.5",
+    "lcdp-api==1.15.0.post2+git.bd98e275",
+    "urllib3==2.2.3",
+    "certifi",
+    "python-dateutil==2.8.2",
+    "six==1.16.0",
+    "requests==2.32.2",
+    "backoff==2.2.1",
+    "pydantic==2.9.2",
+    "tablib[xlsx]==3.6.1",
+    "flatten-json==0.1.14",
+    "psutil==7.0.0",
+]
+
+# Build/test-only tools. Synced everywhere via `uv sync` (they're cheap) and pinned
+# in uv.lock like everything else, so the packaging toolchain is reproducible too.
+[dependency-groups]
+dev = [
+    "nose2==0.11.0",
+    "pyinstaller",
+]
+
+# ----------------------------------------------------------------------------
+# Supply-chain policy (LDS-5825), read by uv — committed = repo-enforced.
+#
+# - exclude-newer: ignore any version whose files were uploaded < 1 week ago
+#   (protects against freshly-published malicious public releases, "Miasma").
+#   Frozen into uv.lock at `uv lock` time (lock-time gate, like poetry min-release-age).
+# - exclude-newer-package: our internal packages are exempt (false = no age limit);
+#   they legitimately change often and are first-party.
+# - required-version: refuse to run with a uv too old to honor the per-package exempt
+#   (so nobody silently downgrades uv and loses the policy).
+#
+# Malware scanning is added on top by safe-chain (aikido-uv) in CI. The age policy
+# lives here (uv); the lock carries the resolved, age-gated versions.
+# ----------------------------------------------------------------------------
+[tool.uv]
+required-version = ">=0.11.22"
+# Internal packages are dual-published: snapshots on fury, releases on PyPI — the SAME
+# name lives on both indexes. The default "first-index" strategy stops at the first index
+# holding the name (PyPI) and never queries fury, so a pinned fury snapshot is invisible.
+# "unsafe-first-match" makes uv try indexes in priority order (fury first, see below) and
+# fall back to PyPI. "unsafe" = dependency-confusion caveat, acceptable here: fury is our
+# private index and only lists our own packages, and downloads are malware-scanned (aikido).
+index-strategy = "unsafe-first-match"
+exclude-newer = "1 week"
+exclude-newer-package = { lcdp-api = false, lcdp-avro-to-python = false, lcdp-back-merge = false, lcdp-boto3-utils = false, lcdp-fastapi-utils = false, lcdp-flask-utils = false, lcdp-kafka-utils = false, lcdp-logging-utils = false, lcdp-postgres-utils = false, lcdp-sqlalchemy-utils = false, python-avro-generator = false, python-fastapi-rest-server-codegen = false, python-flask-rest-server-codegen = false, python-rest-client-codegen = false }
+
+# Internal packages live on gemfury (dev versions) and PyPI (released). Declared as a
+# supplemental index so uv finds them; we do NOT pin sources (dual-publish), the
+# resolver picks the right version from whichever index has it.
+# Auth at lock/sync time via env: UV_INDEX_FURY_USERNAME=<gemfury token>, UV_INDEX_FURY_PASSWORD=
+[[tool.uv.index]]
+name = "fury"
+url = "https://pypi.fury.io/lcdp/"

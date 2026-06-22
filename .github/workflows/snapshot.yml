@@ -10,6 +10,17 @@ jobs:
   Package_app:
     name: Create Snapshot
     runs-on: ${{ matrix.os }}
+    # Supply-chain policy (LDS-5825): deps come from uv.lock via `uv sync --frozen`
+    # (age gate frozen in at lock time, see pyproject.toml [tool.uv]); aikido-uv adds
+    # malware scanning. NO_PROXY lets fury bypass the MITM proxy; UV_INDEX_FURY_*
+    # authenticates the gemfury index for internal packages.
+    env:
+      NO_PROXY: "lcdp.fury.site,pypi.fury.io"
+      no_proxy: "lcdp.fury.site,pypi.fury.io"
+      PIP_DEFAULT_TIMEOUT: "180"
+      AIKIDO_SCAN_TIMEOUT_MS: "180000"
+      UV_INDEX_FURY_USERNAME: ${{ secrets.DEPLOY_GEMFURY_TOKEN }}
+      UV_INDEX_FURY_PASSWORD: ""
     strategy:
       fail-fast: false
       matrix:
@@ -18,47 +29,43 @@ jobs:
         include:
           - os: macos-15-intel
             label: macos-intel
-            path: ~/Library/Caches/pip
           - os: macos-15
             label: macos-applesilicon
-            path: ~/Library/Caches/pip
           - os: windows-latest
             label: windows
-            path: ~\AppData\Local\pip\Cache
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-      - uses: actions/cache@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          path: ${{ matrix.path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install safe-chain
+        run: npm install -g @aikidosec/safe-chain@1.5.7
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+        # Installs uv.lock exactly (age gate already frozen in); aikido-uv scans for malware.
+        run: aikido-uv sync --frozen
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: '11'
       - name: Prepare app
-        run: python prepare.py
+        run: uv run python prepare.py
         env:
           APP_VERSION: ${{ github.ref_name }}
           LCDP_ENVIRONMENT: staging
           PROVIDER_HOST: api.lcdp.ovh
           IS_PROVIDER_SECURE: "True"
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      - run: python -m pip install pyinstaller
       - name: Compute safe branch name
         id: branch
         run: echo "safe=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
       - name: Package project
-        run: python -m PyInstaller app.spec --distpath ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app
+        run: uv run pyinstaller app.spec --distpath ./${{ matrix.label }}-${{ steps.branch.outputs.safe }}-app
       - name: Add macOS install script and README
         if: runner.os == 'macOS'
         run: |

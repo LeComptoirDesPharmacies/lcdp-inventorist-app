@@ -12,9 +12,14 @@ This app permit to manage sale offer and product massively with excel import.
 
 ## Requirements
 
-- Access to LCDP gemfury
--  `pip.conf` with gemfury extra index url
-- Python **3.8**
+- Access to LCDP gemfury (token exported as `UV_INDEX_FURY_USERNAME`, empty `UV_INDEX_FURY_PASSWORD`)
+- [uv](https://docs.astral.sh/uv/) **>= 0.11.22** (dependency manager — enforced by `pyproject.toml`)
+- Python **3.12**
+
+> Dependencies are pinned in `uv.lock` (committed). The supply-chain policy (LDS-5825) —
+> ignore PyPI releases younger than 1 week, internal packages exempt — is declared in
+> `pyproject.toml` `[tool.uv]` and frozen into the lock. To add/upgrade a dep:
+> `uv add <pkg>` then commit the updated `uv.lock`.
 
 ## Configure
 
@@ -33,28 +38,28 @@ Default values can be changed in `config.json.tpl`
 
 #### Install dependencies
 
-- With pip.conf : `pip install -r requirements.txt`
+`uv sync --frozen`
 
 #### Prepare
 Run `prepare.py` before start the app to generate codegen and 
 create `config.json` file :
 
-`python prepare.py`
+`uv run python prepare.py`
 
 #### Start
 
 Then start the app with : 
 
-`python main.py`
+`uv run python main.py`
 
 ### Test
 Run :
 
-`python prepare.py`
+`uv run python prepare.py`
 
 And then :
 
-`python -m nose2 tests -v`
+`uv run python -m nose2 tests -v`
 
 
 ## TODO
