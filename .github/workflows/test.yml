@@ -9,28 +9,39 @@ on:
 jobs:
   Test_application:
     runs-on: ubuntu-latest
+    # Supply-chain policy (LDS-5825): the "< 1 week" age gate + internal-package
+    # exemptions are frozen into uv.lock (see pyproject.toml [tool.uv]). `uv sync
+    # --frozen` installs that lock verbatim — no re-resolution, so the gate is already
+    # baked in. safe-chain (aikido-uv) adds malware scanning on download.
+    # NO_PROXY lets fury bypass the safe-chain MITM proxy; timeouts cover big indexes.
+    # UV_INDEX_FURY_* authenticates the gemfury index for internal packages.
+    env:
+      NO_PROXY: "lcdp.fury.site,pypi.fury.io"
+      PIP_DEFAULT_TIMEOUT: "180"
+      AIKIDO_SCAN_TIMEOUT_MS: "180000"
+      UV_INDEX_FURY_USERNAME: ${{ secrets.DEPLOY_GEMFURY_TOKEN }}
+      UV_INDEX_FURY_PASSWORD: ""
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-      - uses: actions/cache@v4
-        if: startsWith(runner.os, 'Linux')
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install safe-chain
+        run: npm install -g @aikidosec/safe-chain@1.5.7
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libjpeg-dev zlib1g-dev
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt --extra-index-url https://${{ secrets.DEPLOY_GEMFURY_TOKEN }}:@pypi.fury.io/lcdp/
+        # Installs uv.lock exactly (age gate already frozen in); aikido-uv scans for malware.
+        run: aikido-uv sync --frozen
       - name: Prepare app
-        run: python prepare.py
+        run: uv run python prepare.py
       - name: Run tests
-        run: python -m nose2 tests -v
+        run: uv run python -m nose2 tests -v
