@@ -235,11 +235,11 @@ wheels = [
 
 [[package]]
 name = "lcdp-api"
-version = "1.15.0.post2+git.bd98e275"
-source = { registry = "https://pypi.fury.io/lcdp/" }
-sdist = { url = "https://pypi.fury.io/lcdp/-/ver_1jLXVM/lcdp_api-1.15.0.post2+git.bd98e275.tar.gz", hash = "sha256:b09ee44a4a9d56304371d8982d4e492f4cfc188959740dcde65ddd0ce129072b" }
+version = "1.19.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/e1/f5f87837a400fcce4444afcd45997d8e3276f42142dbf59711258492a24d/lcdp_api-1.19.0.tar.gz", hash = "sha256:2fdd8a358065d23b673a7290ce1292083e723bdc298536951578b717843d3f08", size = 81409, upload-time = "2026-07-09T15:11:16.867Z" }
 wheels = [
-    { url = "https://pypi.fury.io/lcdp/-/ver_Mlnj9/lcdp_api-1.15.0.post2+git.bd98e275-py3-none-any.whl", hash = "sha256:6f7a04998626566897f7e43ae53d05c698ef7b7281dd98cfd8eb239cb6f18c1d" },
+    { url = "https://files.pythonhosted.org/packages/7f/0f/b91264ccb8707c045399925415fccb17126a1603f387efb582406aa67ddf/lcdp_api-1.19.0-py3-none-any.whl", hash = "sha256:d897c302a7e2bd1408793d0539c867cded77ca98a86cfebcb0386cfeb6b1bcf5", size = 126430, upload-time = "2026-07-09T15:11:15.745Z" },
 ]
 
 [[package]]
@@ -280,14 +280,14 @@ requires-dist = [
     { name = "envsubst", specifier = "==0.1.5" },
     { name = "flatten-json", specifier = "==0.1.14" },
     { name = "keyring", specifier = "==23.4.0" },
-    { name = "lcdp-api", specifier = "==1.15.0.post2+git.bd98e275" },
+    { name = "lcdp-api", specifier = "==1.19.0" },
     { name = "openpyxl", specifier = "==3.1.3" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "psutil", specifier = "==7.0.0" },
     { name = "pydantic", specifier = "==2.9.2" },
     { name = "pyside6", specifier = "==6.6.3.1" },
     { name = "python-dateutil", specifier = "==2.8.2" },
-    { name = "python-rest-client-codegen", specifier = "==1.10.5" },
+    { name = "python-rest-client-codegen", specifier = "==1.12.1" },
     { name = "requests", specifier = "==2.32.2" },
     { name = "sentry-sdk", specifier = "==0.15.1" },
     { name = "six", specifier = "==1.16.0" },
@@ -535,14 +535,13 @@ wheels = [
 
 [[package]]
 name = "python-rest-client-codegen"
-version = "1.10.5"
+version = "1.12.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/5c/2686518ff8afe0eb0d56505e489709a683a44e7109e1219e28fcde457e15/python_rest_client_codegen-1.10.5.tar.gz", hash = "sha256:9b702473d8a17756e476d57543418fca911121a22b7813b8f1fa24b5c417baca", size = 287134, upload-time = "2026-06-17T14:03:46.291Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/12/fe5ed11b961424a30b632285a0b4978d03285b936c2bb5f438aa94701609/python_rest_client_codegen-1.10.5-py3-none-any.whl", hash = "sha256:25413bc8f34a942f700f6c51e704e2f9b1a49e6682c3458d2c2657488540d573", size = 26988527, upload-time = "2026-06-17T14:03:44.455Z" },
+    { url = "https://files.pythonhosted.org/packages/00/e9/adbed192f094c445b0ac0c9ead15da6022753ef64d08d0043a9375bd9a78/python_rest_client_codegen-1.12.1-py3-none-any.whl", hash = "sha256:55a6e5d29c9af8ccac2872c3a746911ccded70bf5fc4bde1f3fc633d35e94f0a", size = 26986224, upload-time = "2026-07-06T13:02:42.245Z" },
 ]
 
 [[package]]
