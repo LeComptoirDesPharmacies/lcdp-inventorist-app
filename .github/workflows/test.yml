@@ -6,6 +6,7 @@ on:
       - 'feature/**'
       - 'bugfix/**'
       - 'hotfix/**'
+      - 'release/**'
 jobs:
   Test_application:
     runs-on: ubuntu-latest
