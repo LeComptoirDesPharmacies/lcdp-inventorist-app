@@ -235,11 +235,11 @@ wheels = [
 
 [[package]]
 name = "lcdp-api"
-version = "1.15.0.post2+git.bd98e275"
-source = { registry = "https://pypi.fury.io/lcdp/" }
-sdist = { url = "https://pypi.fury.io/lcdp/-/ver_1jLXVM/lcdp_api-1.15.0.post2+git.bd98e275.tar.gz", hash = "sha256:b09ee44a4a9d56304371d8982d4e492f4cfc188959740dcde65ddd0ce129072b" }
+version = "1.20.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ea/ef/f479db6c0934c56d5da5cd641a0985dc7edfd9285ad437e9715263e50104/lcdp_api-1.20.0.tar.gz", hash = "sha256:d0c98a37d21a45dd6ef56e8b953582c65b5ccfe11d8b2640775d8fa4af12a32d", size = 81648, upload-time = "2026-08-10T13:59:17.436Z" }
 wheels = [
-    { url = "https://pypi.fury.io/lcdp/-/ver_Mlnj9/lcdp_api-1.15.0.post2+git.bd98e275-py3-none-any.whl", hash = "sha256:6f7a04998626566897f7e43ae53d05c698ef7b7281dd98cfd8eb239cb6f18c1d" },
+    { url = "https://files.pythonhosted.org/packages/b3/fd/031057aa333ccc3a8aad0d639dfb056a3ff3dbe85491d3f2eef5dc58045e/lcdp_api-1.20.0-py3-none-any.whl", hash = "sha256:a8de9f94912db68699ad503e021c206e34f078dcb5db67749d83e026cdfe2440", size = 126387, upload-time = "2026-08-10T13:59:16.533Z" },
 ]
 
 [[package]]
@@ -280,7 +280,7 @@ requires-dist = [
     { name = "envsubst", specifier = "==0.1.5" },
     { name = "flatten-json", specifier = "==0.1.14" },
     { name = "keyring", specifier = "==23.4.0" },
-    { name = "lcdp-api", specifier = "==1.15.0.post2+git.bd98e275" },
+    { name = "lcdp-api", specifier = "==1.20.0" },
     { name = "openpyxl", specifier = "==3.1.3" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "psutil", specifier = "==7.0.0" },
