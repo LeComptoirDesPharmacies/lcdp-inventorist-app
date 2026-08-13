@@ -42,6 +42,13 @@ jobs:
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "release_branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
 
+      # Rejouable de bout en bout : ce step échoue sur ce que l'automatisation ne peut
+      # pas trancher seule — typiquement un conflit release → main quand main porte un
+      # commit que develop n'a jamais reçu (back-merge manquant, vécu en v2.2.1). Une
+      # fois le conflit résolu à la main, relancer le workflow doit reprendre où il
+      # s'est arrêté, pas buter sur les traces de la tentative précédente.
+      # La branche release n'est supprimée qu'après le push du tag : c'est la seule ref
+      # depuis laquelle ce workflow peut être redéclenché (cf. Validate branch name).
       - name: Merge release branch into main via PR and tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,20 +57,40 @@ jobs:
         run: |
           COMMIT_DIFF=$(git rev-list main.."$RELEASE_BRANCH" | wc -l | tr -d ' ')
           if [ "$COMMIT_DIFF" -gt 0 ]; then
-            gh pr create \
-              --base main \
-              --head "$RELEASE_BRANCH" \
-              --title "Release $NEW_VERSION" \
-              --body "Automated release $NEW_VERSION."
-            gh pr merge "$RELEASE_BRANCH" --merge --delete-branch
+            # Une PR laissée ouverte par la tentative précédente est réutilisée :
+            # `gh pr create` échouerait sur "a pull request for branch ... already exists".
+            EXISTING_PR=$(gh pr list --head "$RELEASE_BRANCH" --base main --state open \
+              --json number --jq '.[0].number // empty')
+            if [ -n "$EXISTING_PR" ]; then
+              echo "Reusing open PR #$EXISTING_PR for $RELEASE_BRANCH."
+            else
+              gh pr create \
+                --base main \
+                --head "$RELEASE_BRANCH" \
+                --title "Release $NEW_VERSION" \
+                --body "Automated release $NEW_VERSION."
+            fi
+            gh pr merge "$RELEASE_BRANCH" --merge
           else
             echo "Release branch already merged into main, skipping PR creation."
           fi
           git fetch origin main
           git checkout main
           git pull --ff-only origin main
-          git tag -a -m "Tagging for release $NEW_VERSION" "$NEW_VERSION"
-          git push origin "$NEW_VERSION"
+          # Idempotent sur le tag aussi, mais jamais silencieux s'il désigne un autre
+          # commit : un tag déplacé changerait ce qui est buildé et publié.
+          EXISTING_TAG=$(git ls-remote --tags origin "refs/tags/$NEW_VERSION^{}" | cut -f1)
+          if [ -n "$EXISTING_TAG" ]; then
+            if [ "$EXISTING_TAG" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::$NEW_VERSION already exists on $EXISTING_TAG, but main is now $(git rev-parse HEAD)"
+              exit 1
+            fi
+            echo "Tag $NEW_VERSION already points at main, skipping."
+          else
+            git tag -a -m "Tagging for release $NEW_VERSION" "$NEW_VERSION"
+            git push origin "$NEW_VERSION"
+          fi
+          git push origin --delete "$RELEASE_BRANCH" || true
 
       # Back-merge main → develop via le bot lcdp-back-merge (PR + résolution IA
       # des conflits) plutôt qu'un merge brut qui ferait planter la release au
