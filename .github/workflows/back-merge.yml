@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0              # toutes les branches divergentes
           persist-credentials: false  # le bot gère l'auth git via son token App
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
 
       - name: Back merge main into develop
         env:
