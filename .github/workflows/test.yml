@@ -40,8 +40,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libjpeg-dev zlib1g-dev
       - name: Install dependencies
-        # Installs uv.lock exactly (age gate already frozen in); aikido-uv scans for malware.
-        run: aikido-uv sync --frozen
+        # Installs uv.lock exactly (age gate already frozen in by uv at lock time, internal
+        # packages exempt); skip safe-chain's own age check, redundant here — its malware
+        # scan stays active (LDS-6097).
+        run: aikido-uv sync --frozen --safe-chain-skip-minimum-package-age
       - name: Prepare app
         run: uv run python prepare.py
       - name: Run tests
