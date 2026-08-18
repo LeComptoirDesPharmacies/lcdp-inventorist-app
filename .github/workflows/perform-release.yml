@@ -125,8 +125,10 @@ jobs:
       - name: Install safe-chain
         run: npm install -g @aikidosec/safe-chain@1.5.7
       - name: Install dependencies
-        # Installs uv.lock exactly (age gate already frozen in); aikido-uv scans for malware.
-        run: aikido-uv sync --frozen
+        # Installs uv.lock exactly (age gate already frozen in by uv at lock time, internal
+        # packages exempt); skip safe-chain's own age check, redundant here — its malware
+        # scan stays active (LDS-6097).
+        run: aikido-uv sync --frozen --safe-chain-skip-minimum-package-age
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
