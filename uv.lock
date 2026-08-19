@@ -287,7 +287,7 @@ requires-dist = [
     { name = "pydantic", specifier = "==2.9.2" },
     { name = "pyside6", specifier = "==6.6.3.1" },
     { name = "python-dateutil", specifier = "==2.8.2" },
-    { name = "python-rest-client-codegen", specifier = "==1.12.2" },
+    { name = "python-rest-client-codegen", specifier = "==1.12.3" },
     { name = "requests", specifier = "==2.32.2" },
     { name = "sentry-sdk", specifier = "==0.15.1" },
     { name = "six", specifier = "==1.16.0" },
@@ -535,13 +535,13 @@ wheels = [
 
 [[package]]
 name = "python-rest-client-codegen"
-version = "1.12.2"
+version = "1.12.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/c8/a0f4afaece121378b831d2738df36db5a18becaea67aeb2f175d56e73d60/python_rest_client_codegen-1.12.2-py3-none-any.whl", hash = "sha256:230e82aecb3053f2e27be6c860e1cb6e1b2b1cb5dfd9f5ccd49a355c69b63d19", size = 26981554, upload-time = "2026-08-10T13:59:43.668Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/00/010a8978cbbe10c2c5b31a0bb92d3667e8fee1aee5e62d94693e9e6d5d55/python_rest_client_codegen-1.12.3-py3-none-any.whl", hash = "sha256:3eb9e4984055891b98f9456856dcc8c187a93aaa95dc06b9cea4f29ffe34d285", size = 26995798, upload-time = "2026-08-17T09:20:08.483Z" },
 ]
 
 [[package]]
