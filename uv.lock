@@ -287,7 +287,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.11,<3" },
     { name = "pyside6", specifier = "==6.6.3.1" },
     { name = "python-dateutil", specifier = "==2.8.2" },
-    { name = "python-rest-client-codegen", specifier = "==1.12.3.post24+git.2f641227" },
+    { name = "python-rest-client-codegen", specifier = "==1.12.4.post7+git.db6976e2" },
     { name = "requests", specifier = "==2.32.2" },
     { name = "sentry-sdk", specifier = "==0.15.1" },
     { name = "six", specifier = "==1.16.0" },
@@ -543,13 +543,13 @@ wheels = [
 
 [[package]]
 name = "python-rest-client-codegen"
-version = "1.12.3.post24+git.2f641227"
+version = "1.12.4.post7+git.db6976e2"
 source = { registry = "https://pypi.fury.io/lcdp/" }
 dependencies = [
     { name = "pydantic" },
 ]
 wheels = [
-    { url = "https://pypi.fury.io/lcdp/-/ver_1jbUqM/python_rest_client_codegen-1.12.3.post24+git.2f641227-py3-none-any.whl", hash = "sha256:cc098c4dcd4447158a7ab1eea483d2ebaa1ca13ae1a2add338dadd84584b1c06" },
+    { url = "https://pypi.fury.io/lcdp/-/ver_WPihH/python_rest_client_codegen-1.12.4.post7+git.db6976e2-py3-none-any.whl", hash = "sha256:b379a5a624924afad143e9e9f8a15bbee3141d907f3f96ac8aa4fdc6046776a2" },
 ]
 
 [[package]]
