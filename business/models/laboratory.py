@@ -1,10 +1,5 @@
-from business.models.errors import GetOrCreateLaboratoryError
-from business.models.supervisor import SupervisedEntity
-
-
-class Laboratory(SupervisedEntity):
-    def __init__(self, supervisor):
-        super().__init__(supervisor)
+class Laboratory:
+    def __init__(self):
         self._id = None
         self._name = None
 
@@ -24,8 +19,3 @@ class Laboratory(SupervisedEntity):
     def name(self, name):
         self._name = name
 
-    def report_errors(self):
-        errors = []
-        if not self.name:
-            errors.append(GetOrCreateLaboratoryError.INVALID_LABORATORY_NAME)
-        return errors
