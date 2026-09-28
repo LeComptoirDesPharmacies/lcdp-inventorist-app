@@ -36,11 +36,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,
-                "_type": null,
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": null,
                 "_ranges": []
             },
             "_rank": null,
@@ -86,11 +86,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,
-                "_type": null,
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": null,
                 "_ranges": []
             },
             "_rank": null,
@@ -136,11 +136,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,
-                "_type": null,
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": null,
                 "_ranges": []
             },
             "_rank": null,

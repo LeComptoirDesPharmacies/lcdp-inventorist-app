@@ -66,22 +66,22 @@ class Range(SupervisedEntity):
 # Excel mapper should not be constructed depended on this issue
 # TODO: Create a Draft class with all value of the excel and then create models objects
 class Distribution(SupervisedEntity):
+    # The values a user can type. Everything else (type, ranges) is structural: the type may come
+    # from a mapper default, so it must not make the distribution non-empty.
+    VALUE_FIELDS = ('sold_by', 'maximal_quantity', 'discounted_price', 'free_unit')
 
     def __init__(self, supervisor, distribution_type=None):
         super().__init__(supervisor)
         self._is_empty = True
-        self._type = distribution_type
         self._sold_by = None
         self._maximal_quantity = None
         self._discounted_price = None
         self._free_unit = None
-        self._ranges = [Range(self.supervisor)] if distribution_type == RANGE_DISTRIBUTION else []
+        self.type = distribution_type
 
     def __setattr__(self, name, value):
         super(Distribution, self).__setattr__(name, value)
-        # Empty = no value typed by the user. The type and the ranges are structural (the type may
-        # come from a mapper default), they must not count.
-        if name not in ('_is_empty', 'type', '_type', 'ranges', '_ranges') and value is not None:
+        if name in self.VALUE_FIELDS and value is not None:
             self._is_empty = False
 
     @property
@@ -91,6 +91,8 @@ class Distribution(SupervisedEntity):
     @type.setter
     def type(self, distribution_type):
         self._type = distribution_type
+        # A range distribution starts with one range, the values are written into the last one.
+        self._ranges = [Range(self.supervisor)] if distribution_type == RANGE_DISTRIBUTION else []
     
     @property
     def ranges(self):
@@ -238,8 +240,6 @@ class SaleOffer(SupervisedEntity):
     @distribution_type.setter
     def distribution_type(self, distribution_type):
         self._distribution.type = distribution_type or None
-        # A range distribution starts with one range, the values are written into the last one.
-        self._distribution.ranges = [Range(self.supervisor)] if self._distribution.type == RANGE_DISTRIBUTION else []
 
     @property
     def distribution(self):

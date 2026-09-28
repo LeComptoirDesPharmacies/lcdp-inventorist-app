@@ -74,26 +74,19 @@ class TestSaleOffer(unittest.TestCase):
         another_sale_offer.product.principal_barcode = sale_offers_dict['sale_offer_2_code']
         self.assertFalse(initial_sale_offer.should_merge(another_sale_offer))
 
-    def test_sale_offer_distribution_attribute_can_be_set_without_distribution_type(self):
+    def test_sale_offer_without_distribution_type_reports_invalid_distribution(self):
         # The "Distribution*" column may be left empty while "Vendu par (nombre) - colisage*" is
-        # filled : writing through sale_offer.distribution must not raise (LDS-6203).
+        # filled : writing through sale_offer.distribution must not raise, the line must report
+        # an invalid distribution instead (LDS-6203).
         sale_offer = SaleOffer(Supervisor())
         sale_offer.owner_id = 123
 
         sale_offer.distribution.sold_by = 10
+        sale_offer.supervisor.identify_errors()
 
         self.assertEqual(10, sale_offer.distribution.sold_by)
         self.assertIsNone(sale_offer.distribution_type)
-
-    def test_sale_offer_without_distribution_type_reports_invalid_distribution(self):
-        sale_offer = SaleOffer(Supervisor())
-        sale_offer.owner_id = 123
-        sale_offer.distribution.sold_by = 10
-
-        sale_offer.supervisor.identify_errors()
-
-        errors = sale_offer.supervisor.errors
-        self.assertEqual(1, errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
+        self.assertEqual(1, sale_offer.supervisor.errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
 
     def test_sale_offer_distribution_type_keeps_the_distribution_empty(self):
         # The type may come from a mapper default: alone, it is not a value typed by the user, so

@@ -36,11 +36,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "palier",
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": "palier",
                 "_ranges": [
                     {
                         "supervisor": "",

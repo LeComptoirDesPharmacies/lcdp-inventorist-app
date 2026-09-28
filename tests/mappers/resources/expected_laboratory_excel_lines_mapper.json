@@ -36,11 +36,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "palier",
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": "palier",
                 "_ranges": [
                     {
                         "supervisor": "",
@@ -99,11 +99,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "devis",
                 "_sold_by": 6,
                 "_maximal_quantity": null,
                 "_discounted_price": 7.38,
                 "_free_unit": null,
+                "_type": "devis",
                 "_ranges": []
             },
             "_rank": 500,
@@ -149,11 +149,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": 12,
                 "_discounted_price": 13.5225,
                 "_free_unit": null,
+                "_type": "unitaire",
                 "_ranges": []
             },
             "_rank": 610,
@@ -199,11 +199,11 @@
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": null,
                 "_discounted_price": 20.0,
                 "_free_unit": null,
+                "_type": "unitaire",
                 "_ranges": []
             },
             "_rank": 590,
