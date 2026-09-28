@@ -1,20 +1,15 @@
 {
     "0": {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 5.5
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "Dispositifs m\u00e9dicaux"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Mon laboratoire"
                 },
@@ -26,15 +21,13 @@
                 "_status": null
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_remaining_quantity": 120,
                 "_lapsing_date": "2029-04-01",
-                "_batch": "LEKEO2"
+                "_batch": "LEKEO2",
+                "_is_empty": false
             },
             "_reference": "2103302923",
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": false,
                 "_sold_by": 30,
                 "_maximal_quantity": null,

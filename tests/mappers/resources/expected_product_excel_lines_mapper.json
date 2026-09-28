@@ -1,20 +1,15 @@
 [
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 20
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "Dispositifs m\u00e9dicaux"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Mon laboratoire"
                 },
@@ -26,15 +21,13 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": true
             },
             "_reference": null,
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": true,
                 "_sold_by": null,
                 "_maximal_quantity": null,
@@ -50,21 +43,16 @@
         }
     },
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": null
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": null
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": null
                 },
@@ -76,15 +64,13 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": true
             },
             "_reference": null,
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": true,
                 "_sold_by": null,
                 "_maximal_quantity": null,
@@ -100,21 +86,16 @@
         }
     },
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 0
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "Hom\u00e9opathie"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Nouveau laboratoire"
                 },
@@ -126,15 +107,13 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": true
             },
             "_reference": null,
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": true,
                 "_sold_by": null,
                 "_maximal_quantity": null,
