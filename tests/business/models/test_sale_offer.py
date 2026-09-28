@@ -1,7 +1,7 @@
 import unittest
 
 from business.models.errors import CreateSaleOfferError
-from business.models.sale_offer import SaleOffer, Range
+from business.models.sale_offer import SaleOffer, Range, Distribution
 from business.models.supervisor import Supervisor
 
 from nose2.tools import params
@@ -94,6 +94,21 @@ class TestSaleOffer(unittest.TestCase):
 
         errors = sale_offer.supervisor.errors
         self.assertEqual(1, errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
+
+    def test_sale_offer_distribution_type_replaces_the_supervised_distribution(self):
+        # The initial typeless distribution must not survive in the supervisor once the type is
+        # set, otherwise it would keep reporting INVALID_DISTRIBUTION on a valid sale offer.
+        sale_offer = build_sale_offer(123, None, 'palier')
+        sale_offer.distribution_type = 'unitaire'
+        sale_offer.distribution.sold_by = 10
+        sale_offer.distribution.discounted_price = 4.5
+
+        sale_offer.supervisor.identify_errors()
+
+        self.assertEqual(0, sale_offer.supervisor.errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
+        distributions = [e for e in sale_offer.supervisor.registered_entity if isinstance(e, Distribution)]
+        self.assertEqual([sale_offer.distribution], distributions)
+        self.assertFalse(any(isinstance(e, Range) for e in sale_offer.supervisor.registered_entity))
 
     def test_sale_offer_merge(self):
         initial_sale_offer = build_sale_offer(123, None, 'palier')

@@ -180,7 +180,10 @@ class SaleOffer(SupervisedEntity):
         self._stock = Stock(supervisor)
         self._reference = None
         self._distribution_type = None
-        self._distribution = None
+        # Always present: the excel mapper writes through this link ('sale_offer.distribution.sold_by')
+        # even when the column carrying the distribution type is empty, in which case its setter
+        # never runs. A typeless Distribution reports INVALID_DISTRIBUTION instead of crashing on None.
+        self._distribution = Distribution(supervisor)
         self._rank = None
         self._owner_id = None
         self._description = None
@@ -236,20 +239,16 @@ class SaleOffer(SupervisedEntity):
 
     @distribution_type.setter
     def distribution_type(self, distribution_type):
-        if distribution_type:
-            self._distribution = Distribution(self.supervisor, distribution_type)
-        else:
-            self._distribution = Distribution(self.supervisor)
+        # The distribution is rebuilt for the given type (a range one starts with a Range) : the
+        # previous instance must leave the supervisor, otherwise it would keep reporting errors.
+        self.supervisor.unregister(self._distribution)
+        for range_ in self._distribution.ranges:
+            self.supervisor.unregister(range_)
+        self._distribution = Distribution(self.supervisor, distribution_type or None)
         self._distribution_type = distribution_type
 
     @property
     def distribution(self):
-        # The excel mapper writes through this link (ex: 'sale_offer.distribution.sold_by') and the
-        # column carrying the distribution type may be empty, in which case its setter never runs.
-        # Building an empty Distribution on demand keeps the line mappable: the missing type is then
-        # reported as INVALID_DISTRIBUTION instead of raising an AttributeError on None.
-        if self._distribution is None:
-            self._distribution = Distribution(self.supervisor)
         return self._distribution
 
     @property
@@ -261,10 +260,8 @@ class SaleOffer(SupervisedEntity):
         self._status = status
 
     def should_merge(self, next_sale_offer):
-        return self._distribution and \
-                self._distribution.type == RANGE_DISTRIBUTION and \
-                next_sale_offer._distribution and \
-                next_sale_offer._distribution.type == RANGE_DISTRIBUTION and \
+        return self.distribution.type == RANGE_DISTRIBUTION and \
+                next_sale_offer.distribution.type == RANGE_DISTRIBUTION and \
                 self.product.principal_barcode == next_sale_offer.product.principal_barcode
 
     def merge(self, sale_offer):
@@ -274,8 +271,4 @@ class SaleOffer(SupervisedEntity):
         errors = []
         if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
             errors.append(CreateSaleOfferError.INVALID_SELLER_ID)
-        # Read the raw attribute: going through the property would build a Distribution while the
-        # supervisor is iterating over its registered entities.
-        if not self._distribution or not isinstance(self._distribution, Distribution):
-            errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
         return errors

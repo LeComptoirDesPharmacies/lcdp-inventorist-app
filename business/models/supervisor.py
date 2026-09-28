@@ -15,6 +15,10 @@ class Supervisor:
     def register(self, entity):
         self.registered_entity.append(entity)
 
+    def unregister(self, entity):
+        # By identity: some entities (Range) define __eq__ on their values.
+        self.registered_entity = [e for e in self.registered_entity if e is not entity]
+
     def identify_errors(self):
         self._errors = [error for entity in self.registered_entity for error in entity.report_errors()]
 
