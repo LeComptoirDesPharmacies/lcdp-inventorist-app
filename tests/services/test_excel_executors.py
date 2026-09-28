@@ -138,11 +138,15 @@ class TestExcelExecutors(unittest.TestCase):
                                  column_names=('Distribution*',))
         lines = LaboratoryExcelLinesMapper(excel_path).map_to_obj()
 
-        assemblies = self.run_executor(excel.sale_offer_upsert_from_excel_lines, lines)
+        with self.assertLogs(level='WARNING') as logs:
+            assemblies = self.run_executor(excel.sale_offer_upsert_from_excel_lines, lines)
 
         records = assemblies[12]
         self.assertEqual(4, len(records))
         self.assertNotIn('distributionMode', records[2])
         self.assertEqual('3492270078112', records[2]['product']['principal_barcode'])
+        self.assertEqual(1, len(logs.output))
+        self.assertIn('3492270078112', logs.output[0])
+        self.assertIn('unknown distribution type None', logs.output[0])
         self.assertEqual(['RANGE', 'QUOTATION', 'UNITARY'],
                          [records[i]['distributionMode']['type'] for i in (0, 1, 3)])
