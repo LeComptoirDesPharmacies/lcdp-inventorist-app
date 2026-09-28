@@ -244,6 +244,12 @@ class SaleOffer(SupervisedEntity):
 
     @property
     def distribution(self):
+        # The excel mapper writes through this link (ex: 'sale_offer.distribution.sold_by') and the
+        # column carrying the distribution type may be empty, in which case its setter never runs.
+        # Building an empty Distribution on demand keeps the line mappable: the missing type is then
+        # reported as INVALID_DISTRIBUTION instead of raising an AttributeError on None.
+        if self._distribution is None:
+            self._distribution = Distribution(self.supervisor)
         return self._distribution
 
     @property
@@ -255,10 +261,10 @@ class SaleOffer(SupervisedEntity):
         self._status = status
 
     def should_merge(self, next_sale_offer):
-        return self.distribution and \
-                self.distribution.type == RANGE_DISTRIBUTION and \
-                next_sale_offer.distribution and \
-                next_sale_offer.distribution.type == RANGE_DISTRIBUTION and \
+        return self._distribution and \
+                self._distribution.type == RANGE_DISTRIBUTION and \
+                next_sale_offer._distribution and \
+                next_sale_offer._distribution.type == RANGE_DISTRIBUTION and \
                 self.product.principal_barcode == next_sale_offer.product.principal_barcode
 
     def merge(self, sale_offer):
@@ -268,6 +274,8 @@ class SaleOffer(SupervisedEntity):
         errors = []
         if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
             errors.append(CreateSaleOfferError.INVALID_SELLER_ID)
-        if not self.distribution or not isinstance(self.distribution, Distribution):
+        # Read the raw attribute: going through the property would build a Distribution while the
+        # supervisor is iterating over its registered entities.
+        if not self._distribution or not isinstance(self._distribution, Distribution):
             errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
         return errors
