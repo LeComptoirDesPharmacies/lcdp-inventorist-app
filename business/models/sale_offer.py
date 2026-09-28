@@ -69,20 +69,19 @@ class Distribution(SupervisedEntity):
 
     def __init__(self, supervisor, distribution_type=None):
         super().__init__(supervisor)
+        self._is_empty = True
         self._type = distribution_type
         self._sold_by = None
         self._maximal_quantity = None
         self._discounted_price = None
         self._free_unit = None
-        if distribution_type == RANGE_DISTRIBUTION:
-            self._ranges = [Range(self.supervisor)]
-        else:
-            self._ranges = []
-        self._is_empty = True
+        self._ranges = [Range(self.supervisor)] if distribution_type == RANGE_DISTRIBUTION else []
 
     def __setattr__(self, name, value):
         super(Distribution, self).__setattr__(name, value)
-        if name != '_is_empty' and value is not None:
+        # Empty = no value typed by the user. The type and the ranges are structural (the type may
+        # come from a mapper default), they must not count.
+        if name not in ('_is_empty', 'type', '_type', 'ranges', '_ranges') and value is not None:
             self._is_empty = False
 
     @property
@@ -179,9 +178,8 @@ class SaleOffer(SupervisedEntity):
         self._product = Product(supervisor)
         self._stock = Stock(supervisor)
         self._reference = None
-        self._distribution_type = None
         # Always present: the excel mapper writes through this link ('sale_offer.distribution.sold_by')
-        # even when the column carrying the distribution type is empty, in which case its setter
+        # even when the column carrying the distribution type is empty, in which case the type setter
         # never runs. A typeless Distribution reports INVALID_DISTRIBUTION instead of crashing on None.
         self._distribution = Distribution(supervisor)
         self._rank = None
@@ -235,17 +233,13 @@ class SaleOffer(SupervisedEntity):
 
     @property
     def distribution_type(self):
-        return self._distribution_type
+        return self._distribution.type
 
     @distribution_type.setter
     def distribution_type(self, distribution_type):
-        # The distribution is rebuilt for the given type (a range one starts with a Range) : the
-        # previous instance must leave the supervisor, otherwise it would keep reporting errors.
-        self.supervisor.unregister(self._distribution)
-        for range_ in self._distribution.ranges:
-            self.supervisor.unregister(range_)
-        self._distribution = Distribution(self.supervisor, distribution_type or None)
-        self._distribution_type = distribution_type
+        self._distribution.type = distribution_type or None
+        # A range distribution starts with one range, the values are written into the last one.
+        self._distribution.ranges = [Range(self.supervisor)] if self._distribution.type == RANGE_DISTRIBUTION else []
 
     @property
     def distribution(self):

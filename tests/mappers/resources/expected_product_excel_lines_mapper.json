@@ -33,7 +33,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": null,
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,
@@ -84,7 +83,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": null,
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,
@@ -135,7 +133,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": null,
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": true,

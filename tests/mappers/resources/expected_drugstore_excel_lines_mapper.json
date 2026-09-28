@@ -33,7 +33,6 @@
                 "_batch": "LEKEO2"
             },
             "_reference": "2103302923",
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -84,7 +83,6 @@
                 "_batch": "Mon lot"
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -135,7 +133,6 @@
                 "_batch": "LEKEO1"
             },
             "_reference": "2103302923",
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -186,7 +183,6 @@
                 "_batch": "Mon lot 2"
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,

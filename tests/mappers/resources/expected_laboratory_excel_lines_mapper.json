@@ -33,7 +33,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": "palier",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -97,7 +96,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": "devis",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -148,7 +146,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
@@ -199,7 +196,6 @@
                 "_batch": null
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,

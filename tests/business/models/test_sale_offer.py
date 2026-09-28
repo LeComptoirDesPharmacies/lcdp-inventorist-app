@@ -1,7 +1,7 @@
 import unittest
 
 from business.models.errors import CreateSaleOfferError
-from business.models.sale_offer import SaleOffer, Range, Distribution
+from business.models.sale_offer import SaleOffer, Range
 from business.models.supervisor import Supervisor
 
 from nose2.tools import params
@@ -95,20 +95,26 @@ class TestSaleOffer(unittest.TestCase):
         errors = sale_offer.supervisor.errors
         self.assertEqual(1, errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
 
-    def test_sale_offer_distribution_type_replaces_the_supervised_distribution(self):
-        # The initial typeless distribution must not survive in the supervisor once the type is
-        # set, otherwise it would keep reporting INVALID_DISTRIBUTION on a valid sale offer.
-        sale_offer = build_sale_offer(123, None, 'palier')
-        sale_offer.distribution_type = 'unitaire'
+    def test_sale_offer_distribution_type_keeps_the_distribution_empty(self):
+        # The type may come from a mapper default: alone, it is not a value typed by the user, so
+        # no distribution mode must be built from it (see excel.__build_distribution_mode).
+        sale_offer = build_sale_offer(123, None, 'unitaire')
+        self.assertTrue(sale_offer.distribution.is_empty())
+        self.assertEqual('unitaire', sale_offer.distribution.type)
+
         sale_offer.distribution.sold_by = 10
-        sale_offer.distribution.discounted_price = 4.5
 
-        sale_offer.supervisor.identify_errors()
+        self.assertFalse(sale_offer.distribution.is_empty())
 
-        self.assertEqual(0, sale_offer.supervisor.errors.count(CreateSaleOfferError.INVALID_DISTRIBUTION))
-        distributions = [e for e in sale_offer.supervisor.registered_entity if isinstance(e, Distribution)]
-        self.assertEqual([sale_offer.distribution], distributions)
-        self.assertFalse(any(isinstance(e, Range) for e in sale_offer.supervisor.registered_entity))
+    def test_sale_offer_range_distribution_type_opens_a_first_range(self):
+        sale_offer = build_sale_offer(123, None, 'palier')
+        self.assertEqual(1, len(sale_offer.distribution.ranges))
+        self.assertTrue(sale_offer.distribution.is_empty())
+
+        sale_offer.distribution.sold_by = 10
+
+        self.assertEqual(10, sale_offer.distribution.ranges[0].sold_by)
+        self.assertFalse(sale_offer.distribution.is_empty())
 
     def test_sale_offer_merge(self):
         initial_sale_offer = build_sale_offer(123, None, 'palier')
