@@ -70,18 +70,21 @@ jobs:
       # moindre conflit. Le bot crée une PR auto-merge/main-into-develop et
       # l'auto-merge si le merge est propre (ou high-confidence après IA).
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.0.1
 
       - name: Back merge main into develop
         env:
           # Le workflow est déclenché sur release/vX → on FORCE main comme branche
-          # source (le bot lit la source depuis GITHUB_REF_NAME).
-          GITHUB_REF_NAME: main
+          # source. Pas via GITHUB_REF_NAME : Actions ignore en silence la surcharge
+          # des variables GITHUB_* (LDS-6139).
+          AUTO_MERGE_SOURCE_BRANCH: main
           GITHUB_APP_ID: ${{ vars.LCDP_BACKMERGE_APP_ID }}
           GITHUB_APP_PRIVATE_KEY: ${{ secrets.LCDP_BACKMERGE_APP_PRIVATE_KEY }}
           AUTO_MERGE_TARGET_PATTERNS: "develop"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: uvx lcdp-back-merge
+        # @latest : force la résolution de la dernière version (>= 1.0.5, la
+        # première qui lit AUTO_MERGE_SOURCE_BRANCH) plutôt qu'une version en cache.
+        run: uvx lcdp-back-merge@latest
 
   build-and-publish:
     name: Build and publish release
@@ -118,15 +121,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: Install safe-chain
         run: npm install -g @aikidosec/safe-chain@1.5.7
       - name: Install dependencies
-        # Installs uv.lock exactly (age gate already frozen in); aikido-uv scans for malware.
-        run: aikido-uv sync --frozen
+        # Installs uv.lock exactly (age gate already frozen in by uv at lock time, internal
+        # packages exempt); skip safe-chain's own age check, redundant here — its malware
+        # scan stays active (LDS-6097).
+        run: aikido-uv sync --frozen --safe-chain-skip-minimum-package-age
       - uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
