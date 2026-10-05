@@ -235,11 +235,11 @@ wheels = [
 
 [[package]]
 name = "lcdp-api"
-version = "1.20.3"
+version = "1.20.6"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6c/05/712c157d2cbf2161b286a42865c3cdb43a7c2ab6ca26583fa9e873d7ea1e/lcdp_api-1.20.3.tar.gz", hash = "sha256:73d0568626f8dfab859557fefd065b1b762c43116bdbb201102fc2360b689849", size = 83288, upload-time = "2026-09-28T15:39:20.765Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/d5/cdbe223ab39d5d88db230641f10a2d6d766b95478527eca552115dfa81e3/lcdp_api-1.20.6.tar.gz", hash = "sha256:8bff69a172c011f5c400092d741c7378c23b14902dfc14b3dcd2c1b2f194f5d5", size = 84099, upload-time = "2026-10-05T09:19:28.42Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/39/6600b0b2f8d56eb7ca26b73170a1b73b701276784690fde36c0a7f786315/lcdp_api-1.20.3-py3-none-any.whl", hash = "sha256:3f83ea36526aa9ffbdb4a69b92c5f7f61a5cc8960de45f135a2267e1f464feb4", size = 128021, upload-time = "2026-09-28T15:39:19.857Z" },
+    { url = "https://files.pythonhosted.org/packages/19/cd/efa0030a1d6b347a2b2ef5fd121831bded98380b8a66de68d05e208a81a7/lcdp_api-1.20.6-py3-none-any.whl", hash = "sha256:a105f60abc3d9c98fdc5a6d2786c24227dc22a57baf0ecd8a7ebb9b1d5c0fa01", size = 128892, upload-time = "2026-10-05T09:19:27.244Z" },
 ]
 
 [[package]]
@@ -280,7 +280,7 @@ requires-dist = [
     { name = "envsubst", specifier = "==0.1.5" },
     { name = "flatten-json", specifier = "==0.1.14" },
     { name = "keyring", specifier = "==23.4.0" },
-    { name = "lcdp-api", specifier = "==1.20.3" },
+    { name = "lcdp-api", specifier = "==1.20.6" },
     { name = "openpyxl", specifier = "==3.1.3" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "psutil", specifier = "==7.0.0" },
