@@ -33,15 +33,14 @@
                 "_batch": "LEKEO2"
             },
             "_reference": "2103302923",
-            "_distribution_type": "unitaire",
             "_distribution": {
                 "supervisor": "",
                 "_is_empty": false,
-                "_type": "unitaire",
                 "_sold_by": 30,
                 "_maximal_quantity": null,
                 "_discounted_price": 5.0,
                 "_free_unit": null,
+                "_type": "unitaire",
                 "_ranges": []
             },
             "_rank": null,

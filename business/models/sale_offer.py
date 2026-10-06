@@ -66,23 +66,22 @@ class Range(SupervisedEntity):
 # Excel mapper should not be constructed depended on this issue
 # TODO: Create a Draft class with all value of the excel and then create models objects
 class Distribution(SupervisedEntity):
+    # The values a user can type. Everything else (type, ranges) is structural: the type may come
+    # from a mapper default, so it must not make the distribution non-empty.
+    VALUE_FIELDS = ('sold_by', 'maximal_quantity', 'discounted_price', 'free_unit')
 
     def __init__(self, supervisor, distribution_type=None):
         super().__init__(supervisor)
-        self._type = distribution_type
+        self._is_empty = True
         self._sold_by = None
         self._maximal_quantity = None
         self._discounted_price = None
         self._free_unit = None
-        if distribution_type == RANGE_DISTRIBUTION:
-            self._ranges = [Range(self.supervisor)]
-        else:
-            self._ranges = []
-        self._is_empty = True
+        self.type = distribution_type
 
     def __setattr__(self, name, value):
         super(Distribution, self).__setattr__(name, value)
-        if name != '_is_empty' and value is not None:
+        if name in self.VALUE_FIELDS and value is not None:
             self._is_empty = False
 
     @property
@@ -92,6 +91,8 @@ class Distribution(SupervisedEntity):
     @type.setter
     def type(self, distribution_type):
         self._type = distribution_type
+        # A range distribution starts with one range, the values are written into the last one.
+        self._ranges = [Range(self.supervisor)] if distribution_type == RANGE_DISTRIBUTION else []
     
     @property
     def ranges(self):
@@ -179,8 +180,10 @@ class SaleOffer(SupervisedEntity):
         self._product = Product(supervisor)
         self._stock = Stock(supervisor)
         self._reference = None
-        self._distribution_type = None
-        self._distribution = None
+        # Always present: the excel mapper writes through this link ('sale_offer.distribution.sold_by')
+        # even when the column carrying the distribution type is empty, in which case the type setter
+        # never runs. A typeless Distribution reports INVALID_DISTRIBUTION instead of crashing on None.
+        self._distribution = Distribution(supervisor)
         self._rank = None
         self._owner_id = None
         self._description = None
@@ -232,15 +235,11 @@ class SaleOffer(SupervisedEntity):
 
     @property
     def distribution_type(self):
-        return self._distribution_type
+        return self._distribution.type
 
     @distribution_type.setter
     def distribution_type(self, distribution_type):
-        if distribution_type:
-            self._distribution = Distribution(self.supervisor, distribution_type)
-        else:
-            self._distribution = Distribution(self.supervisor)
-        self._distribution_type = distribution_type
+        self._distribution.type = distribution_type or None
 
     @property
     def distribution(self):
@@ -255,9 +254,7 @@ class SaleOffer(SupervisedEntity):
         self._status = status
 
     def should_merge(self, next_sale_offer):
-        return self.distribution and \
-                self.distribution.type == RANGE_DISTRIBUTION and \
-                next_sale_offer.distribution and \
+        return self.distribution.type == RANGE_DISTRIBUTION and \
                 next_sale_offer.distribution.type == RANGE_DISTRIBUTION and \
                 self.product.principal_barcode == next_sale_offer.product.principal_barcode
 
@@ -268,6 +265,4 @@ class SaleOffer(SupervisedEntity):
         errors = []
         if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
             errors.append(CreateSaleOfferError.INVALID_SELLER_ID)
-        if not self.distribution or not isinstance(self.distribution, Distribution):
-            errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
         return errors
