@@ -1,9 +1,5 @@
-from business.models.errors import CreateSaleOfferError
 from business.models.product import Product
 from business.models.stock import Stock
-from business.models.supervisor import SupervisedEntity
-import numbers
-
 from business.utils import cast_or_default
 
 UNITARY_DISTRIBUTION = 'unitaire'
@@ -11,9 +7,8 @@ RANGE_DISTRIBUTION = 'palier'
 QUOTATION_DISTRIBUTION = 'devis'
 
 
-class Range(SupervisedEntity):
-    def __init__(self, supervisor):
-        super().__init__(supervisor)
+class Range:
+    def __init__(self):
         self._sold_by = None
         self._discounted_price = None
         self._free_unit = None
@@ -42,36 +37,23 @@ class Range(SupervisedEntity):
     def free_unit(self, free_unit):
         self._free_unit = free_unit
 
-    def is_valid_discounted_price(self):
-        return self.discounted_price and isinstance(self.discounted_price, numbers.Number)
-
-    def is_valid_sold_by(self):
-        return self.sold_by and isinstance(self.sold_by, numbers.Number)
-
     def __eq__(self, obj):
         return isinstance(obj, Range) \
                and self.free_unit == obj.free_unit \
                and self.discounted_price == obj.discounted_price \
                and self.sold_by == obj.sold_by
 
-    def report_errors(self):
-        errors = []
-        if not self.is_valid_discounted_price() or not self.is_valid_sold_by():
-            errors.append(CreateSaleOfferError.INVALID_RANGE)
-        return errors
-
 
 # The problem is that I need to set distribution type before any other attribute otherwise
 # my object will not be usable.
 # Excel mapper should not be constructed depended on this issue
 # TODO: Create a Draft class with all value of the excel and then create models objects
-class Distribution(SupervisedEntity):
+class Distribution:
     # The values a user can type. Everything else (type, ranges) is structural: the type may come
     # from a mapper default, so it must not make the distribution non-empty.
     VALUE_FIELDS = ('sold_by', 'maximal_quantity', 'discounted_price', 'free_unit')
 
-    def __init__(self, supervisor, distribution_type=None):
-        super().__init__(supervisor)
+    def __init__(self, distribution_type=None):
         self._is_empty = True
         self._sold_by = None
         self._maximal_quantity = None
@@ -92,7 +74,7 @@ class Distribution(SupervisedEntity):
     def type(self, distribution_type):
         self._type = distribution_type
         # A range distribution starts with one range, the values are written into the last one.
-        self._ranges = [Range(self.supervisor)] if distribution_type == RANGE_DISTRIBUTION else []
+        self._ranges = [Range()] if distribution_type == RANGE_DISTRIBUTION else []
     
     @property
     def ranges(self):
@@ -149,41 +131,19 @@ class Distribution(SupervisedEntity):
         else:
             self._free_unit = cast_or_default(free_unit, int, 0)
 
-    def is_valid_maximal_quantity(self):
-        return self.maximal_quantity is None or (self.maximal_quantity and isinstance(self.sold_by, numbers.Number))
-
-    def report_errors(self):
-        errors = []
-        if not self.type or self.type not in [UNITARY_DISTRIBUTION, RANGE_DISTRIBUTION, QUOTATION_DISTRIBUTION]:
-            errors.append(CreateSaleOfferError.INVALID_DISTRIBUTION)
-        # Unitary
-        if self.type and self.type == UNITARY_DISTRIBUTION:
-            if not self.discounted_price or not isinstance(self.discounted_price, numbers.Number):
-                errors.append(CreateSaleOfferError.INVALID_DISCOUNTED_PRICE)
-            if not self.sold_by or not isinstance(self.sold_by, numbers.Number):
-                errors.append(CreateSaleOfferError.INVALID_SOLD_BY)
-            if not self.is_valid_maximal_quantity():
-                errors.append(CreateSaleOfferError.INVALID_MAXIMAL_QUANTITY)
-        if (self.discounted_price or self.maximal_quantity) and not self.sold_by:
-            errors.append(CreateSaleOfferError.MISSING_SOLD_BY)
-        if (self.sold_by or self.maximal_quantity) and not self.discounted_price:
-            errors.append(CreateSaleOfferError.MISSING_DISCOUNTED_PRICE)
-        return errors
-
     def is_empty(self):
         return self._is_empty
 
-class SaleOffer(SupervisedEntity):
+class SaleOffer:
 
-    def __init__(self, supervisor):
-        super().__init__(supervisor)
-        self._product = Product(supervisor)
-        self._stock = Stock(supervisor)
+    def __init__(self):
+        self._product = Product()
+        self._stock = Stock()
         self._reference = None
         # Always present: the excel mapper writes through this link ('sale_offer.distribution.sold_by')
         # even when the column carrying the distribution type is empty, in which case the type setter
-        # never runs. A typeless Distribution reports INVALID_DISTRIBUTION instead of crashing on None.
-        self._distribution = Distribution(supervisor)
+        # never runs. A typeless Distribution is sent without distribution mode instead of crashing on None.
+        self._distribution = Distribution()
         self._rank = None
         self._owner_id = None
         self._description = None
@@ -260,9 +220,3 @@ class SaleOffer(SupervisedEntity):
 
     def merge(self, sale_offer):
         self.distribution.ranges.extend(sale_offer.distribution.ranges)
-
-    def report_errors(self):
-        errors = []
-        if not self.owner_id or not isinstance(self.owner_id, numbers.Number):
-            errors.append(CreateSaleOfferError.INVALID_SELLER_ID)
-        return errors
