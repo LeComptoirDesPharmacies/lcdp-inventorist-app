@@ -11,7 +11,7 @@ dependencies = [
     "envsubst==0.1.5",
     "Pillow==12.2.0",
     "python-rest-client-codegen==1.12.5",
-    "lcdp-api==1.20.3",
+    "lcdp-api==1.20.6",
     "urllib3==2.2.3",
     "certifi",
     "python-dateutil==2.8.2",
