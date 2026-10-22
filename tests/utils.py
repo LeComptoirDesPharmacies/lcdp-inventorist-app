@@ -4,13 +4,9 @@ import tempfile
 from enum import Enum
 import datetime
 
-from business.models.supervisor import Supervisor
-
 
 def to_json(obj):
-    if isinstance(obj, Supervisor):
-        return ""
-    elif isinstance(obj, Enum) or isinstance(obj, datetime.date):
+    if isinstance(obj, Enum) or isinstance(obj, datetime.date):
         return str(obj)
     else:
         return obj.__dict__

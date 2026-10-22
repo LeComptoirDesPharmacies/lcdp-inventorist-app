@@ -42,7 +42,6 @@ class ExcelLinesMapper:
             obj_unique_key=self.unique_key,
             custom_dict=ConditionalDict(
                 condition_func=self.condition,
-                before_insert_func=self.before_insert,
                 merge_func=self.merge
             )
         ).values())
@@ -50,11 +49,6 @@ class ExcelLinesMapper:
     @staticmethod
     def condition(key, value):
         return key is not None
-
-    @staticmethod
-    def before_insert(key, value):
-        value.supervisor.identify_errors()
-        return value
 
     @staticmethod
     def merge(key, old_obj, new_obj):

@@ -1,32 +1,6 @@
 from enum import Enum
 
 
-class GetOrCreateLaboratoryError(Enum):
-    INVALID_LABORATORY_NAME = "Nom du laboratoire invalide"
-
-
-class CreateProductError(Enum):
-    INVALID_PRODUCT_NAME = 'Nom de produit invalide'
-    INVALID_VAT = 'T.V.A invalide'
-    INVALID_UNIT_PRICE = 'Prix unitaire du produit invalide'
-    INVALID_WEIGHT = 'Poids invalide'
-
-
-class CreateSaleOfferError(Enum):
-    INVALID_DISTRIBUTION = 'Type de distribution invalide'
-    INVALID_REMAINING_QUANTITY = 'Stock invalide'
-    INVALID_LAPSING_DATE = 'Date de péremption invalide'
-    INVALID_BATCH = 'Numéro de lot invalide'
-    INVALID_SELLER_ID = 'Identifiant vendeur est invalide'
-    INVALID_RANGE = 'Un ou plusieurs palier sont invalide'
-    INVALID_DISCOUNTED_PRICE = 'Prix remisé invalide'
-    INVALID_SOLD_BY = 'Le colisage est invalide'
-    INVALID_MAXIMAL_QUANTITY = 'La quantité maximale est invalide'
-    INVALID_CIP = 'CIP invalide'
-    MISSING_DISCOUNTED_PRICE = 'Prix remisé manquant'
-    MISSING_SOLD_BY = 'Colisage manquant'
-
-
 class ProcessingError(Enum):
     TOO_MANY_PRODUCT = 'Plusieurs produits sont lié à ce cip'
     TOO_MANY_LABORATORY = 'Plusieurs laboratoires sont lié à ce nom'

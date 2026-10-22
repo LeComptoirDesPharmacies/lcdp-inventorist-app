@@ -1,20 +1,15 @@
 [
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 5.5
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "M\u00e9dicament"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Phytoceutic Institut"
                 },
@@ -26,31 +21,26 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_remaining_quantity": 2,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": false
             },
             "_reference": null,
-            "_distribution_type": "palier",
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": false,
-                "_type": "palier",
                 "_sold_by": null,
                 "_maximal_quantity": null,
                 "_discounted_price": null,
                 "_free_unit": null,
+                "_type": "palier",
                 "_ranges": [
                     {
-                        "supervisor": "",
                         "_sold_by": 20,
                         "_discounted_price": 20.0,
                         "_free_unit": 10
                     },
                     {
-                        "supervisor": "",
                         "_sold_by": 10,
                         "_discounted_price": 10.0,
                         "_free_unit": 5
@@ -64,21 +54,16 @@
         }
     },
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 5.5
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "M\u00e9dicament"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Phytoceutic Institut"
                 },
@@ -90,22 +75,19 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_remaining_quantity": 3,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": false
             },
             "_reference": null,
-            "_distribution_type": "devis",
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": false,
-                "_type": "devis",
                 "_sold_by": 6,
                 "_maximal_quantity": null,
                 "_discounted_price": 7.38,
                 "_free_unit": null,
+                "_type": "devis",
                 "_ranges": []
             },
             "_rank": 500,
@@ -115,21 +97,16 @@
         }
     },
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 5.5
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "M\u00e9dicament"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Phytoceutic Institut"
                 },
@@ -141,22 +118,19 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": true
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": false,
-                "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": 12,
                 "_discounted_price": 13.5225,
                 "_free_unit": null,
+                "_type": "unitaire",
                 "_ranges": []
             },
             "_rank": 610,
@@ -166,21 +140,16 @@
         }
     },
     {
-        "_supervisor": "",
         "_sale_offer": {
-            "supervisor": "",
             "_product": {
-                "supervisor": "",
-                "_is_empty": false,
                 "_vat": {
-                    "supervisor": "",
                     "_value": 5.5
                 },
+                "_is_empty": false,
                 "_product_type": {
                     "_name": "M\u00e9dicament"
                 },
                 "_laboratory": {
-                    "supervisor": "",
                     "_id": null,
                     "_name": "Phytoceutic Institut"
                 },
@@ -192,22 +161,19 @@
                 "_status": "VALIDATED"
             },
             "_stock": {
-                "supervisor": "",
-                "_is_empty": true,
                 "_remaining_quantity": null,
                 "_lapsing_date": null,
-                "_batch": null
+                "_batch": null,
+                "_is_empty": true
             },
             "_reference": null,
-            "_distribution_type": "unitaire",
             "_distribution": {
-                "supervisor": "",
                 "_is_empty": false,
-                "_type": "unitaire",
                 "_sold_by": 6,
                 "_maximal_quantity": null,
                 "_discounted_price": 20.0,
                 "_free_unit": null,
+                "_type": "unitaire",
                 "_ranges": []
             },
             "_rank": 590,

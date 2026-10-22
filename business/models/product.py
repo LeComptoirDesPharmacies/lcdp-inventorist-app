@@ -1,8 +1,4 @@
 from business.models.laboratory import Laboratory
-from business.models.errors import CreateProductError, CreateSaleOfferError
-import numbers
-
-from business.models.supervisor import SupervisedEntity
 from business.utils import cast_or_default, cast_yes_to_bool
 
 
@@ -28,9 +24,8 @@ class ProductType:
         self._name = name
 
 
-class Vat(SupervisedEntity):
-    def __init__(self, supervisor):
-        super().__init__(supervisor)
+class Vat:
+    def __init__(self):
         self._value = None
 
     @property
@@ -41,20 +36,13 @@ class Vat(SupervisedEntity):
     def value(self, value):
         self._value = value
 
-    def report_errors(self):
-        errors = []
-        if not self.value or not isinstance(self.value, numbers.Number):
-            errors.append(CreateProductError.INVALID_VAT)
-        return errors
 
+class Product:
 
-class Product(SupervisedEntity):
-
-    def __init__(self, supervisor):
-        super().__init__(supervisor)
-        self._vat = Vat(supervisor)
+    def __init__(self):
+        self._vat = Vat()
         self._product_type = ProductType()
-        self._laboratory = Laboratory(supervisor)
+        self._laboratory = Laboratory()
         self._principal_barcode = None
         self._name = None
         self._weight = None
@@ -127,16 +115,6 @@ class Product(SupervisedEntity):
     @status.setter
     def status(self, status):
         self._status = status
-
-    def report_errors(self):
-        errors = []
-        if not self.principal_barcode:
-            errors.append(CreateSaleOfferError.INVALID_CIP)
-        if self.weight and not isinstance(self.weight, numbers.Number):
-            errors.append(CreateProductError.INVALID_WEIGHT)
-        if not self.unit_price or not isinstance(self.unit_price, numbers.Number):
-            errors.append(CreateProductError.INVALID_UNIT_PRICE)
-        return errors
 
     def is_empty(self):
         return self._is_empty

@@ -71,7 +71,11 @@ def get_action(assembly: Assembly) -> str:
 
 def fromAssemblyToTable(assembly: Assembly) -> dict:
     data = dict({
-        'id': assembly.id,
+        # str() is mandatory: since the openapi-generator 7.25 bump, Assembly.id is a
+        # uuid.UUID, which has no QML counterpart and crosses the boundary as an opaque
+        # QVariant(PySide::PyObjectWrapper). QML hands it back to the downloadAndOpenFile
+        # slot, where it stringifies to that wrapper's repr instead of the id (LDS-6239).
+        'id': str(assembly.id) if assembly.id is not None else None,
         'created_at': assembly.created_at.astimezone(tz=LOCAL_TIMEZONE).strftime("%m/%d/%Y, %H:%M:%S"),
         'type': fromAssemblyTypeToString(assembly.factory_type),
         'tags': fromAssemblyTagsToString(assembly.tags),

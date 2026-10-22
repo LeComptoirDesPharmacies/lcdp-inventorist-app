@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from backend.app import App
 from backend.login import Login
 from business.constant import APPLICATION_NAME, ORGANIZATION_DOMAIN, ORGANIZATION_NAME, GITHUB_REPOSITORY_LATEST_RELEASE
-from business.services.authentication import delete_api_key
+from business.services.authentication import delete_session_api_key
 from settings import get_settings
 
 CURRENT_DIRECTORY = Path(__file__).resolve().parent
@@ -39,7 +39,7 @@ faulthandler.enable(file=_fault_log_file)
 
 def on_exit():
     try:
-        delete_api_key()
+        delete_session_api_key()
     except Exception:
         logging.exception("Unabled to delete api key")
 

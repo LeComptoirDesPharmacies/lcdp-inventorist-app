@@ -1,6 +1,6 @@
 from api.consume.gen.auth.models.any_authentication_credential import AnyAuthenticationCredential
 from business.services.providers import get_auth_api, get_search_user_api, get_manage_api_key_api
-from business.services.security import API_KEY_NAME, persist_api_key, get_api_key
+from business.services.security import API_KEY_NAME, persist_api_key, get_api_key, is_api_key_persisted
 from business.services.settings import get_setting, set_setting, remove_setting
 from business.constant import API_KEY_ID_NAME
 
@@ -41,7 +41,6 @@ def delete_api_key():
 
     if api_key and api_key_id:
         try:
-            # if user open and close app, without login, try to delete old api_key
             if isinstance(api_key_id, str):
                 api_key_id = int(api_key_id)
 
@@ -53,3 +52,9 @@ def delete_api_key():
         finally:
             remove_setting(API_KEY_ID_NAME)
 
+
+def delete_session_api_key():
+    # Only clean up a key this session put in the keyring. A key left by a previous
+    # session is cleaned up by the next login (see authenticate).
+    if is_api_key_persisted():
+        delete_api_key()

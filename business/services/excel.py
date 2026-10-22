@@ -117,6 +117,11 @@ def __build_distribution_mode(sale_offer_line):
             'maximalQuantity': clean_int(sale_offer_line.sale_offer.distribution.maximal_quantity)
         }
     else:
+        # Values were typed (the distribution is not empty) but no known type goes with them: nothing can
+        # be sent, the API contract needs a typed distribution mode. Same policy as an unknown product type.
+        logging.warning(f"Distribution values ignored for product "
+                        f"{sale_offer_line.sale_offer.product.principal_barcode}: "
+                        f"unknown distribution type {sale_offer_line.sale_offer.distribution_type!r}")
         distribution_mode = dict()
 
     return distribution_mode

@@ -2,10 +2,6 @@ from business.models.column import Column
 from business.models.sale_offer import UNITARY_DISTRIBUTION
 
 
-error_mapper = [
-    Column("Erreur de saisie", "supervisor.readable_errors")
-]
-
 # TODO: add column name and asterisk as constant ? But if one change should update all excel
 
 create_laboratory_sale_offer_mapper = [
