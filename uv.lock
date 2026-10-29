@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.12.*"
 
 [options]
@@ -7,20 +7,20 @@ exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for 
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
+lcdp-api = false
+lcdp-avro-to-python = false
+lcdp-back-merge = false
 lcdp-boto3-utils = false
+lcdp-fastapi-utils = false
 lcdp-flask-utils = false
 lcdp-kafka-utils = false
 lcdp-logging-utils = false
+lcdp-postgres-utils = false
+lcdp-sqlalchemy-utils = false
+python-avro-generator = false
+python-fastapi-rest-server-codegen = false
 python-flask-rest-server-codegen = false
 python-rest-client-codegen = false
-lcdp-fastapi-utils = false
-lcdp-postgres-utils = false
-python-avro-generator = false
-lcdp-avro-to-python = false
-python-fastapi-rest-server-codegen = false
-lcdp-back-merge = false
-lcdp-sqlalchemy-utils = false
-lcdp-api = false
 
 [[package]]
 name = "altgraph"
@@ -235,11 +235,11 @@ wheels = [
 
 [[package]]
 name = "lcdp-api"
-version = "1.20.7"
+version = "1.20.8"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/09/3b/17c2a91a862814074405c86a1093be084cd93401f5851e57d278898a84f7/lcdp_api-1.20.7.tar.gz", hash = "sha256:fbb9f614c5a2302514a7a9b8435e9bdc7ebef71c257a4850aa26156be2e745fb", size = 83625, upload-time = "2026-10-21T09:13:03.019Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/d6/cccabed37f29efd02bb023147a926152246c3d61144ce64e94eb50ea6261/lcdp_api-1.20.8.tar.gz", hash = "sha256:c69d133534dfd478977246d4255e5865f843a7bbba096cdc0e00a31e17fb5a27", size = 83718, upload-time = "2026-10-29T15:48:49.728Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/b3/e40fd65e38102844a3394a2797c00157bb0031fd774bf2342be890d68554/lcdp_api-1.20.7-py3-none-any.whl", hash = "sha256:1c1b927c1d08682b0d6a29ba9e81276b56ac9846ec704bd4e7bd270675451a55", size = 128314, upload-time = "2026-10-21T09:13:02.05Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/ea/c31ef4e0d61a7b08c27c200998ae13ea74c6c74ed3a4f74b4c200435c4d7/lcdp_api-1.20.8-py3-none-any.whl", hash = "sha256:02a8766798f5e3ff4ad91e2bbbd4224110bc5e0e8aecbc7e01e389059b50bd86", size = 128407, upload-time = "2026-10-29T15:48:48.447Z" },
 ]
 
 [[package]]
@@ -280,7 +280,7 @@ requires-dist = [
     { name = "envsubst", specifier = "==0.1.5" },
     { name = "flatten-json", specifier = "==0.1.14" },
     { name = "keyring", specifier = "==23.4.0" },
-    { name = "lcdp-api", specifier = "==1.20.7" },
+    { name = "lcdp-api", specifier = "==1.20.8" },
     { name = "openpyxl", specifier = "==3.1.3" },
     { name = "pillow", specifier = "==12.2.0" },
     { name = "psutil", specifier = "==7.0.0" },
