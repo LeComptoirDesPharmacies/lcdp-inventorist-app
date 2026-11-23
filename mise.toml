@@ -1,0 +1,31 @@
+min_version = "2026.10"
+
+[settings]
+# Same policy as pnpm minimumReleaseAge: never resolve a tool version
+# published less than 3 days ago (exact pins are not filtered).
+minimum_release_age = "3d"
+# Single source of truth stays the existing version file.
+idiomatic_version_file_enable_tools = ["python"]
+
+# Versions: python from .python-version; uv.lock
+[tools]
+uv = "0.13"
+
+[tasks.install]
+description = "Install dependencies"
+run = "uv sync"
+
+[tasks.up]
+description = "Run the app"
+run = "uv run main.py"
+
+[tasks.build]
+description = "Package the desktop app (pyinstaller, same as the release workflow)"
+run = "uv run pyinstaller app.spec"
+
+[tasks.test]
+description = "Run tests (same as CI)"
+run = [
+  "uv run python prepare.py",
+  "uv run python -m nose2 tests -v",
+]
